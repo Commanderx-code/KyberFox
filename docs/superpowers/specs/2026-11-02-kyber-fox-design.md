@@ -142,6 +142,12 @@ The toolbar button shows the blocked count for the current site. Its panel holds
 | DRM (Widevine) | Off until a site asks, then one click to enable |
 | Malware protection | On with local lists, `browser.safebrowsing.downloads.remote.enabled=false` |
 | Extensions | addons.mozilla.org stays, with a few requests to Mozilla when browsing or updating add-ons |
+| New tab | Firefox Home with top sites on; sponsored content, weather, stories and highlights off |
+| Search engines shipped | DuckDuckGo, Startpage, Brave Search, Wikipedia; Google and Bing addable by the user |
+| Startup | Restore the previous session |
+| Profile on Linux | `~/.config/kyberfox`, cache `~/.cache/kyberfox` (ADR 0002) |
+| Version | Firefox version plus build counter, `159.0-1` (ADR 0001) |
+| Update channels | `release` for friends, `test` for dry runs |
 
 ### Removed at build time
 

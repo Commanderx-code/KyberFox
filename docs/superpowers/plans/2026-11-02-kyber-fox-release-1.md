@@ -202,7 +202,7 @@ def test_translations_not_flagged(tmp_path):
 
 - [ ] **Step 4: Write `settings/`.** Start from LibreWolf `librewolf.cfg` and `distribution/policies.json`. Keep `AIControls` with `Translations: available`, and `PDFAltText`, `SmartTabGroups`, `LinkPreviewKeyPoints`, `SidebarChatbot` and `SmartWindow` as `blocked`. Remove `AppUpdateURL` and `DisableAppUpdate`. Remove the `uBlock0@raymondhill.net` `ExtensionSettings` entry, which Task 4 replaces. Re-enable Safe Browsing with local lists, and set `browser.safebrowsing.downloads.remote.enabled=false`. Read `patches/rs-blocker.patch`, and make sure it leaves blocklist and certificate revocation updates working.
 
-- [ ] **Step 5: Wire branding.** Set `--with-branding=browser/branding/kyberfox`, the app id, `--with-app-name=kyberfox` and the vendor. Pass the Google key through `--with-google-safebrowsing-api-keyfile`. Confirm the profile path is `~/.kyberfox` on Linux and `%APPDATA%\Kyber Fox` on Windows.
+- [ ] **Step 5: Wire branding.** Set `--with-branding=browser/branding/kyberfox`, the app id, `--with-app-name=kyberfox` and the vendor. Pass the Google key through `--with-google-safebrowsing-api-keyfile`. Confirm the profile path is `~/.config/kyberfox` on Linux, with the cache under `~/.cache/kyberfox`, and `%APPDATA%\Kyber Fox` on Windows.
 
 - [ ] **Step 6: Run tests and the release guard.** `pytest tests -v`, then `make check-forbidden`, then `./mach xpcshell-test browser/components/kyberfox/test/xpcshell/`. Expected: PASS and exit 0.
 
