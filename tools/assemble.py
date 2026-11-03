@@ -89,6 +89,46 @@ def _follow_collection_pref(tree: Path) -> None:
                                          "follows_collection_enabled: true"))
 
 
+# LibreWolf's string table; whole-file replacements that would drop terms Kyber Fox still uses.
+SKIPPED_L10N = {"toolkit/toolkit/branding/brandings.ftl"}
+
+
+def apply_librewolf_l10n(tree: Path, librewolf: Path) -> list[Path]:
+    """Apply LibreWolf's en-US strings, as scripts/librewolf-patches.py does.
+
+    l10n/en-US/<app>/<rest> goes to <app>/locales/en-US/<rest>. A file named
+    *.inc.<ext> is appended to the existing target with ".inc" dropped; any
+    other file is written whole. Content is rebranded. Other locales are
+    skipped: release 1 ships en-US only. brandings.ftl is skipped as well: it
+    replaces the whole upstream file and drops terms the kept UI uses, and the
+    overlay's brand.ftl already provides the -brand-* names.
+    """
+    l10n = librewolf / "l10n" / "en-US"
+    written: list[Path] = []
+    if not l10n.is_dir():
+        return written
+    for source in sorted(l10n.rglob("*")):
+        if source.is_dir() or source.name.endswith(".md"):
+            continue
+        rel = source.relative_to(l10n)
+        if rel.as_posix() in SKIPPED_L10N:
+            continue
+        app, *rest = rel.parts
+        target = tree / app / "locales" / "en-US" / Path(*rest)
+        append = ".inc" in target.name
+        if append:
+            target = target.with_name(target.name.replace(".inc", ""))
+        target.parent.mkdir(parents=True, exist_ok=True)
+        text = rebrand(source.read_text())
+        if append:
+            with open(target, "a") as f:
+                f.write("\n\n" + text)
+        else:
+            target.write_text(text)
+        written.append(target)
+    return written
+
+
 def _finish_tree(tree: Path, pins, touched: set[str], ublock: Path) -> None:
     settings = tree / "kyberfox"
     settings.mkdir(exist_ok=True)
@@ -145,6 +185,8 @@ def assemble(pins, workdir: Path, allow_failed: bool = False) -> AssemblyResult:
     for name in read_list(kyber_dir / "series.txt"):
         _apply(tree, f"patches/kyber/{name}", (kyber_dir / name).read_text(),
                scratch, result, allow_failed, touched)
+
+    apply_librewolf_l10n(tree, lw)  # before the overlay, so overlay files win
 
     overlay = REPO_ROOT / "overlay"
     if overlay.is_dir():
