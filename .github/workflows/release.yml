@@ -107,6 +107,18 @@ jobs:
             echo "tag=$tag"
           } >> "$GITHUB_OUTPUT"
 
+      # Settings shows Safe Browsing as on, so a release build must carry the key.
+      # Test and dry runs only warn (the build workflows print the warning).
+      - name: Refuse a release build without the Safe Browsing key
+        if: inputs.channel == 'release' && !inputs.dry-run
+        env:
+          HAVE_KEY: ${{ secrets.KYBERFOX_SAFEBROWSING_KEY != '' }}
+        run: |
+          if [ "$HAVE_KEY" != "true" ]; then
+            echo "::error::KYBERFOX_SAFEBROWSING_KEY is not set; a release build would ship without Safe Browsing lists. See docs/release.md (Owner steps)."
+            exit 1
+          fi
+
       - name: Write the theme status
         env:
           DISABLED_SKINS: ${{ inputs.set-disabled-skin }}

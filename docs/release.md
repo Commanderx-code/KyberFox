@@ -25,7 +25,7 @@ A release is one workflow run, `.github/workflows/release.yml`, plus one approva
 
 ## What each job does
 
-- **prepare**: checks the version against `pins.toml`, checks the tag is free, and validates the skin ids (`tools/set_disabled_skins.py`). It uploads the `themes/status.json` the release ships.
+- **prepare**: checks the version against `pins.toml`, checks the tag is free, refuses a `release` channel run (not a dry run) when the `KYBERFOX_SAFEBROWSING_KEY` secret is empty, and validates the skin ids (`tools/set_disabled_skins.py`). It uploads the `themes/status.json` the release ships.
 - **build-linux**, **build-windows**: the existing Build Linux and Build Windows workflows, called with `disabled-skins` and the `KYBERFOX_SAFEBROWSING_KEY` secret. Each writes `themes/status.json` into its checkout before assembling (nothing is committed). Build Linux ends with the Arch smoke; Build Windows ends with the Windows smoke and the update smoke `refuse` job, and compares the update certificates in the assembled tree with the committed ones.
 - **front-end-tests**, **smoke-windows**, **smoke-arch**: the front-end test build and the two smokes, called again against the artifacts of this run.
 - **verify**: assembles the release tree (with the shipped `status.json`), runs `check-forbidden`, and runs the `tests/` suite. `release.yml` does not call the update smoke `refuse` job a second time; the one inside Build Windows is the gate. `apply-update` calls `smoke-update.yml` with `skip-refuse: true` for the same reason.
@@ -90,7 +90,7 @@ Done once, in the GitHub repository settings. Nothing here is in the repository.
      - `MAR_SIGNING_KEY`: the primary update-signing private key, PEM. From the private keys folder: `gh secret set MAR_SIGNING_KEY --env release < release_primary.key` (`docs/update-signing.md`, Owner steps).
      - `PACMAN_GPG_KEY`: the armored private repo key, with no passphrase.
      - `PACMAN_GPG_KEY_ID`: its fingerprint. Steps in `docs/arch-repo.md`.
-2. **Safe Browsing key**: obtain a Google Safe Browsing API key (Google Cloud console, a project with the Safe Browsing API enabled, an API key restricted to that API), then save it as a repository secret, not an environment secret, so the push-triggered build-gate runs get it too: `gh secret set KYBERFOX_SAFEBROWSING_KEY`. Both build workflows write it to a file in `$RUNNER_TEMP` and pass it to the build through `KYBERFOX_SAFEBROWSING_KEYFILE`; without it they print a warning and the build ships without Safe Browsing lists.
+2. **Safe Browsing key**: obtain a Google Safe Browsing API key (Google Cloud console, a project with the Safe Browsing API enabled, an API key restricted to that API), then save it as a repository secret, not an environment secret, so the push-triggered build-gate runs get it too: `gh secret set KYBERFOX_SAFEBROWSING_KEY`. Both build workflows write it to a file in `$RUNNER_TEMP` and pass it to the build through `KYBERFOX_SAFEBROWSING_KEYFILE`; without it they print a warning and the build ships without Safe Browsing lists. A `release` channel run of this workflow that is not a dry run stops in `prepare` until the secret is set.
 3. **Real update certificates**: replace the two placeholder `.der` files and rebuild, as in `docs/update-signing.md`. Publish refuses placeholders.
 4. **Pacman public key**: commit `packaging/arch/kyberfox-signing.pub` (`docs/arch-repo.md`).
 5. **Pages**: enable GitHub Pages from the `gh-pages` branch, root folder. The first publish creates the branch.

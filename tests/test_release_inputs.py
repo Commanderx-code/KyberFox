@@ -71,8 +71,26 @@ def test_publish_job_requires_environment():
         assert ("MAR_SIGNING_KEY" in text) == (name == "publish"), name
         for secret in ("PACMAN_GPG_KEY", "PACMAN_GPG_KEY_ID"):
             assert (secret in text) == (name == "publish"), (name, secret)
+        if name == "prepare":
+            # prepare only tests whether the Safe Browsing key exists; the value never reaches a step.
+            text = text.replace(SB_PRESENT, "")
         assert ("secrets." in text) == (name == "publish"), name
     assert "secrets.MAR_SIGNING_KEY" in yaml.safe_dump(publish)
+
+
+SB_PRESENT = "${{ secrets.KYBERFOX_SAFEBROWSING_KEY != '' }}"
+
+
+def test_prepare_refuses_a_release_without_the_safe_browsing_key():
+    steps = JOBS["prepare"]["steps"]
+    [step] = [s for s in steps if "Safe Browsing" in s.get("name", "")]
+    assert step["if"] == "inputs.channel == 'release' && !inputs.dry-run"
+    assert step["env"] == {"HAVE_KEY": SB_PRESENT}
+    assert 'if [ "$HAVE_KEY" != "true" ]' in step["run"]
+    assert "exit 1" in step["run"]
+    # The tag check runs first so a missing key is reported against a valid run.
+    names = [s.get("name") for s in steps]
+    assert names.index("Check the version and the tag") < names.index(step["name"])
 
 
 SB_SECRET = "${{ secrets.KYBERFOX_SAFEBROWSING_KEY }}"
