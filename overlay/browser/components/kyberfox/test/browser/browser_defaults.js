@@ -41,6 +41,15 @@ add_task(function test_cfg_defaults() {
   });
 });
 
+// kyberfox.cfg sets this one with pref(), so it is a user value.
+add_task(function test_pref_entries() {
+  Assert.strictEqual(
+    Services.prefs.getBoolPref("browser.safebrowsing.downloads.remote.enabled"),
+    false,
+    "remote download checks are off"
+  );
+});
+
 add_task(function test_private_defaults() {
   checkPrefs({
     "network.cookie.cookieBehavior": 1,

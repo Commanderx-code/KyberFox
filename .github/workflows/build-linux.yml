@@ -76,7 +76,9 @@ jobs:
         run: make assemble
 
       - name: Release guard
-        run: make check-forbidden
+        run: |
+          make check-forbidden
+          make check-strict
 
       - name: Install build dependencies
         working-directory: work/tree

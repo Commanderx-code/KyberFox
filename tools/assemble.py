@@ -89,19 +89,52 @@ def _follow_collection_pref(tree: Path) -> None:
                                          "follows_collection_enabled: true"))
 
 
-# LibreWolf's string table; whole-file replacements that would drop terms Kyber Fox still uses.
-SKIPPED_L10N = {"toolkit/toolkit/branding/brandings.ftl"}
+# LibreWolf's brandings.ftl lists only its renamed terms. Applying it means
+# replacing those terms in the upstream file in place and keeping the rest.
+BRANDINGS_L10N = "toolkit/toolkit/branding/brandings.ftl"
+
+_TERM_START = re.compile(r"^(-[A-Za-z0-9_-]+)[ \t]*=", re.MULTILINE)
+
+
+def _term_blocks(text: str) -> dict[str, tuple[int, int]]:
+    """Map each term id to the (start, end) span of its definition: the
+    "-id = value" line and any indented continuation lines after it."""
+    spans: dict[str, tuple[int, int]] = {}
+    for m in _TERM_START.finditer(text):
+        end = text.find("\n", m.start())
+        end = len(text) if end == -1 else end + 1
+        while end < len(text) and text[end] in " \t" and text[end:].strip():
+            nl = text.find("\n", end)
+            end = len(text) if nl == -1 else nl + 1
+        spans[m.group(1)] = (m.start(), end)
+    return spans
+
+
+def _merge_terms(target: Path, source_text: str) -> None:
+    """Replace, in place, every term of source_text in the upstream file target."""
+    if not target.is_file():
+        raise RuntimeError(f"cannot merge terms into {target}: it does not exist")
+    upstream = target.read_text(encoding="utf-8")
+    for term, (start, end) in sorted(_term_blocks(source_text).items(),
+                                     key=lambda kv: kv[1][0]):
+        current = _term_blocks(upstream).get(term)
+        if current is None:
+            raise RuntimeError(f"term {term} is not defined in upstream {target}")
+        block = source_text[start:end]
+        if not block.endswith("\n"):
+            block += "\n"
+        upstream = upstream[: current[0]] + block + upstream[current[1]:]
+    target.write_text(upstream, encoding="utf-8")
 
 
 def apply_librewolf_l10n(tree: Path, librewolf: Path) -> list[Path]:
     """Apply LibreWolf's en-US strings, as scripts/librewolf-patches.py does.
 
     l10n/en-US/<app>/<rest> goes to <app>/locales/en-US/<rest>. A file named
-    *.inc.<ext> is appended to the existing target with ".inc" dropped; any
-    other file is written whole. Content is rebranded. Other locales are
-    skipped: release 1 ships en-US only. brandings.ftl is skipped as well: it
-    replaces the whole upstream file and drops terms the kept UI uses, and the
-    overlay's brand.ftl already provides the -brand-* names.
+    *.inc.<ext> is appended to the existing target with ".inc" dropped; a
+    missing target is an error (LibreWolf only warns). brandings.ftl replaces
+    its terms in the upstream file one by one. Any other file is written whole.
+    Content is rebranded. Other locales are skipped: release 1 ships en-US only.
     """
     l10n = librewolf / "l10n" / "en-US"
     written: list[Path] = []
@@ -111,20 +144,20 @@ def apply_librewolf_l10n(tree: Path, librewolf: Path) -> list[Path]:
         if source.is_dir() or source.name.endswith(".md"):
             continue
         rel = source.relative_to(l10n)
-        if rel.as_posix() in SKIPPED_L10N:
-            continue
         app, *rest = rel.parts
         target = tree / app / "locales" / "en-US" / Path(*rest)
-        append = ".inc" in target.name
-        if append:
+        text = rebrand(source.read_text(encoding="utf-8"))
+        if rel.as_posix() == BRANDINGS_L10N:
+            _merge_terms(target, text)
+        elif ".inc" in target.name:
             target = target.with_name(target.name.replace(".inc", ""))
-        target.parent.mkdir(parents=True, exist_ok=True)
-        text = rebrand(source.read_text())
-        if append:
-            with open(target, "a") as f:
+            if not target.is_file():
+                raise RuntimeError(f"{source} appends to {target}, which does not exist")
+            with open(target, "a", encoding="utf-8") as f:
                 f.write("\n\n" + text)
         else:
-            target.write_text(text)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(text, encoding="utf-8")
         written.append(target)
     return written
 

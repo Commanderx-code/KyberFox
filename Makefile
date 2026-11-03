@@ -11,7 +11,7 @@ export MOZCONFIG ?= $(abspath mozconfigs/linux)
 -include .env
 export KYBERFOX_SAFEBROWSING_KEYFILE
 
-.PHONY: assemble configure build package test-tools check-forbidden
+.PHONY: assemble configure build package test-tools check-forbidden check-strict
 
 assemble:
 	$(PYTHON) -m tools.assemble
@@ -32,3 +32,7 @@ test-tools:
 # LibreWolf hosts in the assembled tree and in this repo's settings and mozconfigs.
 check-forbidden:
 	$(PYTHON) -m tools.check_forbidden $(TREE) .
+
+# Drift guard: the strict content-blocking feature list must follow Firefox's.
+check-strict:
+	$(PYTHON) -m tools.check_strict $(TREE) settings/kyberfox.cfg

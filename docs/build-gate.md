@@ -114,16 +114,22 @@ build.
 ### Test results
 
 xpcshell, `./mach xpcshell-test browser/components/kyberfox/test/xpcshell/`:
-FAIL, 0 passed, 1 failed (2.7 s).
+`test_cfg_is_loaded` (the `local-settings.js` filename),
+`test_display_version_has_build_counter` and the policies file check pass.
+`test_shipped_policies` then crashes the artifact build only, with
+`Mozilla crash reason: Missing chrome or resource URLs: resource:///modules/policies/schema.sys.mjs`
+(the file exists in the objdir; the prebuilt binary does not list it). It needs
+a full build. Autoconfig does not run under xpcshell, so everything
+`kyberfox.cfg` sets is checked in `browser_defaults.js` instead.
 
-```
-PASS test_cfg_is_loaded - [test_cfg_is_loaded : 48] local-settings.js names the autoconfig file - "kyberfox.cfg" == "kyberfox.cfg"
-FAIL test_cfg_is_loaded - [test_cfg_is_loaded : 53] kyberfox.cfg was read - "" != ""
-```
+Browser tests, whole directory, `--exclude-extension=uBlock0@raymondhill.net.xpi`:
+`Passed: 56  Failed: 5`. `browser_defaults.js` (21/21), `browser_workspaces.js`
+(34/36, 0 unexpected) and `browser_ublock_bundled.js` pass. The 5 failures are
+all `browser_identity.js`: the artifact build runs Mozilla's binary, so the
+application name, vendor and profile root are Firefox's. They need a full
+build.
 
-The autoconfig pref is set, but `kyberfox.cfg` is not evaluated under the
-xpcshell harness (and the autoconfig reader, `nsReadConfig.cpp`, is a patched
-C++ file). Whether the test can pass in this environment is open.
+Earlier findings on the mochitest harness:
 
 mochitest, `./mach mochitest --app obj-artifact/dist/bin/firefox
 browser/components/kyberfox/test/browser/browser_identity.js`:
