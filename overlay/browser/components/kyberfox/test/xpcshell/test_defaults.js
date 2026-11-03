@@ -18,12 +18,37 @@ const { EnterprisePolicyTesting } = ChromeUtils.importESModule(
 const { SearchTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/SearchTestUtils.sys.mjs"
 );
+const { SearchService } = ChromeUtils.importESModule(
+  "moz-src:///toolkit/components/search/SearchService.sys.mjs"
+);
 const { TestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/TestUtils.sys.mjs"
 );
 const { updateAppInfo } = ChromeUtils.importESModule(
   "resource://testing-common/AppInfo.sys.mjs"
 );
+
+// Autoconfig does not run here, so prefs kyberfox.cfg sets are read from the
+// shipped file itself.
+function shippedCfg() {
+  let cfg = Services.dirsvc.get("GreD", Ci.nsIFile);
+  cfg.append("kyberfox.cfg");
+  return Cu.readUTF8File(cfg);
+}
+
+// The kept LibreWolf Remote Settings patch serves dumps (the search
+// configuration among them) only for the collections kyberfox.cfg allows.
+function applyCfgRemoteSettingsAllowLists() {
+  let found = 0;
+  for (let [, name, value] of shippedCfg().matchAll(
+    /defaultPref\(\s*"(kyberfox\.services\.settings\.allowedCollections(?:FromDump)?)",\s*"([^"]*)"\s*\)/g
+  )) {
+    Services.prefs.getDefaultBranch("").setStringPref(name, value);
+    found++;
+  }
+  Assert.equal(found, 2, "kyberfox.cfg sets both Remote Settings allow lists");
+}
+applyCfgRemoteSettingsAllowLists();
 
 updateAppInfo({
   name: "XPCShell",
@@ -75,16 +100,25 @@ add_task(async function test_shipped_policies() {
     "policies.json is valid"
   );
 
-  Assert.equal((await Services.search.getDefault()).name, "DuckDuckGo");
-  Assert.equal((await Services.search.getDefaultPrivate()).name, "DuckDuckGo");
-  let visible = (await Services.search.getVisibleEngines()).map(e => e.name);
-  for (let name of ["DuckDuckGo", "Startpage", "Brave Search", "Wikipedia (en)"]) {
+  Assert.equal((await SearchService.getDefault()).name, "DuckDuckGo");
+  Assert.equal((await SearchService.getDefaultPrivate()).name, "DuckDuckGo");
+  let visible = (await SearchService.getVisibleEngines()).map(e => e.name);
+  // The spec ships these six; the first-run page offers the first five as
+  // the default.
+  for (let name of [
+    "DuckDuckGo",
+    "Google",
+    "Brave Search",
+    "Startpage",
+    "Ecosia",
+    "Wikipedia (en)",
+  ]) {
     Assert.ok(visible.includes(name), `${name} is offered`);
   }
-  for (let name of ["Google", "Bing"]) {
+  for (let name of ["Bing"]) {
     Assert.ok(!visible.includes(name), `${name} is not offered by default`);
     Assert.ok(
-      Services.search.getEngineByName(name)?.hidden,
+      SearchService.getEngineByName(name)?.hidden,
       `${name} is hidden, so the user can restore it`
     );
   }
@@ -112,7 +146,10 @@ add_task(function test_distribution_addons_are_enabled() {
   // distribution/extensions, so that scope must stay enabled. kyberfox.cfg
   // must not narrow it, and the add-on is not a detected sideload, so
   // extensions.autoDisableScopes does not disable it.
-  let scopes = Services.prefs.getIntPref("extensions.enabledScopes");
+  let [, value] = shippedCfg().match(
+    /defaultPref\("extensions\.enabledScopes",\s*(\d+)\)/
+  );
+  let scopes = Number(value);
   Assert.ok(scopes & 1, "the profile scope is enabled");
   Assert.ok(scopes & 4, "the application scope is enabled");
 });

@@ -140,10 +140,17 @@ build.
 xpcshell, `./mach xpcshell-test browser/components/kyberfox/test/xpcshell/`:
 `test_cfg_is_loaded` (the `local-settings.js` filename),
 `test_display_version_has_build_counter` and the policies file check pass.
-`test_shipped_policies` then crashes the artifact build only, with
-`Mozilla crash reason: Missing chrome or resource URLs: resource:///modules/policies/schema.sys.mjs`
-(the file exists in the objdir; the prebuilt binary does not list it). It needs
-a full build. Autoconfig does not run under xpcshell, so everything
+`test_shipped_policies` then crashed, on the artifact build and on the first
+full-build run of `front-end-tests.yml` alike, with
+`Mozilla crash reason: Missing chrome or resource URLs: resource:///modules/policies/schema.sys.mjs`.
+The cause: the harness reads the app dir from the key `<appname>-appdir`, and
+the appname is `kyberfox` (`kyber fox` on the artifact build), so
+`firefox-appdir` was ignored and `resource:///` pointed at `dist/bin` instead
+of `dist/bin/browser`. `xpcshell.toml` now also sets `kyberfox-appdir`; for a
+local artifact run add `"kyber fox-appdir" = "browser"` to the assembled copy.
+The test reads the Remote Settings allow lists and `extensions.enabledScopes`
+from the shipped `kyberfox.cfg`, because the search configuration dump is
+served only for allowed collections. Autoconfig does not run under xpcshell, so everything
 `kyberfox.cfg` sets is checked in `browser_defaults.js` instead.
 
 Browser tests, whole directory, `--exclude-extension=uBlock0@raymondhill.net.xpi`:
