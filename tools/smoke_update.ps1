@@ -185,7 +185,7 @@ foreach ($root in $env:USERPROFILE, $env:ProgramData, $env:RUNNER_TEMP) {
 Write-Host '=== update files'
 foreach ($f in @(Get-UpdateFiles | Sort-Object FullName -Unique)) {
     Write-Host "--- $($f.FullName) ($($f.Length) bytes)"
-    if ($f.Length -lt 200000 -and $f.Extension -ne '.mar') { Get-Content $f.FullName -TotalCount 300 }
+    if ($f.Length -lt 200000 -and $f.Extension -notin '.mar', '.lock') { Get-Content $f.FullName -TotalCount 300 -ErrorAction SilentlyContinue }
 }
 Write-Host '=== browser output (update lines)'
 Get-Content $stdout, $stderr -ErrorAction SilentlyContinue | Select-String -Pattern 'AUS:|update' | Select-Object -First 200
