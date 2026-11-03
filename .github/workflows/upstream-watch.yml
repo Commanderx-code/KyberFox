@@ -14,6 +14,10 @@ permissions:
   contents: write
   pull-requests: write
 
+defaults:
+  run:
+    shell: bash  # bash -eo pipefail
+
 concurrency:
   group: upstream-watch
   cancel-in-progress: false
@@ -22,11 +26,14 @@ jobs:
   watch:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    env:
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         # The push at the end needs the token; no later step runs fetched code.
         with:
+          ref: ${{ github.event.repository.default_branch }}
           persist-credentials: true
 
       - name: Set up Python
@@ -37,44 +44,67 @@ jobs:
       - name: Check upstream
         id: check
         run: |
-          python -m tools.upstream_watch --check | tee check.json
+          python -m tools.upstream_watch --check > check.json
+          cat check.json
+          jq -e '.firefox.newer | type == "boolean"' check.json > /dev/null
+          version=$(jq -r '.firefox.latest' check.json)
+          if ! printf '%s' "$version" | grep -Eqx '[0-9]+\.[0-9]+(\.[0-9]+)?'; then
+            echo "::error::unexpected Firefox version"
+            exit 1
+          fi
           {
             echo "newer=$(jq -r '.firefox.newer' check.json)"
-            echo "version=$(jq -r '.firefox.latest' check.json)"
+            echo "version=$version"
             echo "security=$(jq -r '.firefox.security' check.json)"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Look for an existing pull request
+      - name: Look for an existing branch or pull request
         if: steps.check.outputs.newer == 'true'
         id: existing
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: upstream/firefox-${{ steps.check.outputs.version }}
         run: |
-          found=$(gh pr list --head "$BRANCH" --state all --json number --jq length)
-          echo "found=$found" >> "$GITHUB_OUTPUT"
-          if [ "$found" != "0" ]; then
+          # A pull request from a fork with the same branch name does not count.
+          prs=$(gh pr list --head "$BRANCH" --state all \
+                  --json isCrossRepository,number \
+                  --jq '[.[] | select(.isCrossRepository | not)] | length')
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null; then
+            branch=yes
+          else
+            branch=no
+          fi
+          echo "prs=$prs" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          if [ "$prs" != "0" ]; then
             echo "A pull request for $BRANCH already exists; nothing to do."
           fi
 
       - name: Bump pins and assemble
-        if: steps.check.outputs.newer == 'true' && steps.existing.outputs.found == '0'
-        run: python -m tools.upstream_watch --bump
+        if: >-
+          steps.check.outputs.newer == 'true' && steps.existing.outputs.prs == '0'
+          && steps.existing.outputs.branch == 'no'
+        env:
+          VERSION: ${{ steps.check.outputs.version }}
+        run: python -m tools.upstream_watch --bump "$VERSION"
 
       - name: Open the pull request
-        if: steps.check.outputs.newer == 'true' && steps.existing.outputs.found == '0'
+        if: steps.check.outputs.newer == 'true' && steps.existing.outputs.prs == '0'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.check.outputs.version }}
           SECURITY: ${{ steps.check.outputs.security }}
+          BRANCH_EXISTS: ${{ steps.existing.outputs.branch }}
         run: |
           branch="upstream/firefox-$VERSION"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$branch"
-          git add pins.toml
-          git commit -m "Bump Firefox to $VERSION"
-          git push origin "$branch"
+          if [ "$BRANCH_EXISTS" = "no" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git switch -c "$branch"
+            git add pins.toml
+            git commit -m "Bump Firefox to $VERSION"
+            git push origin "$branch"
+          fi
 
           if [ "$SECURITY" = "true" ]; then sec=yes; else sec=no; fi
           deadline=$(date -u -d "+72 hours" +%Y-%m-%dT%H:%MZ)
@@ -82,16 +112,21 @@ jobs:
             echo "Security release: $sec"
             echo "Deadline: $deadline"
             echo
-            cat upstream-watch-report.md
+            if [ -f upstream-watch-report.md ]; then
+              cat upstream-watch-report.md
+            else
+              echo "The branch already existed, so no new assembly ran. Run"
+              echo "python -m tools.assemble --allow-failed to list failed patches."
+            fi
           } > body.md
 
           labels=()
-          existing=$(gh label list --json name --jq ".[].name")
+          existing=$(gh label list --limit 200 --json name --jq ".[].name")
           for want in upstream "$([ "$SECURITY" = "true" ] && echo security)"; do
             if [ -n "$want" ] && printf '%s\n' "$existing" | grep -qx "$want"; then
               labels+=(--label "$want")
             fi
           done
 
-          gh pr create --base "${GITHUB_REF_NAME}" --head "$branch" \
+          gh pr create --base "$DEFAULT_BRANCH" --head "$branch" \
             --title "Bump Firefox to $VERSION" --body-file body.md "${labels[@]}"

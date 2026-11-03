@@ -6,7 +6,7 @@
 
 1. `--check` reads `https://product-details.mozilla.org/1.0/firefox_versions.json` and prints JSON: the pinned and latest Firefox, whether the change is a security release, the pinned and newest LibreWolf tag, and the pinned and newest uBlock Origin. The LibreWolf and uBlock lookups are best effort; if Codeberg or GitHub is down the fields are `null` and the watch carries on.
 2. If Firefox is not newer, the run ends. Nothing is committed.
-3. If it is newer and no pull request for `upstream/firefox-<version>` exists (open, merged or closed), the workflow runs `--bump`: it rewrites `[firefox] version` and `sha256` in `pins.toml` (the hash comes from `SHA256SUMS` on archive.mozilla.org) and assembles the tree with `allow_failed=True`, which downloads about 500 MB. It writes `upstream-watch-report.md` with the failed patch list.
+3. If it is newer and no pull request for `upstream/firefox-<version>` exists (open, merged or closed; a pull request from a fork does not count) and no such branch exists, the workflow runs `--bump <version>` with the version `--check` printed: it rewrites `[firefox] version` and `sha256` in `pins.toml` (the hash comes from `SHA256SUMS` on archive.mozilla.org) and assembles the tree with `allow_failed=True`, which downloads about 500 MB. It writes `upstream-watch-report.md` with the failed patch list. If assembly stops for another reason (for example a changed Firefox file), the error goes in the report and the pull request still opens. A hash mismatch stops the run.
 4. The workflow commits `Bump Firefox to <version>` as `github-actions[bot]`, pushes the branch and opens a pull request. The body starts with `Security release: yes/no` and `Deadline: <UTC time 72 hours later>`, then the report. Labels `upstream` (and `security`) are added when they exist in the repository.
 
 A security release is a patch bump inside the same major version, for example 159.0 to 159.0.1. A new major version is not flagged.
@@ -15,7 +15,7 @@ If a newer LibreWolf tag exists, the report says so and lists the patches in its
 
 ## The 72-hour rule
 
-A Firefox security release is shipped within 72 hours of Mozilla publishing it. The deadline in the pull request body is that limit.
+A Firefox security release is shipped within 72 hours of Mozilla publishing it. The deadline in the pull request body is 72 hours after the run that noticed the release. Mozilla's publish time can be up to 3 hours earlier (more if earlier runs failed), so treat the deadline as the latest allowed time.
 
 ## What to do with the pull request
 
@@ -29,4 +29,5 @@ A Firefox security release is shipped within 72 hours of Mozilla publishing it. 
 
 - Settings, Actions, General: enable "Allow GitHub Actions to create and approve pull requests".
 - Create the labels `upstream` and `security`. Without them the pull request is opened without labels.
+- If PR creation failed after the push (for example the setting above was off), delete the leftover `upstream/firefox-*` branch, or the next run opens the PR from that branch without rebuilding.
 - Pull requests opened with the default token do not start other workflows. Close and reopen the pull request, or push a commit to it, to run checks.

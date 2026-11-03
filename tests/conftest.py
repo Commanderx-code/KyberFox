@@ -153,3 +153,20 @@ def fake_sources(tmp_path, tmp_path_factory, fake_tarball, monkeypatch):
     )
     monkeypatch.setattr(assemble_mod, "REPO_ROOT", repo)
     return lw
+
+
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch):
+    """A test that forgets to stub a fetcher fails instead of reaching the network."""
+    import urllib.parse
+    import urllib.request
+
+    real = urllib.request.urlopen
+
+    def guarded(req, *args, **kwargs):
+        url = req if isinstance(req, str) else req.full_url
+        if urllib.parse.urlsplit(url).hostname not in ("127.0.0.1", "localhost", "::1"):
+            raise AssertionError(f"test tried to use the network: {url}")
+        return real(req, *args, **kwargs)
+
+    monkeypatch.setattr(urllib.request, "urlopen", guarded)
