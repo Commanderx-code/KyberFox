@@ -50,6 +50,12 @@ The script took about one second. Result: 161 entries in
 A refactor of `assemble()` that accepts an existing tree would replace the
 script; it is not needed for this loop.
 
+The script only works on a pristine tree: run `git reset --hard && git clean -fd`
+in `work/dev` before each rerun (`obj-artifact` and the mozconfig are ignored
+and survive), or the patches fail as already applied. Run the Python suite as
+`python -m pytest tests` from the repo root; a bare `pytest` also collects
+`work/dev` and never finishes.
+
 ### mozconfig
 
 `work/dev/mozconfig-artifact`:
