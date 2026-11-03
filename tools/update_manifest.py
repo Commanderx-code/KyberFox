@@ -8,7 +8,7 @@ file is the empty manifest.
     python -m tools.update_manifest --version 159.0.1 --display-version 159.0.1-1 \
         --build-id 20261110000000 --mar kyberfox-159.0.1-1.complete.mar \
         --url https://github.com/Commanderx-code/KyberFox/releases/download/v159.0.1-1/kyberfox-159.0.1-1.complete.mar \
-        --out update/release/WINNT_x86_64-msvc/update.xml
+        --out update/release/WINNT_x86_64-msvc-x64/update.xml
 """
 import argparse
 import hashlib
