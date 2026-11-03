@@ -30,7 +30,9 @@ function readList() {
   try {
     let list = JSON.parse(Services.prefs.getStringPref(LIST_PREF, "[]"));
     if (Array.isArray(list)) {
-      return list.filter(w => w && typeof w.id == "string");
+      return list.filter(
+        w => w && typeof w.id == "string" && typeof w.name == "string"
+      );
     }
   } catch (e) {
     console.error("KyberWorkspaces: unreadable workspace list", e);
@@ -54,14 +56,16 @@ function isKnown(id) {
   return readList().some(w => w.id == id);
 }
 
-/** The first workspace's id. Recreates the default one if the list is gone. */
-function firstId() {
-  let list = readList();
-  if (!list.length) {
-    list = [{ id: newId(), name: DEFAULT_NAME }];
-    writeList(list);
+/** Creates the default workspace if the list is empty. */
+function ensureDefault() {
+  if (!readList().length) {
+    writeList([{ id: newId(), name: DEFAULT_NAME }]);
   }
-  return list[0].id;
+}
+
+/** The first workspace's id, or "" while the list is empty. */
+function firstId() {
+  return readList()[0]?.id ?? "";
 }
 
 /**
@@ -115,6 +119,7 @@ function syncTab(tab) {
  *   Where tabs with a missing or unknown id go.
  */
 function refresh(win, orphanTarget) {
+  ensureDefault();
   let active = savedActiveId(win);
   if (!isKnown(active)) {
     active = firstId();
@@ -140,6 +145,9 @@ function refresh(win, orphanTarget) {
 function applyVisibility(win) {
   let { gBrowser } = win;
   let id = KyberWorkspaces.activeId(win);
+  if (!id) {
+    return;
+  }
   let own = gBrowser.openTabs.filter(t => !t.pinned && tabWorkspace(t) == id);
 
   if (!own.length) {
@@ -163,6 +171,7 @@ export const KyberWorkspaces = {
   },
 
   create(name) {
+    ensureDefault();
     let workspace = { id: newId(), name: String(name).trim() };
     writeList([...readList(), workspace]);
     return workspace;
@@ -261,7 +270,16 @@ export const KyberWorkspaces = {
     let onTabUnpinned = event => syncTab(event.target);
     // Session restore brings back the window's saved active workspace.
     let onWindowRestored = () => refresh(win, "active");
-    let prefObserver = () => refresh(win, "first");
+    // Creating or renaming a workspace changes no tab's membership. Only a
+    // removal (or a cleared list) leaves orphans or a stale active id.
+    let prefObserver = () => {
+      let stale =
+        !isKnown(savedActiveId(win)) ||
+        win.gBrowser.openTabs.some(t => !isKnown(tabWorkspace(t)));
+      if (stale) {
+        refresh(win, "first");
+      }
+    };
 
     tabContainer.addEventListener("TabOpen", onTabOpen);
     tabContainer.addEventListener("SSTabRestoring", onTabRestoring);

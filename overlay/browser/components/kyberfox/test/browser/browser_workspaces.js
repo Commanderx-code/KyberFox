@@ -169,16 +169,33 @@ add_task(async function test_cannot_remove_last() {
   });
 });
 
+// Restores a state into a new background tab, through the real session
+// restore path, and resolves once it has started restoring.
+async function restoreTabInto(win, workspaceId) {
+  let tab = addTab(win);
+  let restoring = BrowserTestUtils.waitForEvent(tab, "SSTabRestoring");
+  SessionStore.setTabState(
+    tab,
+    JSON.stringify({
+      entries: [
+        {
+          url: "about:blank",
+          triggeringPrincipal_base64: E10SUtils.SERIALIZED_SYSTEMPRINCIPAL,
+        },
+      ],
+      index: 1,
+      extData: { [TAB_KEY]: workspaceId },
+    })
+  );
+  await restoring;
+  return tab;
+}
+
 add_task(async function test_restore_preserves_assignment() {
   await withWorkspaces(async (win, home, work) => {
-    let tab = addTab(win);
-    KyberWorkspaces.assign(tab, work.id);
-    KyberWorkspaces.switchTo(win, home.id);
-    Assert.ok(tab.hidden, "tab is hidden in Home");
-
-    tab.dispatchEvent(new CustomEvent("SSTabRestoring", { bubbles: true }));
+    let tab = await restoreTabInto(win, work.id);
     Assert.equal(workspaceOf(tab), work.id, "assignment survives restoring");
-    Assert.ok(tab.hidden, "tab stays hidden");
+    Assert.ok(tab.hidden, "tab is hidden while Home is active");
 
     KyberWorkspaces.switchTo(win, work.id);
     Assert.ok(!tab.hidden, "tab shows in its own workspace");
@@ -188,11 +205,29 @@ add_task(async function test_restore_preserves_assignment() {
 add_task(async function test_restore_with_unknown_id_lands_in_first_visible() {
   await withWorkspaces(async (win, home, work) => {
     KyberWorkspaces.switchTo(win, work.id);
-    let tab = addTab(win);
-    SessionStore.setCustomTabValue(tab, TAB_KEY, "no-such-workspace");
-
-    tab.dispatchEvent(new CustomEvent("SSTabRestoring", { bubbles: true }));
+    let tab = await restoreTabInto(win, "no-such-workspace");
     Assert.equal(workspaceOf(tab), work.id, "tab joined the active workspace");
     Assert.ok(!tab.hidden, "tab is visible");
+  });
+});
+
+add_task(async function test_unknown_window_id_falls_back_to_first() {
+  await withWorkspaces(async (win, home, work) => {
+    KyberWorkspaces.switchTo(win, work.id);
+    SessionStore.setCustomWindowValue(win, "kyberActiveWorkspace", "nope");
+    Assert.equal(
+      KyberWorkspaces.activeId(win),
+      home.id,
+      "an unknown saved id reads as the first workspace"
+    );
+  });
+});
+
+add_task(async function test_active_id_does_not_write_the_list() {
+  await withWorkspaces(async (win, home) => {
+    let before = Services.prefs.getStringPref(LIST_PREF);
+    KyberWorkspaces.activeId(win);
+    Assert.equal(Services.prefs.getStringPref(LIST_PREF), before, "unchanged");
+    Assert.equal(KyberWorkspaces.list()[0].id, home.id, "Home is first");
   });
 });
