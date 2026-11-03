@@ -30,3 +30,20 @@ LICENSES["ublock-origin"].notice = """
 add-on <code>distribution/extensions/uBlock0@raymondhill.net.xpi</code>.
 Source code: <a href="https://github.com/gorhill/uBlock">https://github.com/gorhill/uBlock</a></p>
 """
+
+# Bundled themes. The MPL-2.0 skins keep their LICENSE files under themes/skins/;
+# the MIT notices for the two palettes are reproduced in the text file.
+LICENSES += ["kyberfox-themes"]
+LICENSES["kyberfox-themes"].title = "Kyber Fox bundled themes (MIT and MPL-2.0)"
+LICENSES["kyberfox-themes"].text = "themes-license.txt"
+LICENSES["kyberfox-themes"].spdx = "MIT AND MPL-2.0"
+LICENSES["kyberfox-themes"].notice = """
+<p>The Catppuccin Mocha and Tokyo Night palettes are MIT-licensed; their
+notices follow. The GX-style and One-style skins are by Godiesc
+(<a href="https://github.com/Godiesc/firefox-gx">firefox-gx</a>,
+<a href="https://github.com/Godiesc/firefox-one">firefox-one</a>) and the
+Starry colors derive from
+<a href="https://github.com/sagars007/starry-fox">starry-fox</a>; all three are
+MPL-2.0, and the skins keep their upstream license files and headers. See
+<code>themes/NOTICES.md</code> in the source for what was changed.</p>
+"""

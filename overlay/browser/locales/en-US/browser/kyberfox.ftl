@@ -48,7 +48,7 @@ kyberfox-shield-fingerprinting =
     .label = Fingerprinting
 kyberfox-shield-cookies =
     .label = Cookies
-kyberfox-shield-cookies-note = Also turns off Firefox’s tracker and fingerprint blocking for this site. uBlock Origin keeps blocking ads.
+kyberfox-shield-cookies-note = Also turns off the browser’s tracker and fingerprint blocking for this site. uBlock Origin keeps blocking ads.
 kyberfox-shield-private-note = Private window: one switch for this site, kept only for this session.
 kyberfox-shield-unreachable = uBlock Origin not reachable.
 

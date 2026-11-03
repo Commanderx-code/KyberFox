@@ -1,0 +1,28 @@
+diff --git a/browser/base/content/overrides/app-license.html b/browser/base/content/overrides/app-license.html
+--- a/browser/base/content/overrides/app-license.html
++++ b/browser/base/content/overrides/app-license.html
+@@ -2,7 +2,21 @@
+    - License, v. 2.0. If a copy of the MPL was not distributed with this
+    - file, You can obtain one at http://mozilla.org/MPL/2.0/.  -->
+ <p>
+-  <b>Binaries</b> of this product have been made available to you by the
+-  <a href="http://www.mozilla.org/">Mozilla Project</a> under the Mozilla Public
+-  License 2.0 (MPL). <a href="about:rights">Know your rights</a>.
++  <b>Binaries</b> of this product are built by the Kyber Fox project from the
++  source code of <a href="https://www.firefox.com/">Mozilla Firefox</a>, with
++  patches from <a href="https://librewolf.net/">LibreWolf</a>, under the
++  Mozilla Public License 2.0 (MPL). <a href="about:rights">Know your rights</a>.
++  Kyber Fox is not made or endorsed by Mozilla.
+ </p>
++<p>
++  Kyber Fox also ships these pieces, with the licenses listed below:
++</p>
++<ul>
++  <li><a href="#ublock-origin">uBlock Origin</a>, by Raymond Hill (GPL-3.0).
++    Source code: <a href="https://github.com/gorhill/uBlock">https://github.com/gorhill/uBlock</a></li>
++  <li><a href="#kyberfox-themes">Theme skins and palettes</a>: GX-style, from
++    <a href="https://github.com/Godiesc/firefox-gx">firefox-gx</a>, and One-style, from
++    <a href="https://github.com/Godiesc/firefox-one">firefox-one</a> (both by Godiesc, MPL-2.0);
++    Starry, with colors from <a href="https://github.com/sagars007/starry-fox">starry-fox</a>
++    (MPL-2.0); Catppuccin Mocha (MIT); Tokyo Night (MIT).</li>
++</ul>

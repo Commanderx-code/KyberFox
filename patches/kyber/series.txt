@@ -16,3 +16,5 @@ theme-engine.patch
 theme-pane.patch
 lint-skins.patch
 welcome-tab.patch
+license-notices.patch
+ui-names.patch

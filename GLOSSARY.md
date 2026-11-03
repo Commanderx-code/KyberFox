@@ -1,6 +1,6 @@
 # Kyber Fox
 
-Kyber Fox is a Firefox fork with the classic Firefox layout, stronger privacy defaults, workspaces, built-in themes and private sync. This glossary fixes the words the project uses for its own concepts.
+Kyber Fox is a Firefox fork with the classic Firefox layout, stronger privacy defaults, workspaces and built-in themes. Private sync is planned for a later release. This glossary fixes the words the project uses for its own concepts.
 
 ## Language
 
