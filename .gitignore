@@ -1,0 +1,34 @@
+# Secrets and personal files. Real values live in a private folder outside
+# this repo, and in GitHub environment secrets for CI.
+.env
+.env.*
+!.env.example
+private/
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+*.gpg
+*.kdbx
+*.secret
+*api-key*
+*api_key*
+*signing-key*
+*signing_key*
+
+# NSS databases hold private signing keys. Public .der update certificates
+# under overlay/ are meant to be tracked.
+cert9.db
+key4.db
+pkcs11.txt
+
+# Build output
+/work/
+/dist/
+*.mar
+*.xpi
+*.source.tar.xz
+__pycache__/
+.pytest_cache/
+.venv/

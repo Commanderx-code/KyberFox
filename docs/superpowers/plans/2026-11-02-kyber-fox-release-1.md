@@ -20,6 +20,8 @@
 - uBlock Origin is GPL-3.0. It ships unmodified and unbundled from the MPL code, with its license and source link in `about:license`.
 - Never use Firefox, Mozilla or Opera names or logos as branding. Never copy code from Glass-Firefox-Theme or LIQUID-GLASS.
 - Commits carry no AI attribution. Docs name no AI tools.
+- The repo is public. Secrets, keys, `.env` files and personal details never enter it. Real values live in a private folder outside the repo, and in GitHub environment secrets for CI. Only `.env.example` and public `.der` certificates are tracked.
+- Actions come from GitHub or the allowlist, currently `jlumbroso/free-disk-space` and `mozilla-actions/sccache-action`, pinned to commit SHAs. Workflow tokens default to read-only. Adding an action means adding it to the repo allowlist.
 - Budget: free services, with no more than $25/month in the friends phase. Ask the owner before exceeding that.
 - Security fixes target 72 hours from the Firefox release. A broken feature or skin ships disabled and never holds a security release.
 - Nothing reaches users without the owner's one-click approval.
