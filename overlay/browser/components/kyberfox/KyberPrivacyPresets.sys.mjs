@@ -103,8 +103,8 @@ export const KyberPrivacyPresets = {
       Services.prefs.setStringPref(RECORD_PREF, name);
     } finally {
       applying = false;
+      notifyAll();
     }
-    notifyAll();
   },
 
   /**
