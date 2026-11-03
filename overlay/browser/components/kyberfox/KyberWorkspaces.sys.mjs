@@ -264,8 +264,16 @@ export const KyberWorkspaces = {
     };
     let onTabSelect = event => {
       let tab = event.target;
-      if (!tab.pinned) {
-        state.lastTabs.set(tabWorkspace(tab), new WeakRef(tab));
+      if (tab.pinned) {
+        return;
+      }
+      let id = tabWorkspace(tab);
+      state.lastTabs.set(id, new WeakRef(tab));
+      // A tab of another workspace was selected from outside the tab strip,
+      // such as the urlbar's "Switch to tab" or the All Tabs menu: follow it
+      // to its workspace, so the window never shows a mix of two.
+      if (isKnown(id) && id != this.activeId(win)) {
+        this.switchTo(win, id);
       }
     };
     let onTabUnpinned = event => syncTab(event.target);

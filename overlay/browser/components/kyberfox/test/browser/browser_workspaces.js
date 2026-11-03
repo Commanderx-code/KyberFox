@@ -52,6 +52,34 @@ add_task(async function test_switch_hides_other_tabs() {
   });
 });
 
+// The urlbar's "Switch to tab" and the All Tabs menu select a hidden tab
+// directly; the window follows the tab to its workspace.
+add_task(async function test_selecting_other_workspace_tab_switches() {
+  await withWorkspaces(async (win, home, work) => {
+    let homeTab = win.gBrowser.selectedTab;
+    let workTab = addTab(win);
+    KyberWorkspaces.assign(workTab, work.id);
+    Assert.ok(workTab.hidden, "the Work tab starts hidden");
+
+    win.gBrowser.selectedTab = workTab;
+    await TestUtils.waitForCondition(
+      () => KyberWorkspaces.activeId(win) == work.id,
+      "Work becomes active"
+    );
+    Assert.equal(win.gBrowser.selectedTab, workTab, "the chosen tab stays selected");
+    Assert.ok(!workTab.hidden, "the Work tab is shown");
+    Assert.ok(homeTab.hidden, "the Home tab is hidden");
+
+    win.gBrowser.selectedTab = homeTab;
+    await TestUtils.waitForCondition(
+      () => KyberWorkspaces.activeId(win) == home.id,
+      "Home becomes active again"
+    );
+    Assert.ok(!homeTab.hidden, "the Home tab is shown again");
+    Assert.ok(workTab.hidden, "the Work tab is hidden again");
+  });
+});
+
 add_task(async function test_new_tab_joins_active_workspace() {
   await withWorkspaces(async (win, home, work) => {
     KyberWorkspaces.switchTo(win, work.id);
