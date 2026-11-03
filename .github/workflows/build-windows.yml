@@ -1,0 +1,159 @@
+name: Build Windows
+
+# Cross-compiles the Windows x86_64 build and its installer on Linux.
+# The win-cross setup follows Zen's .github/workflows/windows-release-build.yml
+# (MPL-2.0, https://github.com/zen-browser/desktop): Wine from Mozilla's
+# toolchain index and the Visual Studio packages through get_vs.py. configure
+# bootstraps the remaining Windows tools; see mozconfigs/windows-cross.
+# workflow_dispatch needs this file on main, so runs before the merge start
+# from a push to the build-gate branch. workflow_call lets release workflows reuse it.
+on:
+  workflow_dispatch: {}
+  workflow_call: {}
+  push:
+    branches: [build-gate]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Windows x86_64
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - name: Disk and memory before freeing space
+        run: |
+          df -h
+          free -h
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+        with:
+          disable_annotations: true
+
+      - name: Disk and memory after freeing space
+        run: |
+          df -h
+          free -h
+          # Sample used disk space every 30 seconds so the peak can be reported.
+          sample() {
+            while true; do
+              df -B1M --output=used / | tail -n 1 | tr -d " " >> "$RUNNER_TEMP/disk-samples"
+              sleep 30
+            done
+          }
+          export -f sample
+          nohup bash -c sample >/dev/null 2>&1 &
+
+      - name: Assemble source tree
+        run: make assemble
+
+      - name: Release guard
+        run: make check-forbidden
+
+      - name: Install build dependencies
+        working-directory: work/tree
+        run: ./mach --no-interactive bootstrap --application-choice=browser
+
+      - name: Install win-cross dependencies
+        run: |
+          # Wine needs the 32-bit C runtime; get_vs.py unpacks MSI files with msitools.
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y libc6-i386 lib32gcc-s1 msitools
+          rustup target add x86_64-pc-windows-msvc
+
+      - name: Restore win-cross cache
+        id: win-cross-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/win-cross
+          key: win-cross-${{ hashFiles('work/tree/build/vs/vs2026.yaml') }}
+
+      - name: Fetch Wine and Visual Studio
+        if: steps.win-cross-cache.outputs.cache-hit != 'true'
+        working-directory: work/tree
+        run: |
+          mkdir -p ~/win-cross
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/wine.tar.zst" \
+            https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/gecko.cache.level-3.toolchains.v3.linux64-wine.latest/artifacts/public/build/wine.tar.zst
+          tar --zstd -xf "$RUNNER_TEMP/wine.tar.zst" -C ~/win-cross
+          rm "$RUNNER_TEMP/wine.tar.zst"
+          ./mach python --virtualenv build taskcluster/scripts/misc/get_vs.py \
+            build/vs/vs2026.yaml ~/win-cross/vs2026
+          du -sh ~/win-cross/*
+
+      - name: Write CI mozconfig
+        run: |
+          {
+            echo ". \"$GITHUB_WORKSPACE/mozconfigs/windows-cross\""
+            echo "ac_add_options --with-ccache=$SCCACHE_PATH"
+          } > "$RUNNER_TEMP/mozconfig"
+          cat "$RUNNER_TEMP/mozconfig"
+          echo "MOZCONFIG=$RUNNER_TEMP/mozconfig" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          date -u
+          make build
+          date -u
+
+      - name: Disk and memory after build
+        if: ${{ !cancelled() }}
+        run: |
+          df -h
+          free -h
+          "$SCCACHE_PATH" --show-stats
+
+      # On Windows targets, mach package also builds the NSIS installer.
+      - name: Package
+        run: make package
+
+      - name: Collect installer
+        run: |
+          version=$(cat work/tree/browser/config/version_display.txt)
+          mapfile -t installers < <(find work/tree/obj-*/dist -maxdepth 1 -name '*.installer.exe')
+          if [ "${#installers[@]}" -ne 1 ]; then
+            echo "Expected one installer, found ${#installers[@]}: ${installers[*]}"
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/upload"
+          cp "${installers[0]}" "$RUNNER_TEMP/upload/kyberfox-$version.installer.exe"
+          # Complete MAR files are uploaded when a packaging step creates them.
+          find work/tree/obj-*/dist -maxdepth 2 -name '*.complete.mar' -exec cp {} "$RUNNER_TEMP/upload/" \;
+          ls -l "$RUNNER_TEMP/upload"
+
+      - name: Report peak disk use
+        if: ${{ !cancelled() }}
+        run: |
+          peak=$(sort -n "$RUNNER_TEMP/disk-samples" | tail -n 1)
+          echo "Peak disk used on /: ${peak} MiB"
+          echo "Peak disk used on /: ${peak} MiB" >> "$GITHUB_STEP_SUMMARY"
+          df -h
+
+      - name: Upload installer
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: kyberfox-windows-x86_64
+          path: ${{ runner.temp }}/upload/
+          if-no-files-found: error

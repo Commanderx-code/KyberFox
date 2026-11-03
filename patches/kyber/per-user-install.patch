@@ -1,0 +1,39 @@
+Kyber Fox: per-user Windows installs. Branding that defines PER_USER_INSTALL
+gets a default install folder under the local application data folder, and its
+installer doesn't ask for elevation at startup, so updates run without UAC.
+
+diff --git a/browser/installer/windows/nsis/installer.nsi b/browser/installer/windows/nsis/installer.nsi
+--- a/browser/installer/windows/nsis/installer.nsi
++++ b/browser/installer/windows/nsis/installer.nsi
+@@ -159,11 +159,17 @@
+ 
+ Name "${BrandFullName}"
+ OutFile "setup.exe"
++; Branding can define PER_USER_INSTALL to install into the user's local
++; application data folder, which the updater can write without elevation.
++!ifdef PER_USER_INSTALL
++  InstallDir "$LOCALAPPDATA\${BrandFullName}\"
++!else
+ !ifdef HAVE_64BIT_BUILD
+   InstallDir "$PROGRAMFILES64\${BrandFullName}\"
+ !else
+   InstallDir "$PROGRAMFILES32\${BrandFullName}\"
+ !endif
++!endif
+ ShowInstDetails nevershow
+ 
+ ################################################################################
+diff --git a/toolkit/mozapps/installer/windows/nsis/common.nsh b/toolkit/mozapps/installer/windows/nsis/common.nsh
+--- a/toolkit/mozapps/installer/windows/nsis/common.nsh
++++ b/toolkit/mozapps/installer/windows/nsis/common.nsh
+@@ -5513,7 +5513,10 @@
+         ; We'll check the user's permission level later on to determine the
+         ; default install path (which will be the real install path for /S).
+         ; If an INI file is used, we try to elevate down that path when needed.
++        ; Per-user installs (PER_USER_INSTALL in branding.nsi) don't elevate.
++!ifndef PER_USER_INSTALL
+         ${ElevateUAC}
++!endif
+       ${EndIf}
+ 
+       Pop $R4

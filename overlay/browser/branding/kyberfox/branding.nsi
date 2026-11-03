@@ -19,6 +19,11 @@
 !define URLSystemRequirements "https://github.com/Commanderx-code/KyberFox"
 !define Channel "release"
 
+# Install for the current user under %LOCALAPPDATA%\Kyber Fox, without a UAC
+# prompt, so the updater can replace files without elevation. Read by
+# installer.nsi and common.nsh through patches/kyber/per-user-install.patch.
+!define PER_USER_INSTALL
+
 # The installer's certificate name and issuer expected by the stub installer
 !define CertNameDownload   "Mozilla Corporation"
 !define CertIssuerDownload "DigiCert Trusted G4 Code Signing RSA4096 SHA384 2021 CA1"

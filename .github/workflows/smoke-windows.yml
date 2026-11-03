@@ -1,0 +1,95 @@
+name: Smoke test Windows
+
+# Installs the Windows build silently and checks that it starts.
+# workflow_dispatch takes the id of a Build Windows run to test; workflow_call
+# without a run id tests the artifact uploaded earlier in the calling run.
+on:
+  workflow_dispatch:
+    inputs:
+      run-id:
+        description: Id of the Build Windows run that uploaded kyberfox-windows-x86_64
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      run-id:
+        description: Id of the run that uploaded kyberfox-windows-x86_64; empty means the calling run
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  smoke:
+    name: Install and launch on Windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download installer
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kyberfox-windows-x86_64
+          path: ${{ runner.temp }}/kyberfox
+          run-id: ${{ inputs.run-id || github.run_id }}
+          github-token: ${{ inputs.run-id && github.token || '' }}
+
+      - name: Install silently
+        run: |
+          $installer = @(Get-ChildItem "$env:RUNNER_TEMP\kyberfox\kyberfox-*.installer.exe")
+          if ($installer.Count -ne 1) { throw "Expected one installer, found $($installer.Count)" }
+          Write-Host "Installing $($installer[0].Name)"
+          $p = Start-Process -FilePath $installer[0].FullName -ArgumentList '/S' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Installer exited with $($p.ExitCode)" }
+
+      - name: Check the install directory
+        run: |
+          $dir = Join-Path $env:LOCALAPPDATA 'Kyber Fox'
+          $exe = Join-Path $dir 'kyberfox.exe'
+          if (-not (Test-Path $exe)) { throw "$exe not found" }
+          # The default install is per user, so nothing may land in Program Files.
+          $machineDir = Join-Path $env:ProgramFiles 'Kyber Fox'
+          if (Test-Path $machineDir) { throw "Installed under $machineDir, expected $dir" }
+          Get-ChildItem $dir | Format-Table -AutoSize
+          "KYBERFOX_EXE=$exe" >> $env:GITHUB_ENV
+
+      - name: Check the version
+        run: |
+          # Kyber Fox <Firefox version>-<build counter>, from pins.toml.
+          $readPins = @'
+          import tomllib
+          with open('pins.toml', 'rb') as f:
+              pins = tomllib.load(f)
+          print('Kyber Fox {}-{}'.format(pins['firefox']['version'], pins['kyber']['build']))
+          '@
+          $expected = ($readPins | python -I - | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0 -or -not $expected) { throw 'Could not read pins.toml' }
+          # --wait-for-browser keeps the launcher process attached to this console.
+          $out = (& $env:KYBERFOX_EXE --version --wait-for-browser | Out-String).Trim()
+          Write-Host "kyberfox.exe --version: $out"
+          if (-not $out.Contains($expected)) { throw "Expected '$expected' in the version output" }
+
+      - name: Take a headless screenshot
+        run: |
+          $work = Join-Path $env:RUNNER_TEMP 'screenshot'
+          $kyberfoxProfile = Join-Path $env:RUNNER_TEMP 'profile'
+          New-Item -ItemType Directory -Force -Path $work, $kyberfoxProfile | Out-Null
+          $arguments = "--headless --no-remote --profile `"$kyberfoxProfile`" --screenshot about:blank"
+          $p = Start-Process -FilePath $env:KYBERFOX_EXE -ArgumentList $arguments -WorkingDirectory $work -NoNewWindow -PassThru
+          if (-not $p.WaitForExit(300000)) {
+            Stop-Process -Id $p.Id -Force
+            throw 'kyberfox.exe did not exit within 5 minutes'
+          }
+          $png = Join-Path $work 'screenshot.png'
+          if (-not (Test-Path $png)) { throw "$png not found (exit code $($p.ExitCode))" }
+          Get-Item $png | Format-Table Name, Length -AutoSize
