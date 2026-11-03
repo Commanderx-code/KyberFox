@@ -53,7 +53,8 @@ script; it is not needed for this loop.
 The script only works on a pristine tree: run `git reset --hard && git clean -fd`
 in `work/dev` before each rerun (`obj-artifact` and the mozconfig are ignored
 and survive), or the patches fail as already applied. Run the Python suite as
-`python -m pytest tests` from the repo root; a bare `pytest` also collects
+`python -m pytest tests` from the repo root after
+`.venv/bin/pip install -r requirements-dev.txt` (pytest and PyYAML, pinned); a bare `pytest` also collects
 `work/dev` and never finishes.
 
 ### mozconfig
