@@ -55,8 +55,7 @@ there was none) are first saved as JSON in `kyberfox.theme.skinPrefBackup`
 and put back when another theme is applied or `resetToDefault()` runs. After
 a restart a backup that already covers the skin's prefs is kept, so a crash
 cannot save the skin's values as the user's. Some prefs may need a restart
-or a tab reload to show fully: `browser.tabs.allow_transparent_browser`,
-`svg.context-properties.content.enabled`, `layout.css.corner-shape.enabled`.
+or a tab reload to show fully: `browser.tabs.allow_transparent_browser`.
 
 A skin that cannot be loaded, or that is listed in `status.json` `disabled`,
 falls back to Ember like any theme.

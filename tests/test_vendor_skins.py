@@ -17,6 +17,8 @@ FILES = {
         '/* Default rules */\n'
         'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);\n'
         'user_pref("svg.context-properties.content.enabled", true);\n'
+        'user_pref("layout.css.corner-shape.enabled", true);\n'
+        'user_pref("browser.newtabpage.activity-stream.improvesearch.handoffToAwesomebar", false);\n'
         'user_pref("browser.tabs.delayHidingAudioPlayingIconMS", 0);\n'
         '// user_pref("not.used", true);\n'
         'user_pref("some.string", "a b");\n'
@@ -37,13 +39,16 @@ FILES = {
     "chrome/components/tabs.css": (
         MPL + '@font-face { font-family: g; src: url("../icons/f.ttf"); }\n'
         ".c { background: url('../icons/sub/c.svg#mask'); }\n"
+        ".g { font-family: 'g'; } .h { font-family: \"g\", serif; }\n"
+        ".r { background: url('../icons/Case.SVG'); }\n"
         "@-moz-document url(chrome://browser/content/places/places.xhtml) { .d { color: red } }\n"
     ),
     "chrome/components/uc.css": ".uc { color: blue }\n",
     "chrome/icons/a.svg": "<svg/>",
     "chrome/icons/opera-logo.svg": "<svg/>",
     "chrome/icons/unused.svg": "<svg/>",
-    "chrome/icons/f.ttf": "font",
+    "chrome/icons/f.ttf": "Copyright (c) 2021 Opera Norway AS",
+    "chrome/icons/case.svg": "<svg/>",
     "chrome/icons/sub/c.svg": "<svg/>",
     "chrome/newtab/wall.png": "png",
     "README.md": "# Opera GX Skin\n",
@@ -93,15 +98,16 @@ def test_vendor_flattens_and_scopes_to_chrome_documents(upstream, tmp_path):
     body = css[css.index("@-moz-document"):]
     assert body.startswith('@-moz-document url-prefix("chrome://") {')
     assert body.rstrip().endswith("}")
-    assert 'url("icons/a.svg")' in css
-    assert 'url("icons/sub/c.svg#mask")' in css
+    base = "chrome://kyberfox/content/themes/skins/gx/"
+    assert f'url("{base}icons/a.svg")' in css
+    assert f'url("{base}icons/sub/c.svg#mask")' in css
 
 
 def test_vendor_copies_only_referenced_assets(upstream, tmp_path):
     dest = run(upstream, tmp_path)
     names = {p.relative_to(dest).as_posix() for p in all_files(dest)}
     assert names == {
-        "LICENSE", "skin.json", "userChrome.css", "icons/a.svg", "icons/f.ttf",
+        "LICENSE", "skin.json", "userChrome.css", "icons/a.svg", "icons/case.svg",
         "icons/sub/c.svg",
     } | ({"colors.css"} if (V.EXTRAS_DIR / "gx" / "colors.css").is_file() else set())
 
@@ -111,7 +117,6 @@ def test_vendor_converts_user_js_to_manifest(upstream, tmp_path):
     m = json.loads((dest / "skin.json").read_text())
     assert m["id"] == "gx" and m["kind"] == "skin" and m["scheme"] == "dark"
     assert m["prefs"] == {
-        "svg.context-properties.content.enabled": True,
         "browser.tabs.delayHidingAudioPlayingIconMS": 0,
         "some.string": "a b",
     }
@@ -169,7 +174,8 @@ def test_committed_skins_have_no_remote_urls_and_scoped_sheets():
             code = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
             assert not re.search(r"url\(\s*['\"]?(https?:|//)", code), (i, sheet)
             assert code.lstrip().startswith('@-moz-document url-prefix("chrome://")'), (i, sheet)
-            for rel in re.findall(r'url\("(icons/[^"#?)]+)', code):
+            base = f"chrome://kyberfox/content/themes/skins/{i}/"
+            for rel in re.findall(r'url\("' + re.escape(base) + r'([^"#?)]+)', code):
                 assert (SKINS / i / rel).is_file() or rel.startswith(("icons/black", "icons/logo_chat", "icons/convert-range", "icons/tab-bottom-corner-right-australis-clipped")), (i, rel)
 
 
@@ -180,3 +186,55 @@ def test_pins_are_real_commits():
         assert re.fullmatch(r"[0-9a-f]{40}", c)
     for i, c in (("gx", pins.gx_commit), ("one", pins.one_commit)):
         assert c in (SKINS / i / "userChrome.css").read_text()
+
+
+def test_vendor_never_copies_fonts_and_falls_back(upstream, tmp_path):
+    dest = run(upstream, tmp_path)
+    assert not [p for p in all_files(dest) if p.suffix.lower() in (".ttf", ".otf", ".woff", ".woff2")]
+    css = (dest / "userChrome.css").read_text()
+    assert "@font-face" not in css and ".ttf" not in css
+    assert ".g { font-family: sans-serif; }" in css
+    assert '.h { font-family: sans-serif, serif; }' in css
+
+
+def test_vendor_matches_asset_names_ignoring_case(upstream, tmp_path):
+    dest = run(upstream, tmp_path)
+    css = (dest / "userChrome.css").read_text()
+    assert 'url("chrome://kyberfox/content/themes/skins/gx/icons/case.svg")' in css
+
+
+def vendor_with(tmp_path, **replace):
+    files = dict(FILES)
+    files.update(replace)
+    repo = tmp_path / "up"
+    commit = git_init(repo, files)
+    V.vendor(str(repo), commit, tmp_path / "out" / "gx")
+
+
+@pytest.mark.parametrize("css", [
+    '@import "x.css";',
+    "@import url(x.css) screen;",
+    '@namespace url("http://www.w3.org/1999/xhtml");',
+    '@charset "utf-8";',
+    '.a { content: "https://example.com/x"; }',
+    ".a { content: '//example.com/x'; }",
+    ".a { background: image-set(\"https://example.com/x.png\" 1x); }",
+])
+def test_vendor_rejects_leftover_imports_and_remote_strings(tmp_path, css):
+    with pytest.raises(V.VendorError):
+        vendor_with(tmp_path, **{"chrome/components/root.css": css + "\n"})
+
+
+def test_vendor_rejects_non_integer_numbers_in_prefs(tmp_path):
+    with pytest.raises(V.VendorError):
+        vendor_with(tmp_path, **{"user.js": 'user_pref("a.b", 1.5);\n'})
+
+
+def test_committed_skins_ship_no_opera_bytes_and_no_fonts():
+    for p in SKINS.rglob("*"):
+        if not p.is_file():
+            continue
+        assert p.suffix.lower() not in (".ttf", ".otf", ".woff", ".woff2"), p
+        data = p.read_bytes().lower()
+        for enc in ("ascii", "utf-16-le", "utf-16-be"):
+            assert "opera".encode(enc) not in data, (p, enc)

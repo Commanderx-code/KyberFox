@@ -55,9 +55,14 @@ add_task(async function test_skins_are_listed() {
     Assert.ok(p.vars["--kf-bg"] && p.vars["--kf-accent"], `${id} preview vars`);
     let m = manifest(id);
     Assert.equal(m.sheets.at(-1), "userChrome.css", `${id} sheet list`);
-    Assert.ok(
-      !("toolkit.legacyUserProfileCustomizations.stylesheets" in m.prefs)
-    );
+    for (let dropped of [
+      "toolkit.legacyUserProfileCustomizations.stylesheets",
+      "svg.context-properties.content.enabled",
+      "layout.css.corner-shape.enabled",
+      "browser.newtabpage.activity-stream.improvesearch.handoffToAwesomebar",
+    ]) {
+      Assert.ok(!(dropped in m.prefs), `${id} does not set ${dropped}`);
+    }
   }
 });
 
@@ -194,7 +199,7 @@ add_task(async function test_disabled_skin_falls_back_to_ember() {
   KyberThemes.apply("gx");
   Assert.equal(KyberThemes.current(), "ember", "gx is off");
   Assert.ok(
-    !Services.prefs.prefHasUserValue("layout.css.corner-shape.enabled"),
+    !Services.prefs.prefHasUserValue("sidebar.revamp.round-content-area"),
     "no skin pref was set"
   );
   Assert.ok(!Services.prefs.prefHasUserValue(BACKUP_PREF), "nothing saved");
@@ -204,6 +209,116 @@ add_task(async function test_disabled_skin_falls_back_to_ember() {
   );
   Services.prefs.clearUserPref(DISABLED_PREF);
   KyberThemes.apply("ember");
+});
+
+function channels(color) {
+  return color
+    .match(/[\d.]+/g)
+    .slice(0, 3)
+    .map(Number);
+}
+
+function isDark(color) {
+  return channels(color).every(c => c < 110);
+}
+
+add_task(async function test_skin_stays_dark_on_a_light_os() {
+  await SpecialPowers.pushPrefEnv({ set: [["ui.systemUsesDarkTheme", 0]] });
+  for (let id of ["gx", "one"]) {
+    KyberThemes.apply(id);
+    await new Promise(r =>
+      requestAnimationFrame(() => requestAnimationFrame(r))
+    );
+    let nav = getComputedStyle(
+      document.querySelector("#nav-bar")
+    ).backgroundColor;
+    Assert.ok(isDark(nav), `${id}: nav-bar stays dark on a light OS (${nav})`);
+
+    let panel = document.getElementById("appMenu-popup");
+    let shown = BrowserTestUtils.waitForEvent(panel, "popupshown");
+    PanelUI.show();
+    await shown;
+    let view = document.getElementById("appMenu-mainView");
+    let bgc = getComputedStyle(panel).getPropertyValue(
+      "--arrowpanel-background"
+    );
+    let panelBg = getComputedStyle(view).backgroundColor;
+    let text = getComputedStyle(view.querySelector("toolbarbutton")).color;
+    info(
+      `${id}: panel --arrowpanel-background=${bgc} view bg=${panelBg} text=${text}`
+    );
+    Assert.equal(
+      getComputedStyle(panel).colorScheme,
+      "dark",
+      `${id}: panel scheme`
+    );
+    Assert.ok(
+      !channels(text).every(c => c < 110),
+      `${id}: panel text is light (${text})`
+    );
+    let hidden = BrowserTestUtils.waitForEvent(panel, "popuphidden");
+    PanelUI.hide();
+    await hidden;
+  }
+  KyberThemes.apply("ember");
+  await SpecialPowers.popPrefEnv();
+});
+
+add_task(async function test_broken_skin_falls_back_to_ember() {
+  const MINE = "browser.tabs.delayHidingAudioPlayingIconMS";
+  const had = Services.prefs.prefHasUserValue(MINE);
+  KyberThemes._setSkinForTests("broken", {
+    id: "broken",
+    name: "Broken",
+    kind: "skin",
+    scheme: "dark",
+    sheets: ["userChrome.css"],
+    prefs: { [MINE]: 7 },
+    vars: KyberThemes.palette("ember").vars,
+  });
+  try {
+    KyberThemes.apply("ember");
+    KyberThemes._skinSheetFailsForTests = true;
+    KyberThemes.apply("broken");
+    Assert.equal(KyberThemes.current(), "ember", "fell back to ember");
+    Assert.equal(
+      Services.prefs.getStringPref(ID_PREF),
+      "ember",
+      "ember stored"
+    );
+    Assert.equal(Services.prefs.prefHasUserValue(MINE), had, "prefs restored");
+    Assert.ok(!Services.prefs.prefHasUserValue(BACKUP_PREF), "no backup left");
+  } finally {
+    KyberThemes._skinSheetFailsForTests = false;
+    KyberThemes._setSkinForTests("broken", null);
+  }
+});
+
+add_task(async function test_crash_after_backup_still_sets_the_prefs() {
+  let gx = manifest("gx").prefs;
+  const MINE = "browser.tabs.delayHidingAudioPlayingIconMS";
+  // The state a crash leaves: backup written, skin values not yet.
+  let backup = {};
+  for (let n of Object.keys(gx)) {
+    backup[n] = { had: false };
+  }
+  Services.prefs.setStringPref(BACKUP_PREF, JSON.stringify(backup));
+  Services.prefs.setStringPref(ID_PREF, "gx");
+  KyberThemes._resetForTests();
+  KyberThemes.init();
+  Assert.equal(KyberThemes.current(), "gx", "gx applied at start");
+  Assert.equal(
+    Services.prefs.getIntPref(MINE),
+    gx[MINE],
+    "skin values written"
+  );
+  Assert.deepEqual(
+    JSON.parse(Services.prefs.getStringPref(BACKUP_PREF)),
+    backup,
+    "the backup was kept"
+  );
+  KyberThemes.apply("ember");
+  Assert.ok(!Services.prefs.prefHasUserValue(MINE), "restored to default");
 });
 
 function readPref(name) {

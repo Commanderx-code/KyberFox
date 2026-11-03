@@ -5,11 +5,9 @@
   "scheme": "dark",
   "sheets": ["colors.css", "userChrome.css"],
   "prefs": {
-    "svg.context-properties.content.enabled": true,
     "browser.tabs.delayHidingAudioPlayingIconMS": 0,
     "browser.tabs.allow_transparent_browser": true,
     "sidebar.revamp.round-content-area": false,
-    "layout.css.corner-shape.enabled": true,
     "privacy.userContext.enabled": true,
     "privacy.userContext.ui.enabled": true,
     "privacy.userContext.longPressBehavior": 2

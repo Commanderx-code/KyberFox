@@ -171,7 +171,13 @@ function paletteCss(palette) {
   if (palette.kind != "skin" && palette.vars["--kf-bg-image"] != "none") {
     css += ` #TabsToolbar, #nav-bar { background-image: var(--kf-bg-image) !important; background-size: 240px 60px !important; background-repeat: repeat !important; }`;
   }
-  return `@-moz-document url-prefix("chrome://browser/content/browser.xhtml") { ${css} }`;
+  // A skin's sheets reach every chrome:// document (the Library, dialogs), so
+  // its scheme rule does too.
+  let scope =
+    palette.kind == "skin"
+      ? "chrome://"
+      : "chrome://browser/content/browser.xhtml";
+  return `@-moz-document url-prefix("${scope}") { ${css} }`;
 }
 
 function register(uri) {
@@ -241,29 +247,30 @@ function restoreSkinPrefs() {
 /**
  * Saves the user values of the skin's prefs, then sets the skin's values.
  * A backup that already covers exactly these prefs (a restart, or a crash
- * after the prefs were set) is kept as is, so it never records the skin's
- * own values as the user's.
+ * after the backup was written) is kept as is, so it never records the
+ * skin's own values as the user's; the skin's values are written again.
  *
  * @param {object} prefs Pref name to value, from skin.json.
  */
 function applySkinPrefs(prefs) {
   let names = Object.keys(prefs);
   let backup = readBackup();
-  if (
+  let covered =
     backup &&
     names.length == Object.keys(backup).length &&
-    names.every(n => Object.hasOwn(backup, n))
-  ) {
-    return;
+    names.every(n => Object.hasOwn(backup, n));
+  if (!covered) {
+    restoreSkinPrefs();
+    let saved = {};
+    for (let name of names) {
+      let had = Services.prefs.prefHasUserValue(name);
+      saved[name] = had ? { had, value: readPref(name) } : { had };
+    }
+    // Written before any pref changes, so a crash cannot lose the user's values.
+    Services.prefs.setStringPref(SKIN_BACKUP_PREF, JSON.stringify(saved));
   }
-  restoreSkinPrefs();
-  let saved = {};
-  for (let name of names) {
-    let had = Services.prefs.prefHasUserValue(name);
-    saved[name] = had ? { had, value: readPref(name) } : { had };
-  }
-  // Written before any pref changes, so a crash cannot lose the user's values.
-  Services.prefs.setStringPref(SKIN_BACKUP_PREF, JSON.stringify(saved));
+  // Always written: a crash between the backup and these writes leaves the
+  // backup in place and the skin's values not yet set.
   for (let [name, value] of Object.entries(prefs)) {
     try {
       writePref(name, value);
@@ -401,6 +408,13 @@ export const KyberThemes = {
   /** Test hook: overrides Services.appinfo.inSafeMode when not undefined. */
   _safeModeForTests: undefined,
 
+  /**
+   * Test hook: makes registering a skin sheet throw, as an unreadable sheet
+   * would. (A really missing chrome:// file crashes the browser, so a test
+   * cannot use one.)
+   */
+  _skinSheetFailsForTests: false,
+
   /** Every theme in palettes.json, with whether it is currently disabled. */
   available() {
     load();
@@ -474,6 +488,9 @@ export const KyberThemes = {
       }
       try {
         for (let sheet of skin.sheets) {
+          if (this._skinSheetFailsForTests) {
+            throw new Error(`cannot load ${sheet}`);
+          }
           let uri = Services.io.newURI(`${THEMES_URI}skins/${id}/${sheet}`);
           register(uri);
           gSkinUris.push(uri);
@@ -601,6 +618,29 @@ export const KyberThemes = {
     return gFileWork;
   },
 
+  /**
+   * Test hook: adds (or, with null, removes) a skin from a manifest object,
+   * as if it were listed in skins/index.json.
+   *
+   * @param {string} id
+   * @param {object|null} manifest
+   */
+  _setSkinForTests(id, manifest) {
+    load();
+    if (!manifest) {
+      delete gSkins[id];
+      delete gPalettes[id];
+      return;
+    }
+    gSkins[id] = manifest;
+    gPalettes[id] = {
+      name: manifest.name,
+      kind: "skin",
+      scheme: manifest.scheme,
+      vars: manifest.vars,
+    };
+  },
+
   /** Forget everything init() did, so tests can run it again. */
   _resetForTests() {
     unregisterSkinSheets();
@@ -615,5 +655,6 @@ export const KyberThemes = {
     gCurrent = DEFAULT_ID;
     gCustomLoading = Promise.resolve();
     this._safeModeForTests = undefined;
+    this._skinSheetFailsForTests = false;
   },
 };

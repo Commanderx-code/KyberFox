@@ -211,8 +211,8 @@
 
     --panel-border-color: lch(from var(--panel-background-color) calc(l + 10) c h) !important;                      /* popup_border */
 
-    --noise-urlbar-personal: url("icons/urlbar-noise-light.png") !important;                                     /* Urlbar [open] - noise background */
-    --my-beats-image: url("icons/Beats.webp") !important;                                                        /* Used in 'Extra' feature 'classic sound icon' */
+    --noise-urlbar-personal: url("chrome://kyberfox/content/themes/skins/gx/icons/urlbar-noise-light.png") !important;                                     /* Urlbar [open] - noise background */
+    --my-beats-image: url("chrome://kyberfox/content/themes/skins/gx/icons/Beats.webp") !important;                                                        /* Used in 'Extra' feature 'classic sound icon' */
 
     --input-background-color: lch(from var(--panel-background-color) calc(l - 6) c h) !important;              /* Color of the 'input box' when saving a bookmark */
     --input-border-color: lch(from var(--panel-background-color) calc(l + 10) c h) !important;                 /* Border Color of the 'input box' not focused e.g. save password */
@@ -236,8 +236,8 @@
 
     --panel-border-color: lch(from var(--panel-background-color) calc(l - 20) c h) !important;                      /* popup_border */
     
-    --noise-urlbar-personal: url("icons/urlbar-noise-light.png") !important;                                     /* Urlbar [open] - noise background */
-    --my-beats-image: url("icons/Beats.gif") !important;                                                         /* Used in 'Extra' feature 'classic sound icon' */
+    --noise-urlbar-personal: url("chrome://kyberfox/content/themes/skins/gx/icons/urlbar-noise-light.png") !important;                                     /* Urlbar [open] - noise background */
+    --my-beats-image: url("chrome://kyberfox/content/themes/skins/gx/icons/Beats.gif") !important;                                                         /* Used in 'Extra' feature 'classic sound icon' */
     
     --input-background-color: color-mix(in srgb, var(--arrowpanel-background) 90%, black) !important;          /* Color of the 'input box' when saving a bookmark */
     --input-border-color: lch(from var(--panel-background-color) calc(l - 15) c h) !important;                 /* Border Color of the 'input box' not focused e.g. save password */
@@ -1495,7 +1495,7 @@ findbar {
   border-radius: 50% !important;
   appearance: none !important;
   -moz-appearance: none !important;  
-  background: rgba(255, 255, 255, 0.12) url("icons/close.svg") center no-repeat !important;
+  background: rgba(255, 255, 255, 0.12) url("chrome://kyberfox/content/themes/skins/gx/icons/close.svg") center no-repeat !important;
   background-size: var(--icon-size) var(--icon-size) !important;
   -moz-context-properties: fill !important;
   fill: currentColor !important;
@@ -1503,7 +1503,7 @@ findbar {
   line-height: 0 !important;
   
   &:hover {
-    background: var(--color-accent-primary-hover) url("icons/close.svg") center no-repeat !important;
+    background: var(--color-accent-primary-hover) url("chrome://kyberfox/content/themes/skins/gx/icons/close.svg") center no-repeat !important;
     background-size: var(--icon-size) var(--icon-size) !important;
     fill: contrast-color(var(--color-accent-primary-hover)) !important;
   }
@@ -3048,41 +3048,41 @@ input::-moz-search-clear-button:hover {
             /* Close icon \
             ¯¯¯¯¯¯¯¯¯¯¯¯¯¯ */
             .titlebar-close & {
-                background-image: url("icons/titlebuttonsWhiteSur/titlebutton-close-dark.svg") !important;
+                background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-close-dark.svg") !important;
             }
             
             .titlebar-close:hover & {
-                background-image: url("icons/titlebuttonsWhiteSur/titlebutton-close-hover-dark.svg") !important;
+                background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-close-hover-dark.svg") !important;
             }
             
             /* Maximize icon \
             ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ */
             .titlebar-max & {
-                background-image: url("icons/titlebuttonsWhiteSur/titlebutton-maximize-dark.svg") !important;
+                background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-maximize-dark.svg") !important;
             }
             
             .titlebar-max:hover & {
-                background-image: url("icons/titlebuttonsWhiteSur/titlebutton-maximize-hover-dark.svg") !important;
+                background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-maximize-hover-dark.svg") !important;
             }
             
             /* Minimize icon \
             ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ */
             .titlebar-min & {
-                background-image: url("icons/titlebuttonsWhiteSur/titlebutton-minimize-dark.svg") !important;
+                background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-minimize-dark.svg") !important;
             }
             
             .titlebar-min:hover & {
-                background-image: url("icons/titlebuttonsWhiteSur/titlebutton-minimize-hover-dark.svg") !important;
+                background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-minimize-hover-dark.svg") !important;
             }
             
             /* Restore \
             ¯¯¯¯¯¯¯¯¯¯¯ */
             .titlebar-restore & {
-                background-image: url("icons/titlebuttonsWhiteSur/titlebutton-maximize-dark.svg") !important;
+                background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-maximize-dark.svg") !important;
             }
             
             .titlebar-restore:hover & {
-                background-image: url("icons/titlebuttonsWhiteSur/titlebutton-unmaximize-hover-dark.svg") !important;
+                background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-unmaximize-hover-dark.svg") !important;
             }
         }
 
@@ -3094,10 +3094,10 @@ input::-moz-search-clear-button:hover {
             .titlebar-min,
             .titlebar-restore {
                 .toolbarbutton-icon {
-                    background-image: url("icons/titlebuttonsWhiteSur/titlebutton-backdrop-dark.svg") !important;
+                    background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-backdrop-dark.svg") !important;
                     
                     @media (prefers-color-scheme: light) {
-                        background-image: url("icons/titlebuttonsWhiteSur/titlebutton-backdrop.svg") !important;
+                        background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-backdrop.svg") !important;
                     }
                 }
             }
@@ -3108,40 +3108,40 @@ input::-moz-search-clear-button:hover {
         body:-moz-window-inactive {
             .titlebar-close {
                 &:hover .toolbarbutton-icon {
-                    background-image: url("icons/titlebuttonsWhiteSur/titlebutton-close-backdrop-dark.svg") !important;
+                    background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-close-backdrop-dark.svg") !important;
                     
                     @media (prefers-color-scheme: light) {
-                        background-image: url("icons/titlebuttonsWhiteSur/titlebutton-close-backdrop.svg") !important;
+                        background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-close-backdrop.svg") !important;
                     }
                 }
             }
             
             .titlebar-max {
                 &:hover .toolbarbutton-icon {
-                    background-image: url("icons/titlebuttonsWhiteSur/titlebutton-maximize-backdrop-dark.svg") !important;
+                    background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-maximize-backdrop-dark.svg") !important;
                     
                     @media (prefers-color-scheme: light) {
-                        background-image: url("icons/titlebuttonsWhiteSur/titlebutton-maximize-backdrop.svg") !important;
+                        background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-maximize-backdrop.svg") !important;
                     }
                 }
             }
             
             .titlebar-min {
                 &:hover .toolbarbutton-icon {
-                    background-image: url("icons/titlebuttonsWhiteSur/titlebutton-minimize-backdrop-dark.svg") !important;
+                    background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-minimize-backdrop-dark.svg") !important;
                     
                     @media (prefers-color-scheme: light) {
-                        background-image: url("icons/titlebuttonsWhiteSur/titlebutton-minimize-backdrop.svg") !important;                        
+                        background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-minimize-backdrop.svg") !important;                        
                     }
                 }
             }
             
             .titlebar-restore {
                 &:hover .toolbarbutton-icon {
-                    background-image: url("icons/titlebuttonsWhiteSur/titlebutton-unmaximize-backdrop-dark.svg") !important;
+                    background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-unmaximize-backdrop-dark.svg") !important;
                     
                     @media (prefers-color-scheme: light) {
-                        background-image: url("icons/titlebuttonsWhiteSur/titlebutton-unmaximize-backdrop.svg") !important;
+                        background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/titlebuttonsWhiteSur/titlebutton-unmaximize-backdrop.svg") !important;
                     }
                 }
             }
@@ -3227,7 +3227,7 @@ input::-moz-search-clear-button:hover {
     margin-inline-end: calc(3px + var(--customization-panel-padding)) !important;
     margin-top: 1px !important;
     width: 34px; height: 9px;
-    list-style-image: url("icons/panelarrow-menu.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/panelarrow-menu.svg") !important;
     filter: drop-shadow(0px -1px 0px var(--my-scheme-color));
 
     @media -moz-pref("firefoxgx.oneline") {
@@ -3306,7 +3306,7 @@ input::-moz-search-clear-button:hover {
     /*  Favicon trimmed when sound playing */
     .tab-icon-stack:not([crashed]):is([soundplaying]) {
         & :is(.tab-icon-pending, .tab-icon-image, .tab-sharing-icon-overlay) {
-            mask-image: url("icons/tab_icon_masks.svg#SoundMask") !important;
+            mask-image: url("chrome://kyberfox/content/themes/skins/gx/icons/tab_icon_masks.svg#SoundMask") !important;
         }
     }
     
@@ -3314,7 +3314,7 @@ input::-moz-search-clear-button:hover {
     .tabbrowser-tab:not([pending]):hover {
         & .tab-icon-stack:not([crashed]):is([soundplaying],[muted],[activemedia-blocked]) {
             & :is(.tab-icon-pending, .tab-icon-image, .tab-sharing-icon-overlay) {
-                mask-image: url("icons/tab_icon_masks.svg#SoundMask") !important;
+                mask-image: url("chrome://kyberfox/content/themes/skins/gx/icons/tab_icon_masks.svg#SoundMask") !important;
             }
         }
     }
@@ -3340,7 +3340,7 @@ input::-moz-search-clear-button:hover {
     /* Normal tabs - Playing icon */
     
     .tab-audio-button[soundplaying] {
-        --my-background-sound-image: url("icons/sound-playing.svg") !important;
+        --my-background-sound-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-playing.svg") !important;
         --button-background-color-ghost: color-mix(in srgb, var(--my-scheme-color), transparent) !important;
         --button-background-color-ghost-hover: color-mix(in srgb, var(--my-scheme-color), transparent) !important;
         --button-background-color-ghost-active: color-mix(in srgb, var(--my-scheme-color), transparent) !important;
@@ -3354,7 +3354,7 @@ input::-moz-search-clear-button:hover {
     /* Normal tabs - Muted icon */
     
     .tab-audio-button:is([muted],[activemedia-blocked]) {
-        --my-background-sound-image: url("icons/sound-muted.svg") !important;
+        --my-background-sound-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-muted.svg") !important;
         --button-background-color-ghost: transparent !important;
         --button-background-color-ghost-hover: transparent !important;
         --button-background-color-ghost-active: transparent !important;
@@ -3362,14 +3362,14 @@ input::-moz-search-clear-button:hover {
         --my-opacity: 0.8 !important;
         
         &:hover {
-            --my-background-sound-image: url("icons/sound-muted-hover.svg") !important;
+            --my-background-sound-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-muted-hover.svg") !important;
             --my-fill: var(--my-font-color) !important;
             --my-opacity: 1 !important;
         }
     }
     
     .tab-audio-button:is([activemedia-blocked]) {
-        --my-background-sound-image: url("icons/sound-blocked.svg") !important;
+        --my-background-sound-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-blocked.svg") !important;
         --my-fill: var(--my-font-color)  !important;
     }
     
@@ -3397,7 +3397,7 @@ input::-moz-search-clear-button:hover {
             }
             
             &[soundplaying] {
-                list-style-image: url("icons/sound-playing.svg") !important;
+                list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-playing.svg") !important;
                 fill: var(--general-color)  !important;
                 
                 &:hover {
@@ -3406,17 +3406,17 @@ input::-moz-search-clear-button:hover {
             }
             
             &:is([muted],[activemedia-blocked]) {
-                list-style-image: url("icons/sound-muted.svg") !important;
+                list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-muted.svg") !important;
                 background-color: color-mix(in srgb, var(--my-scheme-color), transparent) !important;
                 
                 &:hover {
                     fill: var(--my-font-color) !important;
-                    list-style-image: url("icons/sound-muted-hover.svg") !important;
+                    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-muted-hover.svg") !important;
                 }
             }
             
             &:is([activemedia-blocked]) {
-                list-style-image: url("icons/sound-blocked.svg") !important;
+                list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-blocked.svg") !important;
             }
         }
     }
@@ -3449,21 +3449,21 @@ input::-moz-search-clear-button:hover {
                 }
 
                 &[soundplaying] {
-                    list-style-image: url("icons/sound-playing.svg") !important;
+                    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-playing.svg") !important;
                     fill: var(--general-color)  !important;
                 }
 
                 &:is([muted],[activemedia-blocked]) {
-                    list-style-image: url("icons/sound-muted.svg") !important;
+                    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-muted.svg") !important;
                     background-color: transparent !important;
                     
                     &:hover {
-                        list-style-image: url("icons/sound-muted-hover.svg") !important;
+                        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-muted-hover.svg") !important;
                     }
                 }
 
                 &:is([activemedia-blocked]) {
-                    list-style-image: url("icons/sound-blocked.svg") !important;
+                    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sound-blocked.svg") !important;
                 }
             }
         }
@@ -3997,7 +3997,7 @@ image[part='drop-indicator'] {
     width: 34px!important; 
     height: 9px !important;
     background-size: 34px 9px !important;
-    background-image: url("icons/panelarrow-menu.svg") !important;
+    background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/panelarrow-menu.svg") !important;
     background-color: transparent !important;
     -moz-context-properties: fill, stroke !important;
     fill: var(--arrowpanel-background) !important;
@@ -4414,7 +4414,7 @@ browser[primary="true"][tabDialogShowing="true"],
 }
 
 .tab-close-button {
-    list-style-image: url("icons/close.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/close.svg") !important;
 }
 
 @media not -moz-pref("sidebar.verticalTabs") {
@@ -5278,10 +5278,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
 /* New font for 'Menu' label \
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ */
-@font-face {
-    font-family: 'gamer';
-    src: url("icons/Underwave-Bold.ttf");
-}
+/* font removed */
 
 /* Menu size when 'open' in non-maximized window \
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ */
@@ -5324,7 +5321,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
             /*z-index: 4 !important;  /* Test with 'oneline' feature - if needs change, change too in online css */
             
             .toolbarbutton-badge-stack {
-                list-style-image: url("icons/foxfill.svg") !important;
+                list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/foxfill.svg") !important;
             }
             
             @media -moz-pref("sidebar.verticalTabs"), -moz-pref("firefoxgx.oneline") {
@@ -5453,7 +5450,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
                 
                 /* Logo image */
                 & .toolbarbutton-badge-stack {
-                    list-style-image: url("icons/foxmenu.svg") !important;
+                    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/foxmenu.svg") !important;
                     display: inline-flex !important;
                     height: var(--my-menu-button-height) !important;
                     width: var(--my-menu-button-width, var(--padding-left-tab)) !important;
@@ -5520,7 +5517,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
                     height: 18px;
                     top: 12px;
                     inset-inline-start: var(--panel-menuitem-padding-inline);
-                    background-image: url("icons/foxfill.svg");
+                    background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/foxfill.svg");
                     background-size: contain;
                     background-repeat: no-repeat;
                     background-position: center;
@@ -5546,7 +5543,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
                     color: var(--general-color);
                     font-size: 1rem;
                     text-transform: uppercase;
-                    font-family: "gamer";
+                    font-family: sans-serif;
                     align-items: center;
                     mask: none !important;
                 }
@@ -5969,17 +5966,17 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 /* home button */
 
 #home-button image {
-    list-style-image: url("icons/home.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/home.svg") !important;
 }
 
 /* Bookmark icons  */
 
 #pageAction-panel-bookmark, #star-button {
-    list-style-image: url("icons/bookmark-empty.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
 }
 
 #pageAction-panel-bookmark[starred], #star-button[starred] {
-    list-style-image: url("icons/bookmark-fill.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-fill.svg") !important;
 }
 
 #pageAction-panel-bookmark[starred]:hover, #star-button-box:is(:hover, [open]) #star-button[starred] {
@@ -5989,36 +5986,36 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 /* Lock icon */
 
 #identity-box[pageproxystate="valid"].verifiedDomain #identity-icon, #identity-box[pageproxystate="valid"].mixedActiveBlocked #identity-icon {
-    list-style-image: url("icons/security.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/security.svg") !important;
 }
 
 /* reader mode */
 
 #reader-mode-button>.urlbar-icon {
-    list-style-image: url("icons/read-mode.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/read-mode.svg") !important;
 }
 
 /* 'Forget and delete history' icon on left-sidebar */
 
 #PersonalToolbar #panic-button image {
-    list-style-image: url("icons/cleaner.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/cleaner.svg") !important;
     padding: 2px !important;
 }
 
 /* GX Mods extension */
 
 #gxmods_glacier_dog-BAP{
-    list-style-image: url("icons/edit.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/edit.svg") !important;
 }
 
 /* Firefox view icon */
 
 #firefox-view-button {
-    list-style-image: url("icons/firefoxview-close.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/firefoxview-close.svg") !important;
 }
 
 #firefox-view-button[aria-pressed="true"] {
-    list-style-image: url("icons/firefoxview-open.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/firefoxview-open.svg") !important;
 }
 
 /* 'Delete' bookmark icon  */
@@ -6030,14 +6027,14 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 /* Logo-url on Firefox secure pages */
 
 #identity-box[pageproxystate="valid"].chromeUI #identity-icon {
-    list-style-image: url("icons/foxfill.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/foxfill.svg") !important;
 }
 
 /* Newtab favicon */
 
 .tab-icon-image[src="chrome://branding/content/icon32.png"] {
   --my-container-favicon: var(--identity-icon) !important;
-  --my-default-favicon: url("icons/newtab-favicon.svg") !important;
+  --my-default-favicon: url("chrome://kyberfox/content/themes/skins/gx/icons/newtab-favicon.svg") !important;
     content: var(--my-container-favicon, var(--my-default-favicon)) !important;
     fill: var(--identity-icon-color, var(--general-color)) !important;
 }
@@ -6048,7 +6045,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   &::before,
   &::after {
     content: ""; display: block; position: relative;
-    background: url("icons/urlbar-separator.svg");
+    background: url("chrome://kyberfox/content/themes/skins/gx/icons/urlbar-separator.svg");
     background-repeat: no-repeat;
     background-size: 6px 16px;
     background-position-y: center;
@@ -6097,15 +6094,15 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   /** Icons - List **************************************************************/
   :root {
     --uc-folder-icon: url("chrome://global/skin/icons/folder.svg") !important;
-    --uc-tab-icon: url("icons/tab.svg") !important;
-    --uc-tab-copy-icon: url("icons/tab-copy.svg") !important;
-    --uc-tab-unload-icon: url("icons/tab-unload.svg") !important;
-    --uc-tab-multiple-icon: url("icons/tab-desktop-multiple.svg") !important;
-    --uc-tab-close-duplicate-icon: url("icons/close-duplicate-tabs.svg") !important;
-    --uc-new-tab-icon: url("icons/new-tab.svg") !important;
-    --uc-new-tab-forward-icon: url("icons/new-tab-forward.svg") !important;
-    --uc-new-tab-skip-forward-icon: url("icons/new-tab-skip-forward.svg") !important;
-    --uc-new-tab-multiple-icon: url("icons/new-tab-multiple.svg") !important;
+    --uc-tab-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab.svg") !important;
+    --uc-tab-copy-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-copy.svg") !important;
+    --uc-tab-unload-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-unload.svg") !important;
+    --uc-tab-multiple-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-desktop-multiple.svg") !important;
+    --uc-tab-close-duplicate-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/close-duplicate-tabs.svg") !important;
+    --uc-new-tab-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/new-tab.svg") !important;
+    --uc-new-tab-forward-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/new-tab-forward.svg") !important;
+    --uc-new-tab-skip-forward-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/new-tab-skip-forward.svg") !important;
+    --uc-new-tab-multiple-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/new-tab-multiple.svg") !important;
     --uc-sidebar-icon: url("chrome://browser/skin/sidebar-collapsed.svg") !important;
     --uc-sidebar-icon-reverse: url("chrome://browser/skin/sidebars-right.svg") !important;
   }
@@ -6118,14 +6115,14 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   /*= Floorp Browser ===========================================================*/
 
   :root {
-    --uc-folder-icon: url("icons/folder.svg") !important;
-    --uc-tab-icon: url("icons/tab-photon.svg") !important;
-    --uc-tab-copy-icon: url("icons/tab-copy-photon.svg") !important;
-    --uc-tab-unload-icon: url("icons/tab-unload-photon.svg") !important;
-    --uc-tab-multiple-icon: url("icons/tab-multiple.svg") !important;
-    --uc-new-tab-icon: url("icons/new-tab-photon.svg") !important;
-    --uc-new-tab-forward-icon: url("icons/new-tab-forward-photon.svg") !important;
-    --uc-new-tab-skip-forward-icon: url("icons/new-tab-skip-forward-photon.svg") !important;
+    --uc-folder-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/folder.svg") !important;
+    --uc-tab-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-photon.svg") !important;
+    --uc-tab-copy-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-copy-photon.svg") !important;
+    --uc-tab-unload-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-unload-photon.svg") !important;
+    --uc-tab-multiple-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-multiple.svg") !important;
+    --uc-new-tab-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/new-tab-photon.svg") !important;
+    --uc-new-tab-forward-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/new-tab-forward-photon.svg") !important;
+    --uc-new-tab-skip-forward-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/new-tab-skip-forward-photon.svg") !important;
   }
 
   @supports selector(:has(a)) {
@@ -6162,7 +6159,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
     .bookmark-item[container="true"]:not([query="true"], [tagContainer], [dayContainer])[open="true"],
   :-moz-any(#bookmarks-view, #historyTree, #editBMPanel_folderTree, #placesList, #placeContent)
     treechildren::-moz-tree-image(title, container, open) {
-    list-style-image: url("icons/folder-open.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder-open.svg") !important;
   }
   /*= Other Folder - Inbox Icon ================================================*/
   /* on Menus 
@@ -6207,11 +6204,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   :-moz-any(#placesList, #placeContent) treechildren::-moz-tree-image(title, query, tagContainer),
   :-moz-any(#placesList, #placeContent) treechildren::-moz-tree-image(query, OrganizerQuery_tags_______v),
   .bookmark-item[query][tagContainer] {
-    list-style-image: url("icons/tag.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/tag.svg") !important;
   }
   /* Bookmark */
   :-moz-any(#placesList, #placeContent) treechildren::-moz-tree-image(query, OrganizerQuery_allbms_____v) {
-    list-style-image: url("icons/bookmark-empty.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
   /* Bookmark Toolbar */
   #BMB_bookmarksPopup #BMB_bookmarksToolbar,
@@ -6225,8 +6222,8 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #panelMenu_bookmarksToolbar,
   #bookmarks-toolbar-button,
   #bookmarks-toolbar-placeholder {
-    list-style-image: url("icons/bookmarks-toolbar-alt.svg") !important;
-    --menuitem-icon: url("icons/bookmarks-toolbar-alt.svg") !important;/**/
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmarks-toolbar-alt.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmarks-toolbar-alt.svg") !important;/**/
   }
   /* Bookmark Menu */
   :-moz-any(#bookmarks-view, #editBMPanel_folderTree, #placesList, #placeContent)
@@ -6245,14 +6242,14 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   :-moz-any(#historyTree, #placesList, #placeContent) treechildren::-moz-tree-image(title, query, open, dayContainer),
   :-moz-any(#historyTree, #placesList, #placeContent)
     treechildren::-moz-tree-image(query, open, OrganizerQuery_history____v) {
-    list-style-image: url("icons/history-reverse.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/history-reverse.svg") !important;
   }
   /* Tag */
   :-moz-any(#PlacesToolbar, #BMB_bookmarksPopup, #bookmarksMenu)
     .bookmark-item[container="true"][tagContainer="true"][open="true"],
   :-moz-any(#placesList, #placeContent) treechildren::-moz-tree-image(title, query, open, tagContainer),
   :-moz-any(#placesList, #placeContent) treechildren::-moz-tree-image(query, open, OrganizerQuery_tags_______v) {
-    list-style-image: url("icons/tag-open.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/tag-open.svg") !important;
   }
   /* Bookmark */
   :-moz-any(#placesList, #placeContent) treechildren::-moz-tree-image(query, open, OrganizerQuery_allbms_____v) {
@@ -6263,12 +6260,12 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #bookmarksMenuPopup #bookmarksToolbarFolderMenu[open="true"],
   :-moz-any(#bookmarks-view, #editBMPanel_folderTree, #placesList, #placeContent)
     treechildren::-moz-tree-image(container, open, queryFolder_toolbar_____) {
-    list-style-image: url("icons/bookmarksToolbar-open-alt.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmarksToolbar-open-alt.svg") !important;
   }
   /* Bookmark Menu */
   :-moz-any(#bookmarks-view, #editBMPanel_folderTree, #placesList, #placeContent)
     treechildren::-moz-tree-image(container, open, queryFolder_menu________) {
-    list-style-image: url("icons/bookmarksMenu-open.svg") !important; /* or bookmarksMenu-open2.svg" */
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmarksMenu-open.svg") !important; /* or bookmarksMenu-open2.svg" */
   }
 
 /*_____________________________________________________ Icons switch _____________________________________________________ 
@@ -6279,7 +6276,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   -- overwrite those icons with 'important' to solve it & specific add 'menuitem' before the item name 
   -- 'IMPORTANT' keep 'menupopup' before 'menu' to fix MacOS global menu items */
   menupopup menu, menuitem:not(.menuitem-iconic), menucaption {
-    --menuitem-icon: url("icons/blank.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/blank.svg") !important;
     --menuitem-icon-fill: currentColor !important;
   }
   
@@ -6310,8 +6307,8 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
     menuitem:not([type="radio"],[type="checkbox"]) > &,
       menupopup menu > & {  /* -- 'IMPORTANT' keep 'menupopup' before 'menu' to fix MacOS global menu items */
         &:where(:not([srcset])) {
-          content: var(--menuitem-icon, url("icons/blank.svg")) !important;
-          list-style-image: var(--menuitem-icon, url("icons/blank.svg")) !important;
+          content: var(--menuitem-icon, url("chrome://kyberfox/content/themes/skins/gx/icons/blank.svg")) !important;
+          list-style-image: var(--menuitem-icon, url("chrome://kyberfox/content/themes/skins/gx/icons/blank.svg")) !important;
         }
     }
   }
@@ -6336,7 +6333,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #show-other-bookmarks_PersonalToolbar,            /* 'Show other bookmarks' */
   #spell-check-enabled                              /* 'Check spelling' - searchbox */
   ):not([checked]) .menu-icon {
-    content: var(--menuitem-icon, url("icons/black.svg")) !important;/**/
+    content: var(--menuitem-icon, url("chrome://kyberfox/content/themes/skins/gx/icons/black.svg")) !important;/**/
     visibility: visible !important;
   }
   
@@ -6433,7 +6430,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   /*= Tab Mix Plus =============================================================*/
 
   #appMenu-proton-update-banner::before {
-    content: url("icons/whatsnew.svg") !important;
+    content: url("chrome://kyberfox/content/themes/skins/gx/icons/whatsnew.svg") !important;
   }
 
   #appMenu-fxa-status2::before {
@@ -6478,7 +6475,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   .panel-banner-item {
     background-color: var(--color-accent-primary-hover) !important;
     &> .toolbarbutton-icon {
-      background-image: url("icons/foxfill.svg") !important;
+      background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/foxfill.svg") !important;
       background-size: var(--icon-size) !important;
       order: 0 !important;
     }
@@ -6493,7 +6490,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #appMenu-bookmarks-button {
-    list-style-image: url("icons/bookmark-empty.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #appMenu-history-button {
@@ -6521,61 +6518,61 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #appMenu-save-file-button2 {
-    list-style-image: url("icons/toolbarButton-download.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-download.svg") !important;
   }
   #appMenu-find-button2 {
     list-style-image: url("chrome://global/skin/icons/search-glass.svg") !important;
   }
   #appMenu-translate-button {
-    list-style-image: url("icons/translations.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/translations.svg") !important;
   }
   #appMenu-zoom-controls2::before,
   #appMenu-zoom-controls::before {
-    content: url("icons/screenshot.svg") !important;
+    content: url("chrome://kyberfox/content/themes/skins/gx/icons/screenshot.svg") !important;
   }
 
   #save-page-button {
-    list-style-image: url("icons/toolbarButton-download.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-download.svg") !important;
   }
 
   #open-file-button {
-    list-style-image: url("icons/toolbarButton-upload.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-upload.svg") !important;
   }
 
   #cut-button {
-    list-style-image: url("icons/edit-cut.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-cut.svg") !important;
   }
 
   #copy-button {
-    list-style-image: url("icons/edit-copy.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-copy.svg") !important;
   }
 
   #paste-button {
-    list-style-image: url("icons/edit-paste.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste.svg") !important;
   }
 
   #characterencoding-button {
-    list-style-image: url("icons/characterEncoding.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/characterEncoding.svg") !important;
   }
 
   #screenshot-button {
-    list-style-image: url("icons/screenshot-1.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/screenshot-1.svg") !important;
   }
 
   #email-link-button {
-    list-style-image: url("icons/mail.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/mail.svg") !important;
   }
 
   #panic-button {
-    list-style-image: url("icons/forget.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/forget.svg") !important;
   }
 
   #profiler-button-button > .toolbarbutton-icon {
-    list-style-image: url("icons/performance.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/performance.svg") !important;
   }
 
   #developer-button {
-    list-style-image: url("icons/wrench-filled.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/wrench-filled.svg") !important;
   }
 
   #appMenu-settings-button {
@@ -6583,14 +6580,14 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #appMenu-more-button2 {
-    list-style-image: url("icons/ion.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/ion.svg") !important;
   }
 
   #appMenu-help-button2 {
     list-style-image: url("chrome://global/skin/icons/help.svg") !important;
   }
   #appMenu-quit-button2 {
-    list-style-image: url("icons/quit.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/quit.svg") !important;
   }
 
   #PanelUI-fxa-menu-connect-device-button .toolbarbutton-icon,
@@ -6628,11 +6625,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #PanelUI-fxa-menu-connect-device-button {
-    list-style-image: url("icons/add-device.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/add-device.svg") !important;
   }
 
   #PanelUI-fxa-menu-sendtab-button {
-    list-style-image: url("icons/send-to-device.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/send-to-device.svg") !important;
   }
 
   #PanelUI-fxa-menu-sync-prefs-button {
@@ -6640,13 +6637,13 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #PanelUI-fxa-menu-account-signout-button {
-    list-style-image: url("icons/sign-out.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/sign-out.svg") !important;
   }
   
   /* Inactive tabs - AppMenu */
   
   toolbarbutton[itemtype="showinactivebutton"] {
-    list-style-image: url("icons/unload-tab.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/unload-tab.svg") !important;
   }
   /* Test the button in windowed mode */
   toolbarbutton[itemtype="showmorebutton"], toolbarbutton[itemtype="showinactivebutton"] {
@@ -6687,7 +6684,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   .pageAction-sendToDevice-device.subviewbutton.sync-menuitem.sendtab-target[clientType=""],
   .sendToDevice-device.subviewbutton.sync-menuitem.sendtab-target[clientType=""] {
-    list-style-image: url("icons/send-to-device.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/send-to-device.svg") !important;
   }
 
   .pageAction-sendToDevice-device.subviewbutton.sync-menuitem.sendtab-target:not([clientType]),
@@ -6700,7 +6697,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   panelMenuBookmarkThisPage[starred] {
-    list-style-image: url("icons/bookmark-empty.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #panelMenu_searchBookmarks {
@@ -6708,7 +6705,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #panelMenu_viewBookmarksToolbar {
-    list-style-image: url("icons/bookmarks-toolbar-alt.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmarks-toolbar-alt.svg") !important;
   }
 
   #panelMenu_showAllBookmarks {
@@ -6729,11 +6726,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #appMenuRestoreSession,
   #appMenu-restoreSession {
-    list-style-image: url("icons/restore-session.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/restore-session.svg") !important;
   }
 
   #appMenuClearRecentHistory {
-    list-style-image: url("icons/forget.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/forget.svg") !important;
   }
 
   #PanelUI-historyMore {
@@ -6741,11 +6738,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #appMenu-library-recentlyClosedTabs {
-    list-style-image: url("icons/movetowindow-16.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/movetowindow-16.svg") !important;
   }
 
   #appMenu-library-recentlyClosedWindows {
-    list-style-image: url("icons/restore-session.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/restore-session.svg") !important;
   }
 
   #appmenu-moreTools-button {
@@ -6754,47 +6751,47 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #appmenu-developer-tools-view .subviewbutton:nth-child(1),
   #PanelUI-developer-tools-view .subviewbutton:nth-child(1) {
-    list-style-image: url("icons/developer.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/developer.svg") !important;
   }
 
   #appmenu-developer-tools-view .subviewbutton:nth-child(2),
   #PanelUI-developer-tools-view .subviewbutton:nth-child(2) {
-    list-style-image: url("icons/performance.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/performance.svg") !important;
   }
 
   #appmenu-developer-tools-view .subviewbutton:nth-child(3),
   #PanelUI-developer-tools-view .subviewbutton:nth-child(3) {
-    list-style-image: url("icons/bug.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bug.svg") !important;
   }
 
   #appmenu-developer-tools-view .subviewbutton:nth-child(4),
   #PanelUI-developer-tools-view .subviewbutton:nth-child(4) {
-    list-style-image: url("icons/window-dev-tools.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/window-dev-tools.svg") !important;
   }
 
   #appmenu-developer-tools-view .subviewbutton:nth-child(5),
   #PanelUI-developer-tools-view .subviewbutton:nth-child(5) {
-    list-style-image: url("icons/command-frames.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/command-frames.svg") !important;
   }
 
   #appmenu-developer-tools-view .subviewbutton:nth-last-child(5),
   #PanelUI-developer-tools-view .subviewbutton:nth-last-child(5) {
-    list-style-image: url("icons/command-console.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/command-console.svg") !important;
   }
 
   #appmenu-developer-tools-view .subviewbutton:nth-last-child(4),
   #PanelUI-developer-tools-view .subviewbutton:nth-last-child(4) {
-    list-style-image: url("icons/command-responsivemode.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/command-responsivemode.svg") !important;
   }
 
   #appmenu-developer-tools-view .subviewbutton:nth-last-child(3),
   #PanelUI-developer-tools-view .subviewbutton:nth-last-child(3) {
-    list-style-image: url("icons/command-eyedropper.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/command-eyedropper.svg") !important;
   }
 
   #appmenu-developer-tools-view .subviewbutton:nth-last-child(2),
   #PanelUI-developer-tools-view .subviewbutton:nth-last-child(2) {
-    list-style-image: url("icons/document-search.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/document-search.svg") !important;
   }
 
   #appmenu-developer-tools-view .subviewbutton:nth-last-child(1),
@@ -6811,7 +6808,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #appMenu_feedbackPage {
-    list-style-image: url("icons/send.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/send.svg") !important;
   }
 
   #appMenu_helpSafeMode {
@@ -6833,7 +6830,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #appMenu_helpSwitchDevice {
-    list-style-image: url("icons/add-device.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/add-device.svg") !important;
   }
 
   #appMenu_aboutName {
@@ -6841,7 +6838,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #appMenu-bookmarks-button, #appMenu-library-bookmarks-button, #sidebar-switcher-bookmarks,#panelMenuBookmarkThisPage:not([starred]) {
-    list-style-image: url("icons/bookmark-empty.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #appMenu-library-history-button {
@@ -6866,7 +6863,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #allTabsMenu-undoCloseTab {
-    list-style-image: url("icons/undo.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
 
   #allTabsMenu-searchTabs {
@@ -6882,23 +6879,23 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #allTabsMenu-containerTabsButton {
-    list-style-image: url("icons/container-openin-16.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/container-openin-16.svg") !important;
   }
   
   #allTabsMenu-groupsViewShowMore {
-    list-style-image: url("icons/send-tab-to-group.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/send-tab-to-group.svg") !important;
   }
   
   #allTabsMenu-viewAllTabs {
-    list-style-image: url("icons/firefoxview-close.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/firefoxview-close.svg") !important;
     
     &:hover {
-      list-style-image: url("icons/firefoxview-open.svg") !important;
+      list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/firefoxview-open.svg") !important;
     }
   }
 
   #allTabsMenu-hiddenTabsButton {
-    list-style-image: url("icons/eye-hide.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-hide.svg") !important;
   }
   
   :is(menuitem, toolbarbutton)[data-l10n-id="user-context-add-container"] {
@@ -6952,7 +6949,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #BMB_bookmarksToolbar {
-    --menuitem-icon: url("icons/bookmarks-toolbar-alt.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmarks-toolbar-alt.svg") !important;
   }
 
   #BMB_bookmarksShowAllTop {
@@ -6964,10 +6961,10 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #BMB_viewBookmarksToolbar[data-l10n-args='{"isVisible":true}'] {
-    --menuitem-icon: url("icons/eye-hide.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-hide.svg") !important;
   }
   #BMB_viewBookmarksToolbar[data-l10n-args='{"isVisible":false}'] {
-    --menuitem-icon: url("icons/eye-show.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-show.svg") !important;
   }
 
   #protections-popup-settings-button > .protections-popup-settings-icon,
@@ -6984,7 +6981,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #protections-popup-show-report-button > .protections-popup-show-report-icon {
     /* chrome://browser/skin/controlcenter/dashboard.svg */
-    list-style-image: url("icons/dashboard.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/dashboard.svg") !important;
   }
 
   #identity-popup-clear-sitedata-button,
@@ -6997,7 +6994,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #identity-popup-clear-sitedata-button {
-    list-style-image: url("icons/broom.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/broom.svg") !important;
     padding-inline-start: 8px !important;
   }
 
@@ -7010,10 +7007,10 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #sidebar-switcher-bookmarks.subviewbutton {
-    list-style-image: url("icons/bookmark-empty.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
   #sidebar-switcher-bookmarks:is(menuitem) {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #sidebar-switcher-history.subviewbutton {
@@ -7024,13 +7021,13 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #sidebar-switcher-tabs.subviewbutton {
-    list-style-image: url("icons/synced-tabs.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/synced-tabs.svg") !important;
   }
   #sidebar-switcher-tabs:is(menuitem) {
-    --menuitem-icon: url("icons/synced-tabs.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/synced-tabs.svg") !important;
   }
   #sidebar-switcher-genai-chat:is(menuitem) {
-    --menuitem-icon: url("icons/logo_anthropic-claude.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_anthropic-claude.svg") !important;
   }
   #sidebar-reverse-position.subviewbutton {
     list-style-image: var(--uc-sidebar-icon-reverse) !important;
@@ -7054,11 +7051,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   .sync-engine-tabs.sync-engine-image,
   #sidebar-box[sidebarcommand="viewTabsSidebar"] > #sidebar-header > #sidebar-switcher-target > #sidebar-icon,
   #sync-button {
-    list-style-image: url("icons/synced-tabs.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/synced-tabs.svg") !important;
   }
 
   #allTabsMenu_sortTabsButton {
-    list-style-image: url("icons/text-sort-ascending.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/text-sort-ascending.svg") !important;
   }
 
   /** Context Menu - Icons ******************************************************/ /*= tabContextMenu ===========================================================*/
@@ -7079,27 +7076,27 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   
   #context_moveTabToNewGroup,
   #context_moveTabToGroup {
-      --menuitem-icon: url("icons/add-tab-to-group.svg") !important;
+      --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/add-tab-to-group.svg") !important;
   }
   
   #context_moveTabToSavedGroup > .menu-icon {
-    content: url("icons/send-tab-to-group.svg") !important;
+    content: url("chrome://kyberfox/content/themes/skins/gx/icons/send-tab-to-group.svg") !important;
   }
   
   #context_moveTabToSplitView,
   #context_separateSplitView,
   #context-openlinkinsplitview,
   menuitem[command="splitViewCmd_separateTabs"] {
-    --menuitem-icon: url("icons/split-view-horizontal.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/split-view-horizontal.svg") !important;
   }
   
   #context_reverseSplitView,
   menuitem[command="splitViewCmd_reverseTabs"] {
-    --menuitem-icon: url("icons/reverse-tabs-splitview.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/reverse-tabs-splitview.svg") !important;
   }
   
   #context_ungroupSplitView {
-    --menuitem-icon: url("icons/sign-out.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/sign-out.svg") !important;
   }
   
   #context_moveTabToGroupNewGroup>.menu-icon {
@@ -7107,7 +7104,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   #context_ungroupTab {
-    --menuitem-icon: url("icons/close-duplicate-tabs.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/close-duplicate-tabs.svg") !important;
   }
   
   /* Smaller container icons */
@@ -7125,7 +7122,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #tabcenter-reborn_ariasuni-menuitem-_contextMenuReloadTab,
   #sidebartabs_asamuzak_jp-menuitem-_reloadTab,
   #sidebartabs_asamuzak_jp-menuitem-_reloadAllTabs {
-    --menuitem-icon: url("icons/reload.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/reload.svg") !important;
   }
   #context_toggleMuteTab,
   #context_toggleMuteSelectedTabs,
@@ -7144,7 +7141,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   #context_unloadTab {
-    --menuitem-icon: url("icons/unload-tab.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/unload-tab.svg") !important;
   }
   
   #context_pinTab,
@@ -7152,14 +7149,14 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #treestyletab_piro_sakura_ne_jp-menuitem-_context_pinTab,
   #tabcenter-reborn_ariasuni-menuitem-_contextMenuPinTab,
   #sidebartabs_asamuzak_jp-menuitem-_pinTab {
-    --menuitem-icon: url("icons/unpin-tab.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/unpin-tab.svg") !important;
   }
   #context_unpinTab,
   #context_unpinSelectedTabs,
   #treestyletab_piro_sakura_ne_jp-menuitem-_context_unpinTab,
   #tabcenter-reborn_ariasuni-menuitem-_contextMenuPinTab[label="Unpin Tab"],
   #sidebartabs_asamuzak_jp-menuitem-_pinTab[label="Unpin Tab"] {
-    --menuitem-icon: url("icons/unpin-tab.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/unpin-tab.svg") !important;
   }
   #context_duplicateTab,
   #context_duplicateTabs,
@@ -7178,7 +7175,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #treestyletab_piro_sakura_ne_jp-menuitem-_grouped\:bookmarkTree,
   #sidebartabs_asamuzak_jp-menuitem-_bookmarkTab,
   #sidebartabs_asamuzak_jp-menuitem-_bookmarkAllTabs {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
   
   #context_addNote {
@@ -7189,7 +7186,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #treestyletab_piro_sakura_ne_jp-menuitem-_context_moveTab,
   #tabcenter-reborn_ariasuni-menuitem-_contextMenuMoveTab,
   #sidebartabs_asamuzak_jp-menuitem-_moveTab {
-    --menuitem-icon: url("icons/arrow-swap.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/arrow-swap.svg") !important;
   }
   
   #context_moveToStart,
@@ -7212,12 +7209,12 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   
   #context_sendTabToDevice,
   #treestyletab_piro_sakura_ne_jp-menuitem-_context_sendTabsToDevice {
-    --menuitem-icon: url("icons/send-to-device.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/send-to-device.svg") !important;
   }
   #context_sendTabToDevice:is([disabled="true"]) + #context_shareTabURL,
   #context_sendTabToDevice:is([disabled="true"]) + menuitem.share-tab-url-item {
     /* At windows */
-    --menuitem-icon: url("icons/share.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/share.svg") !important;
   }
     
   /*  new-tab-button-popup =====================================================*/  /*  toolbar-context-menu =====================================================*/
@@ -7235,7 +7232,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #context_shareTabURL,
   menuitem.share-tab-url-item {
-    --menuitem-icon: url("icons/share.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/share.svg") !important;
   }
 
   #context_reopenInContainer,
@@ -7243,7 +7240,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #tabcenter-reborn_ariasuni-menuitem-_contextMenuOpenInContextualTab,
   #sidebartabs_asamuzak_jp-menuitem-_openNewTabInContainer,
   #sidebartabs_asamuzak_jp-menuitem-_reopenTabInContainer {
-    --menuitem-icon: url("icons/container-openin-16.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/container-openin-16.svg") !important;
   }
   
   #context_selectAllTabs,
@@ -7271,7 +7268,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #treestyletab_piro_sakura_ne_jp-menuitem-_context_closeMultipleTabs,
   #tabcenter-reborn_ariasuni-menuitem-_contextMenuCloseTabs,
   #sidebartabs_asamuzak_jp-menuitem-_closeMultipleTabs {
-    --menuitem-icon: url("icons/filter-dismiss.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/filter-dismiss.svg") !important;
   }
 
   #context_undoCloseTab,
@@ -7279,12 +7276,12 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #treestyletab_piro_sakura_ne_jp-menuitem-_noContextTab\:context_undoCloseTab,
   #tabcenter-reborn_ariasuni-menuitem-_contextMenuUndoCloseTab,
   #sidebartabs_asamuzak_jp-menuitem-_undoCloseTab {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
   
   #context_toggleVerticalTabs,
   #toolbar-context-toggle-vertical-tabs {
-    --menuitem-icon: url("icons/logo_tree-tabs.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_tree-tabs.svg") !important;
   }
 
   #new-tab-button-popup > menuitem[command="Browser:OpenAboutContainers"],
@@ -7306,7 +7303,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   menuitem.customize-context-reportExtension {
-    --menuitem-icon: url("icons/send.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/send.svg") !important;
   }
   
   #toolbar-context-customize-sidebar>.menu-icon {
@@ -7319,7 +7316,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #toolbar-context-autohide-downloads-button {
     /* checkbox */
-    --menuitem-icon: url("icons/eye-tracking-off.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-tracking-off.svg") !important;
   }
 
   menuitem.customize-context-removeFromToolbar {
@@ -7331,7 +7328,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #toolbar-context-always-open-downloads-panel {
     /* checkbox */
-    --menuitem-icon: url("icons/drawer-arrow-download.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/drawer-arrow-download.svg") !important;
   }
 
   #toolbar-context-openANewTab {
@@ -7340,12 +7337,12 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #toolbar-context-reloadSelectedTab,
   #toolbar-context-reloadSelectedTabs {
-    --menuitem-icon: url("icons/reload.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/reload.svg") !important;
   }
 
   #toolbar-context-bookmarkSelectedTab,
   #toolbar-context-bookmarkSelectedTabs {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #toolbar-context-selectAllTabs {
@@ -7353,17 +7350,17 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #toolbar-context-undoCloseTab {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
 
   #toggle_toolbar-menubar {
     /* checkbox */
-    --menuitem-icon: url("icons/calendar-agenda.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/calendar-agenda.svg") !important;
   }
 
   #toggle_PersonalToolbar {
     /* Also placeContext */
-    --menuitem-icon: url("icons/bookmarks-toolbar-alt.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmarks-toolbar-alt.svg") !important;
   }
 
   /* Needs to keep 'menuitem' in the start of the item name */
@@ -7373,7 +7370,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   .fullscreen-context-autohide {
     /* checkbox */
-    --menuitem-icon: url("icons/eye-tracking-off.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-tracking-off.svg") !important;
   }
 
   #toolbar-context-menu > menuitem[data-l10n-id="full-screen-exit"] {
@@ -7385,10 +7382,10 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #tm-duplicateinWin {
-    --menuitem-icon: url("icons/tab-desktop-multiple-bottom.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-desktop-multiple-bottom.svg") !important;
   }
   #tm-mergeWindowsTab {
-    --menuitem-icon: url("icons/merge.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/merge.svg") !important;
   }
 
   #tm-renameTab {
@@ -7396,23 +7393,23 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #tm-copyTabUrl {
-    --menuitem-icon: url("icons/link.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link.svg") !important;
   }
 
   #tm-autoreloadTab_menu {
-    --menuitem-icon: url("icons/timer10.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/timer10.svg") !important;
   }
 
   #context_reloadTabOptions {
-    --menuitem-icon: url("icons/reload.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/reload.svg") !important;
   }
 
   #context_reloadTabOptions {
-    --menuitem-icon: url("icons/filter-reload.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/filter-reload.svg") !important;
   }
 
   #context_reloadTabOptions + #context_reloadTab {
-    --menuitem-icon: url("icons/blank.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/blank.svg") !important;
   }
 
   #tm-docShell {
@@ -7420,49 +7417,49 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #tm-freezeTab {
-    --menuitem-icon: url("icons/weather-snowflake.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/weather-snowflake.svg") !important;
   }
 
   #tm-protectTab {
-    --menuitem-icon: url("icons/shield-task.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/shield-task.svg") !important;
   }
 
   #tm-lockTab {
-    --menuitem-icon: url("icons/lock-closed.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/lock-closed.svg") !important;
   }
 
   #context_bookmarkAllTabs {
-    --menuitem-icon: url("icons/bookmark-multiple.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-multiple.svg") !important;
   }
 
   #context-viewsource-goToLine {
-    --menuitem-icon: url("icons/text-number-format.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/text-number-format.svg") !important;
   }
 
   #context-viewsource-wrapLongLines {
     /* checkbox */
-    --menuitem-icon: url("icons/arrow-sort-down-lines.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/arrow-sort-down-lines.svg") !important;
   }
 
   #context-viewsource-highlightSyntax {
     /* checkbox */
-    --menuitem-icon: url("icons/highlight.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/highlight.svg") !important;
   }
 
   #spell-no-suggestions {
-    --menuitem-icon: url("icons/text-proofing-tools.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/text-proofing-tools.svg") !important;
   }
 
   #spell-add-to-dictionary {
-    --menuitem-icon: url("icons/book-add.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/book-add.svg") !important;
   }
 
   #spell-undo-add-to-dictionary {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
 
   #context-openlinkincurrent {
-    --menuitem-icon: url("icons/link-square.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link-square.svg") !important;
   }
 
   #context-openlinkincontainertab,
@@ -7471,7 +7468,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-openlinkinusercontext-menu {
-    --menuitem-icon: url("icons/container-openin-16.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/container-openin-16.svg") !important;
   }
 
   #context-openlink {
@@ -7487,35 +7484,35 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-bookmarklink {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #context-savelink {
-    --menuitem-icon: url("icons/toolbarButton-download.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-download.svg") !important;
   }
 
   #context-savelinktopocket {
-    --menuitem-icon: url("icons/pocket-outline.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/pocket-outline.svg") !important;
   }
 
   #context-copyemail {
-    --menuitem-icon: url("icons/mail.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/mail.svg") !important;
   }
 
   #context-copyphone {
-    --menuitem-icon: url("icons/device-phone.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/device-phone.svg") !important;
   }
 
   #context-copylink {
-    --menuitem-icon: url("icons/link.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link.svg") !important;
   }
 
   #context-stripOnShareLink {
-    --menuitem-icon: url("icons/link-no-tracking.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link-no-tracking.svg") !important;
   }
 
   #context-sendlinktodevice {
-    --menuitem-icon: url("icons/send-to-device.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/send-to-device.svg") !important;
   }
 
   #context-media-play {
@@ -7535,12 +7532,12 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-media-playbackrate {
-    --menuitem-icon: url("icons/time-picker.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/time-picker.svg") !important;
   }
 
   #context-media-loop {
     /* checkbox */
-    --menuitem-icon: url("icons/arrow-repeat-all.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/arrow-repeat-all.svg") !important;
   }
 
   #context-leave-dom-fullscreen {
@@ -7552,15 +7549,15 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-media-hidecontrols {
-    --menuitem-icon: url("icons/eye-hide.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-hide.svg") !important;
   }
 
   #context-media-showcontrols {
-    --menuitem-icon: url("icons/eye-show.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-show.svg") !important;
   }
 
   #context-viewvideo {
-    --menuitem-icon: url("icons/video.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/video.svg") !important;
   }
 
   #context-video-pictureinpicture {
@@ -7569,23 +7566,23 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-reloadimage {
-    --menuitem-icon: url("icons/image-arrow-counterclockwise.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/image-arrow-counterclockwise.svg") !important;
   }
 
   #context-viewimage {
-    --menuitem-icon: url("icons/image-add.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/image-add.svg") !important;
   }
 
   #context-saveimage {
-    --menuitem-icon: url("icons/image.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/image.svg") !important;
   }
 
   #context-video-saveimage {
-    --menuitem-icon: url("icons/video-snapshot.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/video-snapshot.svg") !important;
   }
 
   #context-savevideo {
-    --menuitem-icon: url("icons/video.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/video.svg") !important;
   }
 
   #context-saveaudio {
@@ -7593,19 +7590,19 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-copyimage-contents {
-    --menuitem-icon: url("icons/image-copy.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/image-copy.svg") !important;
   }
 
   #context-copyimage,
   #context-copyvideourl,
   #context-copyaudiourl {
-    --menuitem-icon: url("icons/link.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link.svg") !important;
   }
 
   #context-sendimage,
   #context-sendvideo,
   #context-sendaudio {
-    --menuitem-icon: url("icons/mail.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/mail.svg") !important;
   }
 
   #context-viewimageinfo {
@@ -7613,11 +7610,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-viewimagedesc {
-    --menuitem-icon: url("icons/image-alt-text.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/image-alt-text.svg") !important;
   }
 
   #context-setDesktopBackground {
-    --menuitem-icon: url("icons/resize-image.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/resize-image.svg") !important;
   }
 
   #context-ctp-play {
@@ -7629,19 +7626,19 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-savepage {
-    --menuitem-icon: url("icons/toolbarButton-download.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-download.svg") !important;
   }
 
   #context-pocket {
-    --menuitem-icon: url("icons/pocket-outline.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/pocket-outline.svg") !important;
   }
 
   #context-sendpagetodevice {
-    --menuitem-icon: url("icons/send-to-device.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/send-to-device.svg") !important;
   }
 
   #fill-login {
-    --menuitem-icon: url("icons/password.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/password.svg") !important;
   }
 
   #fill-login-generated-password {
@@ -7649,36 +7646,36 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #use-relay-mask {
-    --menuitem-icon: url("icons/relay-logo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/relay-logo.svg") !important;
   }
 
   #manage-saved-logins {
-    --menuitem-icon: url("icons/key-multiple.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/key-multiple.svg") !important;
   }
 
   #context-undo,
   #context-pdfjs-undo {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
 
   #context-redo,
   #context-pdfjs-redo {
-    --menuitem-icon: url("icons/redo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/redo.svg") !important;
   }
 
   #context-cut,
   #context-pdfjs-cut {
-    --menuitem-icon: url("icons/edit-cut.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-cut.svg") !important;
   }
 
   #context-copy,
   #context-pdfjs-copy {
-    --menuitem-icon: url("icons/edit-copy.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-copy.svg") !important;
   }
 
   #context-paste,
   #context-pdfjs-paste {
-    --menuitem-icon: url("icons/edit-paste.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste.svg") !important;
   }
 
   #context-delete,
@@ -7688,11 +7685,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #context-selectall,
   #context-pdfjs-selectall {
-    --menuitem-icon: url("icons/select-all-on.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/select-all-on.svg") !important;
   }
 
   #context-reveal-password {
-    --menuitem-icon: url("icons/eye-show.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-show.svg") !important;
   }
 
   #context-print-selection {
@@ -7700,15 +7697,15 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   #context-copy-link-to-highlight {
-    --menuitem-icon: url("icons/copy-link-to-highlight.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/copy-link-to-highlight.svg") !important;
   }
   
   #context-copy-clean-link-to-highlight {
-    --menuitem-icon: url("icons/copy-clean-link-to-highlight.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/copy-clean-link-to-highlight.svg") !important;
   }
 
   #context-take-screenshot {
-    --menuitem-icon: url("icons/screenshot-1.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/screenshot-1.svg") !important;
   }
   
   #context-add-engine {
@@ -7735,41 +7732,41 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   menuitem[data-l10n-id="genai-menu-choose-chatbot"] {
-    --menuitem-icon: url("icons/choose.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/choose.svg") !important;
   }
 
   /* ChatGPT */
   [data-l10n-args*='ChatGPT'],
   menuitem[data-l10n-args*='ChatGPT'] {
-    --menuitem-icon: url("icons/logo_chatGPT.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_chatgpt.svg") !important;
     --menuitem-icon: url("chrome://browser/content/genai/assets/brands/chatgpt.svg") !important; !important;
   }
 
   /* Anthropic Claude */
   [data-l10n-args*='Anthropic'],
   menuitem[data-l10n-args*='Anthropic'] {
-    --menuitem-icon: url("icons/logo_anthropic-claude.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_anthropic-claude.svg") !important;
     --menuitem-icon: url("chrome://browser/content/genai/assets/brands/claude.svg") !important; !important;
   }
 
   /* Google Gemini */
   [data-l10n-args*='Google'],
   menuitem[data-l10n-args*='Google'] {
-    --menuitem-icon: url("icons/logo_google-gemini.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_google-gemini.svg") !important;
     --menuitem-icon: url("chrome://browser/content/genai/assets/brands/gemini.svg") !important; !important;
   }
 
   /* Google HuggingChat */
   [data-l10n-args*='HuggingChat'],
   menuitem[data-l10n-args*='HuggingChat'] {
-    --menuitem-icon: url("icons/logo_hugging-chat.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_hugging-chat.svg") !important;
     --menuitem-icon: url("chrome://browser/content/genai/assets/brands/huggingchat.svg") !important; !important;
   }
 
   /* Google Mistral */
   [data-l10n-args*='Mistral'],
   menuitem[data-l10n-args*='Mistral'] {
-    --menuitem-icon: url("icons/logo_mistral.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_mistral.svg") !important;
     --menuitem-icon: url("chrome://browser/content/genai/assets/brands/lechat.svg") !important; !important;
   }
 
@@ -7784,7 +7781,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-keywordfield {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #context-searchselect,
@@ -7793,46 +7790,46 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   #context-translate-selection {
-    --menuitem-icon: url("icons/translations.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/translations.svg") !important;
   }
 
   #frame {
-    --menuitem-icon: url("icons/command-frames.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/command-frames.svg") !important;
   }
 
   #spell-check-enabled {
     /* checkbox */
-    --menuitem-icon: url("icons/text-proofing-tools.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/text-proofing-tools.svg") !important;
   }
 
   #spell-add-dictionaries-main,
   #spell-add-dictionaries{
-    --menuitem-icon: url("icons/book-add.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/book-add.svg") !important;
   }
 
   #spell-dictionaries {
-    --menuitem-icon: url("icons/book.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/book.svg") !important;
   }
 
   #context-bidi-text-direction-toggle {
-    --menuitem-icon: url("icons/text-direction-horizontal-ltr.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/text-direction-horizontal-ltr.svg") !important;
   }
 
   #context-bidi-page-direction-toggle {
-    --menuitem-icon: url("icons/document-landscape-split-hint.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/document-landscape-split-hint.svg") !important;
   }
 
   #context-viewpartialsource-selection,
   #context-viewsource {
-    --menuitem-icon: url("icons/document-search.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/document-search.svg") !important;
   }
 
   #context-inspect-a11y {
-    --menuitem-icon: url("icons/tool-accessibility.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tool-accessibility.svg") !important;
   }
 
   #context-inspect {
-    --menuitem-icon: url("icons/command-pick.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/command-pick.svg") !important;
   }
   
   /* 'Side view' extension */
@@ -7847,7 +7844,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
         content: '' !important;
         width:16px !important;
         height:16px !important;
-        background: url("icons/logo_side-view.svg") !important;
+        background: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_side-view.svg") !important;
         background-size: 16px 16px !important;
         border-radius: 4px !important;
         -moz-context-properties: fill !important;
@@ -7863,7 +7860,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   #context-reload {
-    --menuitem-icon: url("icons/reload.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/reload.svg") !important;
   }
   
   #context-stop {
@@ -7871,11 +7868,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   #context-bookmarkpage {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #context-showonlythisframe {
-    --menuitem-icon: url("icons/eye-show.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-show.svg") !important;
   }
 
   #context-openframeintab {
@@ -7887,15 +7884,15 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-reloadframe {
-    --menuitem-icon: url("icons/reload.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/reload.svg") !important;
   }
 
   #context-bookmarkframe {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #context-saveframe {
-    --menuitem-icon: url("icons/toolbarButton-download.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-download.svg") !important;
   }
 
   #context-printframe {
@@ -7903,11 +7900,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #context-take-frame-screenshot {
-    --menuitem-icon: url("icons/screenshot-1.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/screenshot-1.svg") !important;
   }
 
   #context-viewframesource {
-    --menuitem-icon: url("icons/document-search.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/document-search.svg") !important;
   }
 
   #context-viewframeinfo {
@@ -7915,7 +7912,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #tm-autoreload_menu {
-    --menuitem-icon: url("icons/timer10.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/timer10.svg") !important;
   }
 
   #tm-linkWithhistory {
@@ -7931,7 +7928,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #tm-content-closetab {
-    --menuitem-icon: url("icons/dismiss-filled.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/dismiss-filled.svg") !important;
   }
 
   #tm-duplicateTabContext {
@@ -7939,31 +7936,31 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #tm-duplicateinWinContext {
-    --menuitem-icon: url("icons/tab-desktop-multiple-bottom.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-desktop-multiple-bottom.svg") !important;
   }
 
   #tm-detachTabContext {
-    --menuitem-icon: url("icons/convert-range.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/convert-range.svg") !important;
   }
 
   #tm-mergeWindows {
-    --menuitem-icon: url("icons/merge.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/merge.svg") !important;
   }
 
   #tm-content-freezeTab {
-    --menuitem-icon: url("icons/weather-snowflake.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/weather-snowflake.svg") !important;
   }
 
   #tm-content-protectTab {
-    --menuitem-icon: url("icons/shield-task.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/shield-task.svg") !important;
   }
 
   #tm-content-lockTab {
-    --menuitem-icon: url("icons/lock-closed.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/lock-closed.svg") !important;
   }
 
   #tm-content-undoCloseTab {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
 
   .downloadPauseMenuItem {
@@ -7975,21 +7972,21 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   .downloadUnblockMenuItem {
-    --menuitem-icon: url("icons/checkmark-circle.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/checkmark-circle.svg") !important;
   }
 
   .downloadUseSystemDefaultMenuItem {
-    --menuitem-icon: url("icons/toolbarButton-upload.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-upload.svg") !important;
   }
 
   .downloadAlwaysUseSystemDefaultMenuItem {
     /* checkbox */
-    --menuitem-icon: url("icons/folder-globe.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/folder-globe.svg") !important;
   }
 
   .downloadAlwaysOpenSimilarFilesMenuItem {
     /* checkbox */
-    --menuitem-icon: url("icons/fluid.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/fluid.svg") !important;
   }
 
   .downloadShowMenuItem {
@@ -7998,11 +7995,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #downloadsContextMenu > menuitem.downloadOpenReferrerMenuItem,
   #downloadsContextMenu > menuitem[command="downloadsCmd_openReferrer"] {
-    --menuitem-icon: url("icons/link-square.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link-square.svg") !important;
   }
   #downloadsContextMenu > menuitem.downloadCopyLocationMenuItem,
   #downloadsContextMenu > menuitem[command="downloadsCmd_copyLocation"] {
-    --menuitem-icon: url("icons/link.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link.svg") !important;
   }
 
   .downloadDeleteFileMenuItem {
@@ -8010,21 +8007,21 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   .downloadRemoveFromHistoryMenuItem {
-    --menuitem-icon: url("icons/eraser.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eraser.svg") !important;
   }
 
   #downloadsContextMenu > menuitem[command="downloadsCmd_clearList"],
   #downloadsContextMenu > menuitem[command="downloadsCmd_clearDownloads"] {
-    --menuitem-icon: url("icons/broom.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/broom.svg") !important;
   }
 
   #placesContext_open {
-    --menuitem-icon: url("icons/link-square.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link-square.svg") !important;
   }
 
   #placesContext_openBookmarkContainer\:tabs,
   #placesContext_openBookmarkLinks\:tabs {
-    --menuitem-icon: url("icons/movetowindow-16.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/movetowindow-16.svg") !important;
   }
 
   #placesContext_open\:newtab,
@@ -8034,7 +8031,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #placesContext_open\:newcontainertab {
-    --menuitem-icon: url("icons/container-openin-16.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/container-openin-16.svg") !important;
   }
 
   #placesContext_open\:newwindow {
@@ -8059,27 +8056,27 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #placesContext_deleteHost {
-    --menuitem-icon: url("icons/eye-hide.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-hide.svg") !important;
   }
 
   #placesContext_sortBy\:name {
-    --menuitem-icon: url("icons/text-sort-ascending.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/text-sort-ascending.svg") !important;
   }
 
   #placesContext_cut {
-    --menuitem-icon: url("icons/edit-cut.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-cut.svg") !important;
   }
 
   #placesContext_copy {
-    --menuitem-icon: url("icons/edit-copy.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-copy.svg") !important;
   }
 
   #placesContext_paste_group {
-    --menuitem-icon: url("icons/edit-paste.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste.svg") !important;
   }
 
   #placesContext_new\:bookmark {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #placesContext_showInFolder,
@@ -8088,20 +8085,20 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #placesContext_new\:separator {
-    --menuitem-icon: url("icons/vertical-line.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/vertical-line.svg") !important;
   }
 
   #placesContext_paste {
-    --menuitem-icon: url("icons/edit-paste.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste.svg") !important;
   }
 
   #placesContext_createBookmark {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #show-other-bookmarks_PersonalToolbar {
     /* checkbox */
-    --menuitem-icon: url("icons/star-line-horizontal.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/star-line-horizontal.svg") !important;
   }
 
   #placesContext_showAllBookmarks {
@@ -8109,7 +8106,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   menuitem.openintabs-menuitem {
-    --menuitem-icon: url("icons/movetowindow-16.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/movetowindow-16.svg") !important;
   }
 
   #doNotDisturbMenuItem {
@@ -8139,12 +8136,12 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   menuitem[data-l10n-id="popup-show-popup-menuitem"] {
     /* checkbox */
-    --menuitem-icon: url("icons/eye-show.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-show.svg") !important;
   }
 
   #autohide-context > menuitem[data-l10n-id="full-screen-autohide"] {
     /* checkbox */
-    --menuitem-icon: url("icons/eye-tracking-off.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-tracking-off.svg") !important;
   }
 
   #autohide-context > menuitem[data-l10n-id="full-screen-exit"] {
@@ -8152,7 +8149,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #pictureInPictureToggleContextMenu > menuitem[oncommand="PictureInPicture.hideToggle();"] {
-    --menuitem-icon: url("icons/eye-hide.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-hide.svg") !important;
   }
 
   .pageActionContextMenuItem.extensionPinned.extensionUnpinned.manageExtensionItem {
@@ -8163,7 +8160,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #customizationPanelItemContextMenuUnpin {
-    --menuitem-icon: url("icons/unpin-tab.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/unpin-tab.svg") !important;
   }
 
   menuitem.customize-context-removeFromPanel {
@@ -8184,11 +8181,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #downloads-button-autohide-checkbox {
     /* checkbox */
-    --menuitem-icon: url("icons/eye-tracking-off.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-tracking-off.svg") !important;
   }
 
   #syncedTabsOpenSelected {
-    --menuitem-icon: url("icons/link-square.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link-square.svg") !important;
   }
 
   #syncedTabsOpenSelectedInTab {
@@ -8204,15 +8201,15 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #syncedTabsBookmarkSelected {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #syncedTabsCopySelected {
-    --menuitem-icon: url("icons/link.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link.svg") !important;
   }
 
   #syncedTabsOpenAllInTabs {
-    --menuitem-icon: url("icons/movetowindow-16.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/movetowindow-16.svg") !important;
   }
 
   #syncedTabsManageDevices {
@@ -8224,19 +8221,19 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #SyncedTabsSidebarTabsFilterContext > menuitem[cmd="cmd_undo"] {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
 
   #SyncedTabsSidebarTabsFilterContext > menuitem[cmd="cmd_cut"] {
-    --menuitem-icon: url("icons/edit-cut.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-cut.svg") !important;
   }
 
   #SyncedTabsSidebarTabsFilterContext > menuitem[cmd="cmd_copy"] {
-    --menuitem-icon: url("icons/edit-copy.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-copy.svg") !important;
   }
 
   #SyncedTabsSidebarTabsFilterContext > menuitem[cmd="cmd_paste"] {
-    --menuitem-icon: url("icons/edit-paste.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste.svg") !important;
   }
 
   #SyncedTabsSidebarTabsFilterContext > menuitem[cmd="cmd_delete"] {
@@ -8244,7 +8241,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #SyncedTabsSidebarTabsFilterContext > menuitem[cmd="cmd_selectAll"] {
-    --menuitem-icon: url("icons/select-all-on.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/select-all-on.svg") !important;
   }
 
   #syncedTabsRefreshFilter {
@@ -8252,31 +8249,31 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #urlbar-input-container .textbox-contextmenu menuitem[cmd="cmd_undo"] {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
 
   #urlbar-input-container .textbox-contextmenu menuitem[cmd="cmd_redo"] {
-    --menuitem-icon: url("icons/redo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/redo.svg") !important;
   }
 
   #urlbar-input-container .textbox-contextmenu menuitem[cmd="cmd_cut"] {
-    --menuitem-icon: url("icons/edit-cut.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-cut.svg") !important;
   }
 
   #urlbar-input-container .textbox-contextmenu menuitem[cmd="cmd_copy"] {
-    --menuitem-icon: url("icons/edit-copy.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-copy.svg") !important;
   }
 
   #strip-on-share {
-    --menuitem-icon: url("icons/link-no-tracking.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/link-no-tracking.svg") !important;
   }
 
   #urlbar-input-container .textbox-contextmenu menuitem[cmd="cmd_paste"] {
-    --menuitem-icon: url("icons/edit-paste.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste.svg") !important;
   }
 
   #paste-and-go {
-    --menuitem-icon: url("icons/edit-paste-go.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste-go.svg") !important;
   }
 
   #urlbar-input-container .textbox-contextmenu menuitem[cmd="cmd_delete"] {
@@ -8284,27 +8281,27 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #urlbar-input-container .textbox-contextmenu menuitem[cmd="cmd_selectAll"] {
-    --menuitem-icon: url("icons/select-all-on.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/select-all-on.svg") !important;
   }
 
   .textbox-contextmenu > menuitem[data-l10n-id="text-action-undo"] {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
 
   .textbox-contextmenu > menuitem[data-l10n-id="text-action-redo"] {
-    --menuitem-icon: url("icons/redo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/redo.svg") !important;
   }
 
   .textbox-contextmenu > menuitem[data-l10n-id="text-action-cut"] {
-    --menuitem-icon: url("icons/edit-cut.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-cut.svg") !important;
   }
 
   .textbox-contextmenu > menuitem[data-l10n-id="text-action-copy"] {
-    --menuitem-icon: url("icons/edit-copy.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-copy.svg") !important;
   }
 
   .textbox-contextmenu > menuitem[data-l10n-id="text-action-paste"] {
-    --menuitem-icon: url("icons/edit-paste.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste.svg") !important;
   }
 
   .textbox-contextmenu > menuitem[data-l10n-id="text-action-delete"] {
@@ -8312,7 +8309,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   .textbox-contextmenu > menuitem[data-l10n-id="text-action-select-all"] {
-    --menuitem-icon: url("icons/select-all-on.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/select-all-on.svg") !important;
   }
 
   menuitem[anonid="clear-search-history"],
@@ -8322,32 +8319,32 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   menuitem.searchbar-paste-and-search {
-    --menuitem-icon: url("icons/edit-paste-search.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste-search.svg") !important;
   }
 }
 
 @media not -moz-pref("firefoxgx.icon.disabled") {
   
   menuitem.searchbar-clear-history {
-    --menuitem-icon: url("icons/forget.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/forget.svg") !important;
   }  
   .sync-menuitem.sendtab-target[clientType="phone"] {
-    --menuitem-icon: url("icons/device-phone.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/device-phone.svg") !important;
   }
   .sync-menuitem.sendtab-target[clientType="tablet"] {
-    --menuitem-icon: url("icons/device-tablet.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/device-tablet.svg") !important;
   }
   .sync-menuitem.sendtab-target[clientType="desktop"] {
-    --menuitem-icon: url("icons/device-desktop.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/device-desktop.svg") !important;
   }
   .sync-menuitem.sendtab-target[clientType="tv"] {
-    --menuitem-icon: url("icons/device-tv.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/device-tv.svg") !important;
   }
   .sync-menuitem.sendtab-target[clientType="vr"] {
-    --menuitem-icon: url("icons/device-vr.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/device-vr.svg") !important;
   }
   .sync-menuitem.sendtab-target[clientType=""] {
-    --menuitem-icon: url("icons/send-to-device.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/send-to-device.svg") !important;
   }
   .sync-menuitem.sendtab-target:not([clientType]) {
     --menuitem-icon: url("chrome://global/skin/icons/settings.svg") !important;
@@ -8378,7 +8375,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   menuitem.unified-extensions-context-menu-report-extension {
-    --menuitem-icon: url("icons/send.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/send.svg") !important;
   }
 
   menuitem.urlbarView-result-menuitem[data-command="dismiss"] {
@@ -8390,22 +8387,22 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   
   /*= main-menubar =============================================================*/
   #file-menu>.menu-icon {
-    --menuitem-icon: url("icons/mail-inbox-all.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/mail-inbox-all.svg") !important;
   }
   #edit-menu {
     --menuitem-icon: url("chrome://global/skin/icons/edit.svg") !important;
   }
   #view-menu {
-    --menuitem-icon: url("icons/content-view.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/content-view.svg") !important;
   }
   #history-menu {
     --menuitem-icon: url("chrome://browser/skin/history.svg") !important;
   }
   #bookmarksMenu {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
   #tools-menu {
-    --menuitem-icon: url("icons/toolbox.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbox.svg") !important;
   }
   #helpMenu {
     --menuitem-icon: url("chrome://global/skin/icons/help.svg") !important;
@@ -8417,7 +8414,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
     --menuitem-icon: var(--uc-new-tab-icon) !important;
   }
   #menu_newUserContext {
-    --menuitem-icon: url("icons/container-openin-16.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/container-openin-16.svg") !important;
   }
   #menu_newNavigator {
     --menuitem-icon: url("chrome://browser/skin/window.svg") !important;
@@ -8426,22 +8423,22 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
     --menuitem-icon: url("chrome://browser/skin/privateBrowsing.svg") !important;
   }
   #menu_openFile {
-    --menuitem-icon: url("icons/toolbarButton-upload.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-upload.svg") !important;
   }
   #menu_closeWindow {
-    --menuitem-icon: url("icons/close-duplicate-tabs.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/close-duplicate-tabs.svg") !important;
   }
   #menu_savePage {
-    --menuitem-icon: url("icons/toolbarButton-download.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-download.svg") !important;
   }
   #menu_sendLink {
-    --menuitem-icon: url("icons/mail.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/mail.svg") !important;
   }
   menu.share-tab-url-item {
     --menuitem-icon: url("chrome://browser/skin/share.svg") !important;
   }
   menuitem.share-windows-item {
-    --menuitem-icon: url("icons/more-options.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/more-options.svg") !important;
   }
   #menu_print {
     --menuitem-icon: url("chrome://global/skin/icons/print.svg") !important;
@@ -8451,10 +8448,10 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   #goOfflineMenuitem {
     /* checkbox */
-    --menuitem-icon: url("icons/plug-disconnected.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/plug-disconnected.svg") !important;
   }
   #menu_FileQuitItem {
-    --menuitem-icon: url("icons/quit.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/quit.svg") !important;
   }
   /* Mange Containers */
   #menu_newUserContext menupopup menuitem:last-child {
@@ -8462,7 +8459,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   /*= menu_EditPopup ===========================================================*/
   #menu_undo {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
   /*= menu_viewPopup ===========================================================*/
   /* view-menu-popup sub menu */
@@ -8477,19 +8474,19 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   /*= menu_HelpPopup ===========================================================*/
   
   #menu_redo {
-    --menuitem-icon: url("icons/redo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/redo.svg") !important;
   }
 
   #menu_cut {
-    --menuitem-icon: url("icons/edit-cut.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-cut.svg") !important;
   }
 
   #menu_copy {
-    --menuitem-icon: url("icons/edit-copy.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-copy.svg") !important;
   }
 
   #menu_paste {
-    --menuitem-icon: url("icons/edit-paste.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste.svg") !important;
   }
 
   #menu_delete {
@@ -8497,7 +8494,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #menu_selectAll {
-    --menuitem-icon: url("icons/select-all-on.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/select-all-on.svg") !important;
   }
 
   #menu_find {
@@ -8505,7 +8502,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   #menu_findAgain {
-    --menuitem-icon: url("icons/find-again.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/find-again.svg") !important;
   }
 
   #menu_preferences {
@@ -8513,7 +8510,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #viewToolbarsMenu {
-    --menuitem-icon: url("icons/toolbar.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbar.svg") !important;
   }
 
   #viewSidebarMenuMenu {
@@ -8521,15 +8518,15 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #viewFullZoomMenu {
-    --menuitem-icon: url("icons/screenshot.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/screenshot.svg") !important;
   }
 
   #pageStyleMenu {
-    --menuitem-icon: url("icons/document-css.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/document-css.svg") !important;
   }
 
   #repair-text-encoding {
-    --menuitem-icon: url("icons/characterEncoding.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/characterEncoding.svg") !important;
   }
 
   #enterFullScreenItem {
@@ -8555,7 +8552,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #documentDirection-swap {
-    --menuitem-icon: url("icons/text-direction-horizontal-ltr.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/text-direction-horizontal-ltr.svg") !important;
   }
 
   #menu_customizeToolbars {
@@ -8563,7 +8560,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #menu_bookmarksSidebar {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #menu_historySidebar {
@@ -8571,7 +8568,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #menu_tabsSidebar {
-    --menuitem-icon: url("icons/synced-tabs.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/synced-tabs.svg") !important;
   }
 
   #menu_zoomEnlarge {
@@ -8589,11 +8586,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #menu_zoomReset {
-    --menuitem-icon: url("icons/resize.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/resize.svg") !important;
   }
 
   #toggle_zoom {
-    --menuitem-icon: url("icons/screenshot.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/screenshot.svg") !important;
   }
 
   #menu_showAllHistory {
@@ -8601,7 +8598,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #sanitizeItem {
-    --menuitem-icon: url("icons/forget.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/forget.svg") !important;
   }
 
   #sync-tabs-menuitem {
@@ -8609,11 +8606,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #historyRestoreLastSession {
-    --menuitem-icon: url("icons/restore-session.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/restore-session.svg") !important;
   }
 
   #hiddenTabsMenu {
-    --menuitem-icon: url("icons/eye-hide.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/eye-hide.svg") !important;
   }
 
   #menu_searchHistory {
@@ -8629,11 +8626,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #historyUndoPopup .restoreallitem {
-    --menuitem-icon: url("icons/movetowindow-16.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/movetowindow-16.svg") !important;
   }
 
   #historyUndoWindowPopup .restoreallitem {
-    --menuitem-icon: url("icons/restore-session.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/restore-session.svg") !important;
   }
 
   #bookmarksShowAll {
@@ -8646,7 +8643,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #menu_bookmarkThisPage[data-l10n-id="menu-bookmark-edit"] {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
 
   #menu_searchBookmarks {
@@ -8670,7 +8667,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #menu_openFirefoxView {
-    --menuitem-icon: url("icons/firefoxview-open.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/firefoxview-open.svg") !important;
   }
   
   #menu_editPDF {
@@ -8679,50 +8676,50 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   #webDeveloperMenu,
   #browserToolsMenu {
-    --menuitem-icon: url("icons/developer.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/developer.svg") !important;
   }
 
   #menu_pageInfo {
-    --menuitem-icon: url("icons/document-endnote.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/document-endnote.svg") !important;
   }
 
   #menu_devToolbox {
     /* checkbox */
-    --menuitem-icon: url("icons/developer.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/developer.svg") !important;
   }
 
   #menu_taskManager {
-    --menuitem-icon: url("icons/performance.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/performance.svg") !important;
   }
 
   #menu_devtools_remotedebugging {
-    --menuitem-icon: url("icons/bug.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bug.svg") !important;
   }
 
   #menu_browserToolbox {
-    --menuitem-icon: url("icons/window-dev-tools.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/window-dev-tools.svg") !important;
   }
 
   #menu_browserContentToolbox {
-    --menuitem-icon: url("icons/command-frames.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/command-frames.svg") !important;
   }
 
   #menu_browserConsole {
-    --menuitem-icon: url("icons/command-console.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/command-console.svg") !important;
   }
 
   #menu_responsiveUI {
     /* checkbox */
-    --menuitem-icon: url("icons/command-responsivemode.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/command-responsivemode.svg") !important;
   }
 
   #menu_eyedropper {
     /* checkbox */
-    --menuitem-icon: url("icons/command-eyedropper.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/command-eyedropper.svg") !important;
   }
 
   #menu_pageSource {
-    --menuitem-icon: url("icons/document-search.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/document-search.svg") !important;
   }
 
   #extensionsForDevelopers {
@@ -8730,10 +8727,10 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #windowPopup > menuitem[command="minimizeWindow"] {
-    --menuitem-icon: url("icons/arrow-between-down.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/arrow-between-down.svg") !important;
   }
   #windowPopup > menuitem[command="zoomWindow"] {
-    --menuitem-icon: url("icons/auto-fit-width.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/auto-fit-width.svg") !important;
   }
 
   #menu_openHelp {
@@ -8745,7 +8742,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #feedbackPage {
-    --menuitem-icon: url("icons/send.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/send.svg") !important;
   }
 
   #helpSafeMode {
@@ -8765,11 +8762,11 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #menu_HelpPopup_reportPhishingErrortoolmenu {
-    --menuitem-icon: url("icons/checkmark-circle.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/checkmark-circle.svg") !important;
   }
 
   #helpSwitchDevice {
-    --menuitem-icon: url("icons/add-device.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/add-device.svg") !important;
   }
 
   #aboutName {
@@ -8779,34 +8776,34 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   /*= organizeButtonPopup ======================================================*/
   #newbookmark {
-    --menuitem-icon: url("icons/bookmark-empty.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/bookmark-empty.svg") !important;
   }
   #newfolder {
     --menuitem-icon: var(--uc-folder-icon) !important;
   }
   #newseparator {
-    --menuitem-icon: url("icons/vertical-line.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/vertical-line.svg") !important;
   }
   #orgUndo {
-    --menuitem-icon: url("icons/undo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/undo.svg") !important;
   }
   /*= viewMenuPopup ============================================================*/
   /*= maintenanceButtonPopup ===================================================*/
 
   #orgRedo {
-    --menuitem-icon: url("icons/redo.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/redo.svg") !important;
   }
 
   #orgCut {
-    --menuitem-icon: url("icons/edit-cut.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-cut.svg") !important;
   }
 
   #orgCopy {
-    --menuitem-icon: url("icons/edit-copy.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-copy.svg") !important;
   }
 
   #orgPaste {
-    --menuitem-icon: url("icons/edit-paste.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-paste.svg") !important;
   }
 
   #orgDelete {
@@ -8815,7 +8812,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
 
   
   #orgSelectAll {
-    --menuitem-icon: url("icons/select-all-on.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/select-all-on.svg") !important;
   }
 
   #orgClose {
@@ -8827,24 +8824,24 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #viewSort {
-    --menuitem-icon: url("icons/text-sort-ascending.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/text-sort-ascending.svg") !important;
   }
 
   #backupBookmarks {
-    --menuitem-icon: url("icons/datastore.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/datastore.svg") !important;
   }
 
 
   #fileRestoreMenu {
-    --menuitem-icon: url("icons/datarestore.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/datarestore.svg") !important;
   }
 
   #fileImport {
-    --menuitem-icon: url("icons/toolbarButton-download.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-download.svg") !important;
   }
 
   #fileExport {
-    --menuitem-icon: url("icons/toolbarButton-upload.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/toolbarButton-upload.svg") !important;
   }
 
   #browserImport {
@@ -8852,17 +8849,17 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #appMenu-restart-button {
-    list-style-image: url("icons/refresh-cw.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/refresh-cw.svg") !important;
   }
   
   #menu_FileRestartItem {
-    --menuitem-icon: url("icons/refresh-cw.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/refresh-cw.svg") !important;
   }
   #toggle_status-dummybar {
-    --menuitem-icon: url("icons/pulse-square.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/pulse-square.svg") !important;
   }
   menuitem.privatetab-icon {
-    --menuitem-icon: url("icons/private-favicon.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/private-favicon.svg") !important;
   }
   
   #appMenuNewIdentity {
@@ -8886,36 +8883,36 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #ssbPageAction-image {
-    list-style-image: url("icons/pwa-install.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/pwa-install.svg") !important;
   }
   #ssbPageAction-image[open-ssb="true"] {
-    list-style-image: url("icons/pwa-launch.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/pwa-launch.svg") !important;
   }
 
   #rebootappmenu {
-    list-style-image: url("icons/refresh-cw.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/refresh-cw.svg") !important;
   }
   #openprofiledir {
     list-style-image: var(--uc-folder-icon) !important;
   }
   #appMenu-ssb-button {
-    list-style-image: url("icons/pwa-manage.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/pwa-manage.svg") !important;
   }
   #appMenu-install-or-open-ssb-current-page-button {
-    list-style-image: url("icons/pwa-install.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/pwa-install.svg") !important;
   }
   #appMenu-install-or-open-ssb-current-page-button[open-ssb="true"] {
-    list-style-image: url("icons/pwa-launch.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/pwa-launch.svg") !important;
   }
 
   #toggle_sharemode {
     --menuitem-icon: url("chrome://branding/content/about-logo-private.png") !important;
   }
   #usercssloader-menu {
-    --menuitem-icon: url("icons/developer.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/developer.svg") !important;
   }
   #usercssloader-menupopup > menu[data-l10n-id="css-menu"] {
-    --menuitem-icon: url("icons/document-css.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/document-css.svg") !important;
   }
   #usercssloader-submenupopup > menuitem[data-l10n-id="rebuild-css"] {
     --menuitem-icon: url("chrome://global/skin/icons/reload.svg") !important;
@@ -8934,10 +8931,10 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   #context_toggleToPrivateContainer,
   #open_in_private_container {
-    --menuitem-icon: url("icons/private-favicon.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/private-favicon.svg") !important;
   }
   #toggle_statusBar {
-    --menuitem-icon: url("icons/pulse-square.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/pulse-square.svg") !important;
   }
   #muteMenu {
     --menuitem-icon: url("chrome://global/skin/media/audio-muted.svg") !important;
@@ -8947,34 +8944,34 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
     --menuitem-icon: var(--uc-tab-unload-icon) !important;
   }
   #changeUAWebpanelMenu {
-    --menuitem-icon: url("icons/command-responsivemode.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/command-responsivemode.svg") !important;
     fill-opacity: 0;
   }
   #deleteWebpanelMenu {
     --menuitem-icon: url("chrome://global/skin/icons/delete.svg") !important;
   }
   #run-ssb-contextmenu {
-    --menuitem-icon: url("icons/pwa-launch.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/pwa-launch.svg") !important;
   }
   #uninstall-ssb-contextmenu {
-    --menuitem-icon: url("icons/pwa-remove.svg") !important;
+    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/pwa-remove.svg") !important;
   }
   /* Tabs group context-menu */  
   #tabGroupEditor_addNewTabInGroup {
-    list-style-image: url("icons/new-tab.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/new-tab.svg") !important;
   }  
   #tabGroupEditor_moveGroupToNewWindow {
-      list-style-image: url("icons/arrow-swap.svg") !important;
+      list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/arrow-swap.svg") !important;
   }  
   #tabGroupEditor_saveAndCloseGroup {
-    list-style-image: url("icons/save-group.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/save-group.svg") !important;
   }  
   #tabGroupEditor_copyAllLinks {
-    list-style-image: url("icons/link.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/link.svg") !important;
   }
   
   #tabGroupEditor_ungroupTabs {
-    list-style-image: url("icons/ungroup-tabs.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/ungroup-tabs.svg") !important;
   }  
   #tabGroupEditor_deleteGroup {
     list-style-image: url("chrome://global/skin/icons/delete.svg") !important;
@@ -9001,7 +8998,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
   
   #profiles-copy-profile-button {
-    list-style-image: url("icons/edit-copy.svg") !important;
+    list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/edit-copy.svg") !important;
   }
   
   #menu_newProfile {
@@ -9029,10 +9026,10 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
       --menuitem-icon: url("chrome://global/skin/icons/settings.svg") !important;
     }
     #viewMenu {
-      --menuitem-icon: url("icons/sort.svg") !important;
+      --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/sort.svg") !important;
     }
     #maintenanceButton {
-      --menuitem-icon: url("icons/import-export.svg") !important;
+      --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/import-export.svg") !important;
     }
     #clearDownloadsButton {
       --menuitem-icon: url("chrome://global/skin/icons/delete.svg") !important;
@@ -9320,16 +9317,16 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
         }
 
         #firefox-view-button image {
-            list-style-image: url("icons/firefoxview-close.svg") !important;
+            list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/firefoxview-close.svg") !important;
         }
 
         #firefox-view-button[aria-pressed="false"]:active .toolbarbutton-icon{
-            list-style-image: url("icons/firefoxview-close.svg") !important;
+            list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/firefoxview-close.svg") !important;
             transition-duration: 0ms !important;
         }
 
         #firefox-view-button[aria-pressed="true"]:not(:active) .toolbarbutton-icon{
-            list-style-image: url("icons/firefoxview-open.svg") !important;
+            list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/firefoxview-open.svg") !important;
             transition-duration: 0ms !important;
         }
     }
@@ -9471,94 +9468,94 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
     }
 
     /* Gx Theme Styles Extension */
-    #PersonalToolbar #gxthemestyles_godie-BAP { list-style-image: url("icons/logo_gx-theme-styles.svg") !important; }
+    #PersonalToolbar #gxthemestyles_godie-BAP { list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_gx-theme-styles.svg") !important; }
 
     /* ChatGPT Extension */
     #PersonalToolbar #_87f371f2-66bd-4535-a920-c696f2669122_-BAP,
-    #PersonalToolbar #_63ec59d8-ba50-4d88-917e-fb65af892a39_-BAP { list-style-image: url("icons/logo_chatgpt.svg") !important; }
+    #PersonalToolbar #_63ec59d8-ba50-4d88-917e-fb65af892a39_-BAP { list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_chatgpt.svg") !important; }
 
     /* Twitch Extension */
-    #PersonalToolbar #_d3d2a327-1ae0-4fd6-b732-0844d0b7fd4c_-BAP { list-style-image: url("icons/logo_twitch.svg") !important; }
+    #PersonalToolbar #_d3d2a327-1ae0-4fd6-b732-0844d0b7fd4c_-BAP { list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_twitch.svg") !important; }
 
     /* Messenger Extension */
-    #PersonalToolbar #xrst_vardakis_gmail_com-BAP { list-style-image:url("icons/logo_messenger.svg") !important; }
+    #PersonalToolbar #xrst_vardakis_gmail_com-BAP { list-style-image:url("chrome://kyberfox/content/themes/skins/gx/icons/logo_messenger.svg") !important; }
 
     /* Whatsapp Extension */
     #PersonalToolbar #_34a257f3-adfe-460d-b6ca-7dd18d18506b_-BAP,
-    #PersonalToolbar #chatwappinsidebar_godie-BAP { list-style-image: url("icons/logo_whatsapp.svg") !important; }
-    moz-button[extensionId="ChatwappInSidebar@Godie"] { --my-custom-image: url("icons/logo_whatsapp.svg") !important; }
+    #PersonalToolbar #chatwappinsidebar_godie-BAP { list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_whatsapp.svg") !important; }
+    moz-button[extensionId="ChatwappInSidebar@Godie"] { --my-custom-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_whatsapp.svg") !important; }
 
     /* Spotify Extension */
     #PersonalToolbar #sidebarspotyplay_godie-BAP,
-    #PersonalToolbar #_1d0f1bc6-5e9c-4450-aef5-75cefb44660f_-BAP { list-style-image: url("icons/logo_spotify.svg") !important; }
+    #PersonalToolbar #_1d0f1bc6-5e9c-4450-aef5-75cefb44660f_-BAP { list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_spotify.svg") !important; }
 
     /* Telegram Extension */
-    #PersonalToolbar #_14390478-b41b-4e29-8307-8a3c714f7783_-BAP{ list-style-image: url("icons/logo_telegram.svg") !important; }
+    #PersonalToolbar #_14390478-b41b-4e29-8307-8a3c714f7783_-BAP{ list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_telegram.svg") !important; }
 
     /* ublock Extension */
-    #PersonalToolbar #ublock0_raymondhill_net-BAP{ list-style-image: url("icons/logo_ublock.svg") !important; }
+    #PersonalToolbar #ublock0_raymondhill_net-BAP{ list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_ublock.svg") !important; }
 
     /* Tab-group Extension */
-    #PersonalToolbar #panorama-tab-groups_example_com-BAP{ list-style-image: url("icons/logo_grouptabs.svg") !important; }
+    #PersonalToolbar #panorama-tab-groups_example_com-BAP{ list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_grouptabs.svg") !important; }
 
     /* Discord Extension */
-    #PersonalToolbar #_a16c3799-d903-44e3-b044-a032197f5ef8_-BAP{ list-style-image: url("icons/logo_discord.svg") !important; }
+    #PersonalToolbar #_a16c3799-d903-44e3-b044-a032197f5ef8_-BAP{ list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_discord.svg") !important; }
 
     /* Twitter Extension */
-    #PersonalToolbar #_3119ae66-3c2f-47e2-b1b1-1c76cb9c4ec1_-BAP{ list-style-image: url("icons/logo_twitter.svg") !important; }
+    #PersonalToolbar #_3119ae66-3c2f-47e2-b1b1-1c76cb9c4ec1_-BAP{ list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_twitter.svg") !important; }
 
     /* Simple Translate extension */
-    #PersonalToolbar #simple-translate_sienori-BAP { list-style-image: url("icons/translations.svg") !important; }
+    #PersonalToolbar #simple-translate_sienori-BAP { list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/translations.svg") !important; }
 
     /* Bitwarden extension */
-    #PersonalToolbar #_446900e4-71c2-419f-a6a7-df9c091e268b_-BAP { list-style-image: url("icons/logo_bitwarden.svg") !important; }
+    #PersonalToolbar #_446900e4-71c2-419f-a6a7-df9c091e268b_-BAP { list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_bitwarden.svg") !important; }
 
     /* Tree-tabs extension */
     #PersonalToolbar #treestyletab_piro_sakura_ne_jp-BAP,
-    #PersonalToolbar #tabcenter-reborn_ariasuni-BAP{ list-style-image: url("icons/logo_tree-tabs.svg") !important; }
+    #PersonalToolbar #tabcenter-reborn_ariasuni-BAP{ list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_tree-tabs.svg") !important; }
 
     /* _______________________________________________ Colored folders for bookmarks _______________________________________________ */
 
     #PlacesToolbarItems > .bookmark-item:nth-of-type(9n+1) > .toolbarbutton-icon {
-        list-style-image: url("icons/folder1.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder1.svg") !important;
     }
 
     #PlacesToolbarItems > .bookmark-item:nth-of-type(9n+2) > .toolbarbutton-icon {
-        list-style-image: url("icons/folder2.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder2.svg") !important;
     }
 
     #PlacesToolbarItems > .bookmark-item:nth-of-type(9n+3) > .toolbarbutton-icon {
-        list-style-image: url("icons/folder3.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder3.svg") !important;
     }
 
     #PlacesToolbarItems > .bookmark-item:nth-of-type(9n+4) > .toolbarbutton-icon {
-        list-style-image: url("icons/folder4.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder4.svg") !important;
     }
 
     #PlacesToolbarItems > .bookmark-item:nth-of-type(9n+5) > .toolbarbutton-icon {
-        list-style-image: url("icons/folder5.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder5.svg") !important;
     }
 
     #PlacesToolbarItems > .bookmark-item:nth-of-type(9n+6) > .toolbarbutton-icon {
-        list-style-image: url("icons/folder6.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder6.svg") !important;
     }
 
     #PlacesToolbarItems > .bookmark-item:nth-of-type(9n+7) > .toolbarbutton-icon {
-        list-style-image: url("icons/folder7.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder7.svg") !important;
     }
 
     #PlacesToolbarItems > .bookmark-item:nth-of-type(9n+8) > .toolbarbutton-icon {
-        list-style-image: url("icons/folder8.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder8.svg") !important;
     }
 
     #PlacesToolbarItems > .bookmark-item:nth-of-type(9n+9) > .toolbarbutton-icon {
-        list-style-image: url("icons/folder9.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder9.svg") !important;
     }
 
     /* 'Other Bookmarks' folder */
 
     #OtherBookmarks > .toolbarbutton-icon{
-        list-style-image: url("icons/folder-otherbookmarks.svg") !important;
+        list-style-image: url("chrome://kyberfox/content/themes/skins/gx/icons/folder-otherbookmarks.svg") !important;
     }
 
     /* New position of Open Bookmark Panels in left-sidebar */
@@ -9672,35 +9669,35 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
     /* Some extensions icons \
     ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ */
     /* Gx Theme Styles Extension */
-    moz-button[extensionId="GXThemeStyles@Godie"] { --my-button-icon-content: url("icons/logo_gx-theme-styles.svg"); }
+    moz-button[extensionId="GXThemeStyles@Godie"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_gx-theme-styles.svg"); }
 
     /* Whatsapp Extension */
-    moz-button[extensionId="ChatwappInSidebar@Godie"] { --my-button-icon-content: url("icons/logo_whatsapp.svg"); }
+    moz-button[extensionId="ChatwappInSidebar@Godie"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_whatsapp.svg"); }
 
     /* Instagram Extension */
-    moz-button[extensionId="SidebarInstaChat@Godie"] { --my-button-icon-content: url("icons/logo_instagram.svg"); }
+    moz-button[extensionId="SidebarInstaChat@Godie"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_instagram.svg"); }
 
     /* Spotify Extension */
-    moz-button[extensionId="SidebarSpotyplay@Godie"] { --my-button-icon-content: url("icons/logo_spotify.svg"); }
+    moz-button[extensionId="SidebarSpotyplay@Godie"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_spotify.svg"); }
 
     /* Telegram Extension */
-    moz-button[extensionId="{14390478-b41b-4e29-8307-8a3c714f7783}"] { --my-button-icon-content: url("icons/logo_telegram.svg"); }
+    moz-button[extensionId="{14390478-b41b-4e29-8307-8a3c714f7783}"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_telegram.svg"); }
 
     /* ublock Extension */
-    moz-button[extensionId="uBlock0@raymondhill.net"] { --my-button-icon-content: url("icons/logo_ublock.svg"); }
+    moz-button[extensionId="uBlock0@raymondhill.net"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_ublock.svg"); }
     
     /* Discord Extension */
-    moz-button[extensionId="{a16c3799-d903-44e3-b044-a032197f5ef8}"] { --my-button-icon-content: url("icons/logo_discord.svg"); }
+    moz-button[extensionId="{a16c3799-d903-44e3-b044-a032197f5ef8}"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_discord.svg"); }
 
     /* Twitter Extension */
-    moz-button[extensionId="{3119ae66-3c2f-47e2-b1b1-1c76cb9c4ec1}"] { --my-button-icon-content: url("icons/logo_twitter.svg"); }
+    moz-button[extensionId="{3119ae66-3c2f-47e2-b1b1-1c76cb9c4ec1}"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_twitter.svg"); }
     
     /* Bitwarden extension */
-    moz-button[extensionId="{446900e4-71c2-419f-a6a7-df9c091e268b}"] { --my-button-icon-content: url("icons/logo_bitwarden.svg"); }
+    moz-button[extensionId="{446900e4-71c2-419f-a6a7-df9c091e268b}"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_bitwarden.svg"); }
 
     /* Tree-tabs extension */
     moz-button[extensionId="treestyletab@piro.sakura.ne.jp"],
-    moz-button[extensionId="tabcenter-reborn@ariasuni"] { --my-button-icon-content: url("icons/logo_tree-tabs.svg"); }
+    moz-button[extensionId="tabcenter-reborn@ariasuni"] { --my-button-icon-content: url("chrome://kyberfox/content/themes/skins/gx/icons/logo_tree-tabs.svg"); }
     
     .button-background {
         & img {
@@ -10845,8 +10842,8 @@ https://github.com/Godiesc/firefox-gx */
               --uc-tab-corner-rounding: 10px; /* 10px looks about like chromium - 17px looks close to Australis tabs */
               --uc-tab-corner-padding: 6px;
               --uc-tab-corner-position: calc(var(--uc-tab-corner-padding) - var(--uc-tab-corner-rounding));
-              --uc-tab-corner-left-side-svg: url("icons/tab-bottom-corner-left.svg");
-              --uc-tab-corner-right-side-svg: url("icons/tab-bottom-corner-right.svg");
+              --uc-tab-corner-left-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left.svg");
+              --uc-tab-corner-right-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right.svg");
 
               .tab-background {
                 border-radius: 4px 4px 0 0 !important;
@@ -10884,12 +10881,12 @@ https://github.com/Godiesc/firefox-gx */
       @media -moz-pref("userChrome.tab.bottom_rounded_corner.wave") {
 
         .tabbrowser-tab {
-          --uc-tab-corner-left-side-svg: url("icons/tab-bottom-corner-left-wave1.svg");
-          --uc-tab-corner-left-side-clipPath: url("icons/tab-bottom-corner-left-wave1.svg#svgClipPath");
-          --uc-tab-corner-right-side-svg: url("icons/tab-bottom-corner-right-wave1.svg");
-          --uc-tab-corner-right-side-clipPath: url("icons/tab-bottom-corner-right-wave1.svg#svgClipPath");
-          --uc-tab-corner-left-side-svg-clipped: url("icons/tab-bottom-corner-left-wave-clipped.svg");
-          --uc-tab-corner-right-side-svg-clipped: url("icons/tab-bottom-corner-right-wave-clipped.svg");
+          --uc-tab-corner-left-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-wave1.svg");
+          --uc-tab-corner-left-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-wave1.svg#svgClipPath");
+          --uc-tab-corner-right-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-wave1.svg");
+          --uc-tab-corner-right-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-wave1.svg#svgClipPath");
+          --uc-tab-corner-left-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-wave-clipped.svg");
+          --uc-tab-corner-right-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-wave-clipped.svg");
         }
 
         #TabsToolbar {
@@ -10899,12 +10896,12 @@ https://github.com/Godiesc/firefox-gx */
       }
       @media -moz-pref("userChrome.tab.bottom_rounded_corner.australis") {
         .tabbrowser-tab {
-          --uc-tab-corner-left-side-svg: url("icons/tab-bottom-corner-left-australis1.svg");
-          --uc-tab-corner-left-side-clipPath: url("icons/tab-bottom-corner-left-australis1.svg#svgClipPath");
-          --uc-tab-corner-right-side-svg: url("icons/tab-bottom-corner-right-australis1.svg");
-          --uc-tab-corner-right-side-clipPath: url("icons/tab-bottom-corner-right-australis1.svg#svgClipPath");
-          --uc-tab-corner-left-side-svg-clipped: url("icons/tab-bottom-corner-left-australis-clipped.svg");
-          --uc-tab-corner-right-side-svg-clipped: url("icons/tab-bottom-corner-right-australis-clipped.svg");
+          --uc-tab-corner-left-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-australis1.svg");
+          --uc-tab-corner-left-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-australis1.svg#svgClipPath");
+          --uc-tab-corner-right-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-australis1.svg");
+          --uc-tab-corner-right-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-australis1.svg#svgClipPath");
+          --uc-tab-corner-left-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-australis-clipped.svg");
+          --uc-tab-corner-right-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-australis-clipped.svg");
         }
 
         #TabsToolbar {
@@ -10914,12 +10911,12 @@ https://github.com/Godiesc/firefox-gx */
       }
       @media -moz-pref("userChrome.tab.bottom_rounded_corner.chrome") {
         .tabbrowser-tab {
-          --uc-tab-corner-left-side-svg: url("icons/tab-bottom-corner-left-chrome1.svg");
-          --uc-tab-corner-left-side-clipPath: url("icons/tab-bottom-corner-left-chrome1.svg#svgClipPath");
-          --uc-tab-corner-right-side-svg: url("icons/tab-bottom-corner-right-chrome1.svg");
-          --uc-tab-corner-right-side-clipPath: url("icons/tab-bottom-corner-right-chrome1.svg#svgClipPath");
-          --uc-tab-corner-left-side-svg-clipped: url("icons/tab-bottom-corner-left-chrome-clipped.svg");
-          --uc-tab-corner-right-side-svg-clipped: url("icons/tab-bottom-corner-right-chrome-clipped.svg");
+          --uc-tab-corner-left-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-chrome1.svg");
+          --uc-tab-corner-left-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-chrome1.svg#svgClipPath");
+          --uc-tab-corner-right-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-chrome1.svg");
+          --uc-tab-corner-right-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-chrome1.svg#svgClipPath");
+          --uc-tab-corner-left-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-chrome-clipped.svg");
+          --uc-tab-corner-right-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-chrome-clipped.svg");
           --uc-tab-corner-size: 12px;
         }
 
@@ -10930,12 +10927,12 @@ https://github.com/Godiesc/firefox-gx */
       }
       @media -moz-pref("userChrome.tab.bottom_rounded_corner.chrome_legacy") {
         .tabbrowser-tab {
-          --uc-tab-corner-left-side-svg: url("icons/tab-bottom-corner-left-chromeLegacy1.svg");
-          --uc-tab-corner-left-side-clipPath: url("icons/tab-bottom-corner-left-chromeLegacy1.svg#svgClipPath");
-          --uc-tab-corner-right-side-svg: url("icons/tab-bottom-corner-right-chromeLegacy1.svg");
-          --uc-tab-corner-right-side-clipPath: url("icons/tab-bottom-corner-right-chromeLegacy1.svg#svgClipPath");
-          --uc-tab-corner-left-side-svg-clipped: url("icons/tab-bottom-corner-left-chromeLegacy-clipped.svg");
-          --uc-tab-corner-right-side-svg-clipped: url("icons/tab-bottom-corner-right-chromeLegacy-clipped.svg");
+          --uc-tab-corner-left-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-chromeLegacy1.svg");
+          --uc-tab-corner-left-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-chromeLegacy1.svg#svgClipPath");
+          --uc-tab-corner-right-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-chromeLegacy1.svg");
+          --uc-tab-corner-right-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-chromeLegacy1.svg#svgClipPath");
+          --uc-tab-corner-left-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-chromeLegacy-clipped.svg");
+          --uc-tab-corner-right-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-chromeLegacy-clipped.svg");
         }
 
         #TabsToolbar {
@@ -10945,12 +10942,12 @@ https://github.com/Godiesc/firefox-gx */
       }
       @media -moz-pref("userChrome.tab.bottom_rounded_corner.edge") {
         .tabbrowser-tab {
-          --uc-tab-corner-left-side-svg: url("icons/tab-bottom-corner-left-edge.svg");
-          --uc-tab-corner-left-side-clipPath: url("icons/tab-bottom-corner-left-edge.svg#svgClipPath");
-          --uc-tab-corner-right-side-svg: url("icons/tab-bottom-corner-right-edge.svg");
-          --uc-tab-corner-right-side-clipPath: url("icons/tab-bottom-corner-right-edge.svg#svgClipPath");
-          --uc-tab-corner-left-side-svg-clipped: url("icons/tab-bottom-corner-left-edge-clipped.svg");
-          --uc-tab-corner-right-side-svg-clipped: url("icons/tab-bottom-corner-right-edge-clipped.svg");
+          --uc-tab-corner-left-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-edge.svg");
+          --uc-tab-corner-left-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-edge.svg#svgClipPath");
+          --uc-tab-corner-right-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-edge.svg");
+          --uc-tab-corner-right-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-edge.svg#svgClipPath");
+          --uc-tab-corner-left-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-edge-clipped.svg");
+          --uc-tab-corner-right-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-edge-clipped.svg");
           --uc-tab-corner-size: 12px;
         }
 
@@ -11273,8 +11270,8 @@ https://github.com/Godiesc/firefox-gx */
 
         --panel-border-color: lch(from var(--panel-background-color) calc(l + 10) c h) !important;                            /* popup_border */
 
-        --noise-urlbar-personal: url("icons/urlbar-noise-light.png") !important;                                           /* Urlbar [open] - noise background */
-        --my-beats-image: url("icons/Beats.webp") !important;                                                              /* Used in 'Extra' feature 'classic sound icon' */
+        --noise-urlbar-personal: url("chrome://kyberfox/content/themes/skins/gx/icons/urlbar-noise-light.png") !important;                                           /* Urlbar [open] - noise background */
+        --my-beats-image: url("chrome://kyberfox/content/themes/skins/gx/icons/Beats.webp") !important;                                                              /* Used in 'Extra' feature 'classic sound icon' */
 
         --input-text-background-color: lch(from var(--panel-background-color) calc(l - 6) c h) !important;                    /* Color of the 'input box' when saving a bookmark */
         --input-text-border-color: lch(from var(--panel-background-color) calc(l + 10) c h) !important;                       /* Border Color of the 'input box' not focused e.g. save password */
@@ -11340,8 +11337,8 @@ https://github.com/Godiesc/firefox-gx */
 
         --panel-border-color: lch(from var(--panel-background-color) calc(l - 20) c h) !important;                            /* popup_border */
 
-        --noise-urlbar-personal: url("icons/urlbar-noise-light.png") !important;                                           /* Urlbar [open] - noise background */
-        --my-beats-image: url("icons/Beats.gif") !important;                                                               /* Used in 'Extra' feature 'classic sound icon' */
+        --noise-urlbar-personal: url("chrome://kyberfox/content/themes/skins/gx/icons/urlbar-noise-light.png") !important;                                           /* Urlbar [open] - noise background */
+        --my-beats-image: url("chrome://kyberfox/content/themes/skins/gx/icons/Beats.gif") !important;                                                               /* Used in 'Extra' feature 'classic sound icon' */
 
         --input-text-background-color: color-mix(in srgb, var(--arrowpanel-background) 90%, black) !important;                /* Color of the 'input box' when saving a bookmark */
         --input-border-color: color-mix(in srgb, var(--arrowpanel-background) 70%, black) !important;                         /* Border Color of the 'input box' 'non focused' */
@@ -12608,7 +12605,7 @@ https://github.com/Godiesc/firefox-gx */
     inset-inline-start: calc(var(--toolbarbutton-padding-inner) + 0px);
     width: 34px; height: 9px;
     background-size: 34px 9px;
-    background-image: url("icons/panelarrow-menu.svg");
+    background-image: url("chrome://kyberfox/content/themes/skins/gx/icons/panelarrow-menu.svg");
     -moz-context-properties: fill, stroke;
     fill: var(--arrowpanel-background);
     stroke: var(--panel-border-color);

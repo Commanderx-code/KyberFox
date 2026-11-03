@@ -5,9 +5,7 @@
   "scheme": "dark",
   "sheets": ["colors.css", "userChrome.css"],
   "prefs": {
-    "svg.context-properties.content.enabled": true,
     "browser.tabs.delayHidingAudioPlayingIconMS": 0,
-    "browser.newtabpage.activity-stream.improvesearch.handoffToAwesomebar": false,
     "browser.tabs.allow_transparent_browser": true,
     "privacy.userContext.enabled": true,
     "privacy.userContext.ui.enabled": true,

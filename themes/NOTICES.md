@@ -59,10 +59,36 @@ Modifications, all made by the vendor tool:
 - Every `url()` into `chrome/newtab/` (wallpapers, about-page images) is
   replaced by `none`, since that directory is not shipped. Four icon files
   that upstream itself references but does not contain are left as is.
+- Fonts: upstream ships `Underwave-Bold.ttf`, whose name table reads
+  "Copyright (c) 2021 Opera Norway AS. All rights reserved." It is not MPL
+  and is not copied; no font file is ever vendored. The `@font-face` rule for
+  the family `gamer` (used for a menu label in GX-style) is removed and uses
+  of the family become `sans-serif`.
+- Every `url()` is rewritten to an absolute
+  `chrome://kyberfox/content/themes/skins/<id>/...` URL. A relative `url()`
+  inside a custom property resolves against the sheet that uses the property,
+  which can be a Firefox sheet.
+- `url(../icons/logo_chatGPT.svg)` is matched to the shipped
+  `logo_chatgpt.svg` ignoring case (upstream is developed on Windows).
+- Third-party brand logos that upstream ships and the skins use for menu
+  icons are kept unchanged: `relay-logo.svg`, `logo_anthropic-claude.svg`,
+  `logo_bitwarden.svg`, `logo_chatgpt.svg`, `logo_discord.svg`,
+  `logo_google-gemini.svg`, `logo_hugging-chat.svg`, `logo_instagram.svg`,
+  `logo_messenger.svg`, `logo_mistral.svg`, `logo_spotify.svg`,
+  `logo_telegram.svg`, `logo_twitch.svg`, `logo_twitter.svg`,
+  `logo_ublock.svg`, `logo_whatsapp.svg` (plus the project logos
+  `logo_grouptabs.svg`, `logo_gx-theme-styles.svg`, `logo_side-view.svg`,
+  `logo_tree-tabs.svg`). The marks belong to their owners.
 - `user.js` is converted to the `prefs` map of `skin.json` and applied by the
   theme engine, which saves and restores the user's own values.
   `toolkit.legacyUserProfileCustomizations.stylesheets` is dropped because
-  the sheets are registered directly.
+  the sheets are registered directly. Also dropped, with these effects:
+  `svg.context-properties.content.enabled` (web-exposed; chrome:// images get
+  SVG context paint anyway), `layout.css.corner-shape.enabled` (GX-style; a
+  nightly-only CSS feature exposed to web pages on release, so those corners
+  degrade to plain rounded ones) and
+  `browser.newtabpage.activity-stream.improvesearch.handoffToAwesomebar`
+  (One-style; only upstream's unshipped new-tab CSS needs it).
 - One-style gets the extra pref `firefoxone.without-default-colors`, which
   upstream provides to turn off its own light and dark defaults. Those follow
   the operating system, so without it the skin comes up light on a light OS

@@ -26,12 +26,23 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SKINS_DIR = REPO_ROOT / "themes" / "skins"
 EXTRAS_DIR = Path(__file__).resolve().parent / "skin_extras"
 
+CHROME_BASE = "chrome://kyberfox/content/themes/skins/"
 SCOPE = '@-moz-document url-prefix("chrome://")'
 # Directories whose images only serve about: pages (userContent.css side,
 # not shipped in release 1). References to them become `none`.
 SKIPPED_ASSET_DIRS = {"newtab"}
 # Prefs that only make Firefox read userChrome.css; sheets are registered directly.
-DROPPED_PREFS = {"toolkit.legacyUserProfileCustomizations.stylesheets"}
+DROPPED_PREFS = {
+    "toolkit.legacyUserProfileCustomizations.stylesheets",
+    # Web-exposed; chrome:// images already get SVG context paint.
+    "svg.context-properties.content.enabled",
+    # Nightly-only CSS feature, exposed to web content on release. Corners degrade.
+    "layout.css.corner-shape.enabled",
+    # Only upstream's unshipped new-tab CSS needs it.
+    "browser.newtabpage.activity-stream.improvesearch.handoffToAwesomebar",
+}
+# Fonts are never copied: the ones upstream ships are not MPL.
+FONT_SUFFIXES = (".ttf", ".otf", ".woff", ".woff2")
 
 
 class SkinMismatch(Exception):
@@ -95,6 +106,11 @@ class _State:
     root: Path
     assets: set = field(default_factory=set)
     edits: list = field(default_factory=list)
+    dropped_families: set = field(default_factory=set)
+    # Absolute chrome:// base of the skin. Relative url()s inside custom
+    # properties resolve against the sheet that uses the property, which can
+    # be a Firefox one (a missing-resource crash), so every url() is absolute.
+    base: str = ""
 
 
 def _git(args, cwd):
@@ -114,6 +130,46 @@ def _clone(repo: str, commit: str, dest: Path) -> None:
     _git(["-c", "advice.detachedHead=false", "checkout", "-q", "FETCH_HEAD"], dest)
 
 
+def _resolve_ci(base: Path, raw: str):
+    """base/raw, matching each part case-insensitively when the exact path is
+    missing (upstream is developed on Windows). Returns (path, was_exact)."""
+    exact = (base / raw).resolve()
+    if exact.exists():
+        return exact, True
+    cur = base.resolve()
+    for part in Path(raw).parts:
+        if part == "..":
+            cur = cur.parent
+            continue
+        if part == ".":
+            continue
+        match = next((c for c in cur.iterdir() if c.name.lower() == part.lower()), None) \
+            if cur.is_dir() else None
+        if match is None:
+            return exact, True
+        cur = match
+    return cur, False
+
+
+_FONT_FACE = re.compile(r"@font-face\s*\{[^{}]*\}", re.S)
+_FAMILY = re.compile(r"font-family\s*:\s*(['\"]?)([^;'\"}]+)\1", re.I)
+
+
+def _drop_fonts(text: str, st: "_State") -> str:
+    """Remove @font-face rules that load a font file; remember their families."""
+    def sub(m):
+        rule = m.group(0)
+        if not re.search(r"url\([^)]*\.(ttf|otf|woff2?)\b", rule, re.I):
+            return rule
+        fam = _FAMILY.search(rule)
+        if fam:
+            st.dropped_families.add(fam.group(2).strip())
+        st.edits.append(f"@font-face for {fam.group(2).strip() if fam else '?'} removed "
+                        "(its font file is not MPL); the family falls back to sans-serif")
+        return "/* font removed */"
+    return _FONT_FACE.sub(sub, text)
+
+
 def _rewrite_urls(text: str, file: Path, st: _State) -> str:
     """Make url() paths relative to the chrome root and note the files used."""
     def sub(m):
@@ -126,7 +182,7 @@ def _rewrite_urls(text: str, file: Path, st: _State) -> str:
         if not raw or low.startswith(_KEEP):
             return m.group(0)
         raw, sep, frag = re.match(r"([^#?]*)([#?]?)(.*)", raw, re.S).groups()
-        target = (file.parent / raw).resolve()
+        target, exact = _resolve_ci(file.parent, raw)
         try:
             rel = target.relative_to(st.root.resolve())
         except ValueError:
@@ -137,21 +193,27 @@ def _rewrite_urls(text: str, file: Path, st: _State) -> str:
         if not target.is_file():
             # Dangling upstream too (the browser just shows nothing there).
             st.edits.append(f"url({rel.as_posix()}) in {file.name} is missing upstream; left as is")
-            return f'url("{rel.as_posix()}{sep}{frag}")'
+            return f'url("{st.base}{rel.as_posix()}{sep}{frag}")'
+        if rel.suffix.lower() in FONT_SUFFIXES:
+            raise VendorError(f"{file}: url({raw}) loads a font file")
+        if not exact:
+            st.edits.append(f"url({raw}) in {file.name} matched {rel.as_posix()} "
+                            "ignoring case")
         st.assets.add(rel)
-        return f'url("{rel.as_posix()}{sep}{frag}")'
+        return f'url("{st.base}{rel.as_posix()}{sep}{frag}")'
     return _COMMENT_OR_URL.sub(sub, text)
 
 
 def _inline(file: Path, st: _State, seen: tuple = ()) -> str:
     if file in seen:
         raise VendorError(f"{file}: @import cycle")
-    text = _rewrite_urls(file.read_text(encoding="utf-8"), file, st)
+    text = _drop_fonts(file.read_text(encoding="utf-8"), st)
+    text = _rewrite_urls(text, file, st)
 
     def sub(m):
         if m.group(0).startswith("/*"):
             return m.group(0)
-        target = (file.parent / m.group("path")).resolve()
+        target, _ = _resolve_ci(file.parent, m.group("path"))
         if st.root.resolve() not in target.parents or not target.is_file():
             raise VendorError(f"{file}: bad @import {m.group('path')}")
         return f"/* ---- {target.relative_to(st.root.resolve()).as_posix()} ---- */\n" \
@@ -171,6 +233,26 @@ def _strip_opera(css: str, st: _State) -> str:
     if re.search("opera", renamed, re.I):
         raise VendorError("an Opera reference remains outside comments")
     return renamed
+
+
+def _use_fallback_font(css: str, st: _State) -> str:
+    for fam in st.dropped_families:
+        css = re.sub(r"(font-family\s*:\s*)(['\"])" + re.escape(fam) + r"\2",
+                     r"\1sans-serif", css)
+    return css
+
+
+def _check_clean(css: str) -> None:
+    """Nothing may remain that would load more, or break out of the scope."""
+    code = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    m = re.search(r"@(import|namespace|charset)\b", code, re.I)
+    if m:
+        raise VendorError(f"@{m.group(1)} remains after flattening")
+    m = re.search(r"""["'](?:https?:)?//[^"'\s]""", code, re.I)
+    if m:
+        raise VendorError(f"remote URL in a string: {code[m.start():m.start() + 40]!r}")
+    if re.search(r"url\(\s*['\"]?[^)]*\.(ttf|otf|woff2?)\b", code, re.I):
+        raise VendorError("a font file is still referenced")
 
 
 def _check_braces(css: str) -> None:
@@ -193,7 +275,10 @@ def _parse_user_js(text: str) -> dict:
         name, raw = m.groups()
         if name in DROPPED_PREFS:
             continue
-        prefs[name] = json.loads(raw)
+        value = json.loads(raw)
+        if isinstance(value, float):
+            raise VendorError(f"{name}: non-integer number {raw}")
+        prefs[name] = value
     return prefs
 
 
@@ -208,9 +293,11 @@ def _vendor(repo: str, commit: str, dest: Path) -> list:
         chrome = src / "chrome"
         if not (chrome / "userChrome.css").is_file():
             raise VendorError(f"{repo}: no chrome/userChrome.css")
-        st = _State(root=chrome)
+        st = _State(root=chrome, base=f"{CHROME_BASE}{dest.name}/")
         body = _inline(chrome / "userChrome.css", st)
         body = _strip_opera(body, st)
+        body = _use_fallback_font(body, st)
+        _check_clean(body)
         _check_braces(body)
         css = (f"/* Vendored at upstream commit {commit} (MPL-2.0, see LICENSE and\n"
                f"   themes/NOTICES.md). The import tree is flattened and limited to\n"
@@ -225,6 +312,8 @@ def _vendor(repo: str, commit: str, dest: Path) -> list:
         shutil.copy2(src / "LICENSE", dest / "LICENSE")
         (dest / "userChrome.css").write_text(css, encoding="utf-8")
         for rel in sorted(st.assets):
+            if rel.suffix.lower() in FONT_SUFFIXES:
+                raise VendorError(f"{rel}: font files are not copied")
             out = dest / rel
             out.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(chrome / rel, out)
