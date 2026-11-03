@@ -22,7 +22,7 @@ window.addEventListener("keydown", event => {
     event.shiftKey &&
     event.altKey &&
     !event.metaKey &&
-    event.key.toLowerCase() == "t"
+    (event.key.toLowerCase() == "t" || event.code == "KeyT")
   ) {
     event.preventDefault();
     KyberThemes.resetToDefault();

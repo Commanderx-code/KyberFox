@@ -145,47 +145,72 @@ export class KyberThemeImportError extends Error {
   }
 }
 
-/**
- * Parses text with the engine's own CSS parser. A CSSStyleSheet needs a
- * window to be constructed in; replaceSync does not throw on bad syntax, it
- * drops it, so text that yields no rules at all is not CSS.
- *
- * @param {string} text
- */
-function cssHasRules(text) {
+const CUSTOM_SCOPE = `@-moz-document url-prefix("chrome://browser/content/browser.xhtml")`;
+
+function parsingWindow() {
   let win =
     Services.wm.getMostRecentWindow(null) || Services.appShell.hiddenDOMWindow;
   if (!win) {
     throw new KyberThemeImportError("unreadable", "no window to parse in");
   }
-  try {
-    let sheet = new win.CSSStyleSheet();
-    sheet.replaceSync(text);
-    return !!sheet.cssRules.length;
-  } catch (e) {
-    return false;
-  }
+  return win;
 }
 
 /**
- * The custom file's rules, scoped to the browser window like the palette is:
- * a user sheet would otherwise also hit every web page.
+ * The CSS for the custom sheet: the file's own rules, scoped to the browser
+ * window like the palette is (a user sheet would otherwise also hit every
+ * web page). The text is parsed first and only the parsed top-level rules'
+ * serialization is used, so a stray "}" in the file cannot close the scope.
+ *
+ * @import and @namespace rules are dropped. The result is parsed again and
+ * must be exactly one scope rule. Throws "not-css" otherwise. Nothing is
+ * fetched or run by parsing.
  *
  * @param {string} text
+ * @returns {string}
  */
-function customSheetUri(text) {
-  let css = `@-moz-document url-prefix("chrome://browser/content/browser.xhtml") { ${text} }`;
-  return Services.io.newURI("data:text/css," + encodeURIComponent(css));
+function scopeCustomCss(text) {
+  let win = parsingWindow();
+  let rules;
+  try {
+    let sheet = new win.CSSStyleSheet();
+    sheet.replaceSync(text);
+    rules = [...sheet.cssRules]
+      .filter(
+        r =>
+          !win.CSSImportRule.isInstance(r) &&
+          !win.CSSNamespaceRule.isInstance(r)
+      )
+      .map(r => r.cssText);
+  } catch (e) {
+    throw new KyberThemeImportError("not-css", e.message);
+  }
+  if (!rules.length) {
+    throw new KyberThemeImportError("not-css", "no CSS rules");
+  }
+  let css = `${CUSTOM_SCOPE} { ${rules.join("\n")} }`;
+  let check = new win.CSSStyleSheet();
+  check.replaceSync(css);
+  if (
+    check.cssRules.length != 1 ||
+    check.cssRules[0].constructor.name != "CSSMozDocumentRule" ||
+    !check.cssRules[0].cssText.startsWith(CUSTOM_SCOPE)
+  ) {
+    throw new KyberThemeImportError("not-css", "cannot be scoped");
+  }
+  return css;
 }
 
 /**
  * Registers (or re-registers) the custom sheet above the palette sheet.
  *
- * @param {string} text
+ * @param {string} scopedCss The result of scopeCustomCss.
  */
-function registerCustom(text) {
+function registerCustom(scopedCss) {
   unregisterCustom();
-  gCustomUri = customSheetUri(text);
+  gCustomUri = Services.io.newURI(
+    "data:text/css," + encodeURIComponent(scopedCss)
+  );
   register(gCustomUri);
 }
 
@@ -196,7 +221,11 @@ function unregisterCustom() {
   }
 }
 
-/** Re-registers the stored custom file on start, when the pref says so. */
+/**
+ * Re-registers the stored custom file on start, when the pref says so. The
+ * file is parsed and scoped again, so a hand-edited file gets no more reach
+ * than an imported one.
+ */
 async function loadCustom() {
   if (!Services.prefs.getBoolPref(CUSTOM_PREF, false)) {
     return;
@@ -207,7 +236,11 @@ async function loadCustom() {
     if (info.type != "regular" || info.size > CUSTOM_MAX_BYTES) {
       throw new Error("not a regular file within the size limit");
     }
-    registerCustom(await IOUtils.readUTF8(path));
+    let css = scopeCustomCss(await IOUtils.readUTF8(path));
+    // A reset while the file was being read wins.
+    if (Services.prefs.getBoolPref(CUSTOM_PREF, false)) {
+      registerCustom(css);
+    }
   } catch (e) {
     // A missing or damaged file must not leave the pref claiming otherwise.
     console.error("KyberThemes: cannot load custom CSS", e);
@@ -350,9 +383,7 @@ export const KyberThemes = {
     } catch (e) {
       throw new KyberThemeImportError("not-css", "not UTF-8 text");
     }
-    if (!cssHasRules(text)) {
-      throw new KyberThemeImportError("not-css", "no CSS rules");
-    }
+    let scoped = scopeCustomCss(text);
     let dest = customPath();
     try {
       await IOUtils.makeDirectory(PathUtils.parent(dest), {
@@ -361,11 +392,11 @@ export const KyberThemes = {
       // Remove first so a symlink at the destination is replaced, not
       // written through into some other file.
       await IOUtils.remove(dest, { ignoreAbsent: true });
-      await IOUtils.write(dest, bytes, { tmpPath: dest + ".tmp" });
+      await IOUtils.write(dest, bytes);
     } catch (e) {
       throw new KyberThemeImportError("write-failed", e.message);
     }
-    registerCustom(text);
+    registerCustom(scoped);
     Services.prefs.setBoolPref(CUSTOM_PREF, true);
   },
 

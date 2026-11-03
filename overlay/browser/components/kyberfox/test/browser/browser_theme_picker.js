@@ -341,6 +341,108 @@ add_task(async function test_import_unreadable_file_keeps_current() {
   Assert.ok(Services.prefs.getBoolPref(CUSTOM_PREF), "pref unchanged");
   Assert.equal(await IOUtils.readUTF8(customPath), before, "file unchanged");
   Assert.equal(navBg(), "rgb(4, 5, 6)", "the current sheet still applies");
+
+  // Through the pane, the unreadable message shows and nothing changes.
+  let doc = await openPane();
+  MockFilePicker.init(window.browsingContext);
+  MockFilePicker.returnValue = MockFilePicker.returnOK;
+  MockFilePicker.setFiles([missing]);
+  doc.getElementById("kyberfoxThemeImport").click();
+  await TestUtils.waitForCondition(
+    () =>
+      !errorBar(doc).hidden &&
+      errorBar(doc).getAttribute("data-l10n-id") ==
+        "kyberfox-theme-error-unreadable",
+    "the unreadable message shows"
+  );
+  Assert.equal(navBg(), "rgb(4, 5, 6)", "still unchanged");
+  MockFilePicker.cleanup();
+
+  // A reset from the shortcut clears the stale error.
+  EventUtils.synthesizeKey("T", {
+    ctrlKey: true,
+    shiftKey: true,
+    altKey: true,
+  });
+  await TestUtils.waitForCondition(
+    () => errorBar(doc).hidden,
+    "the reset hides the old error"
+  );
+  await KyberThemes.filesSettled();
+  closePane();
+});
+
+const ESCAPE_CSS =
+  "#nav-bar { background-color: rgb(1, 2, 3) !important; }\n" +
+  "} body, html { background: rgb(255, 0, 0) !important; }\n" +
+  '@import url("https://example.com/x.css");\n';
+
+async function contentBg(browser) {
+  return SpecialPowers.spawn(
+    browser,
+    [],
+    () =>
+      content.getComputedStyle(content.document.documentElement).backgroundColor
+  );
+}
+
+add_task(async function test_import_cannot_escape_the_browser_scope() {
+  KyberThemes.apply("ember");
+  await BrowserTestUtils.withNewTab("https://example.com/", async browser => {
+    let before = await contentBg(browser);
+    try {
+      await KyberThemes.importCustomCss(
+        await fixture("escape.css", ESCAPE_CSS)
+      );
+    } catch (e) {
+      Assert.equal(e.code, "not-css", "rejected, or accepted below");
+    }
+    Assert.equal(await contentBg(browser), before, "the web page is unchanged");
+
+    // A file that only holds the escape has no rules of its own.
+    await rejects(
+      KyberThemes.importCustomCss(
+        await fixture(
+          "escape2.css",
+          "} body, html { background: rgb(255, 0, 0) !important; }"
+        )
+      ),
+      "not-css"
+    );
+    Assert.equal(await contentBg(browser), before, "still unchanged");
+  });
+  KyberThemes.resetToDefault();
+  await KyberThemes.filesSettled();
+});
+
+add_task(async function test_stored_file_is_scoped_again_on_start() {
+  KyberThemes.apply("ember");
+  await BrowserTestUtils.withNewTab("https://example.com/", async browser => {
+    let before = await contentBg(browser);
+    // A hand-edited file, as if someone wrote it into the profile.
+    await IOUtils.makeDirectory(PathUtils.parent(customPath), {
+      createAncestors: true,
+    });
+    await IOUtils.writeUTF8(customPath, ESCAPE_CSS);
+    Services.prefs.setBoolPref(CUSTOM_PREF, true);
+    KyberThemes._resetForTests();
+    await KyberThemes.init();
+    Assert.equal(await contentBg(browser), before, "the web page is unchanged");
+    Assert.equal(navBg(), "rgb(1, 2, 3)", "its first rule still applies");
+
+    // Only the escape, nothing of its own: nothing registers, pref cleared.
+    KyberThemes.resetToDefault();
+    await KyberThemes.filesSettled();
+    await IOUtils.writeUTF8(
+      customPath,
+      "} body, html { background: rgb(255, 0, 0) !important; }"
+    );
+    Services.prefs.setBoolPref(CUSTOM_PREF, true);
+    KyberThemes._resetForTests();
+    await KyberThemes.init();
+    Assert.equal(await contentBg(browser), before, "still unchanged");
+    Assert.ok(!Services.prefs.getBoolPref(CUSTOM_PREF, false), "pref cleared");
+  });
   KyberThemes.resetToDefault();
   await KyberThemes.filesSettled();
 });
@@ -451,6 +553,7 @@ add_task(async function test_safe_mode_skips_theme() {
   Assert.notEqual(navBg(), "rgb(250, 245, 234)", "paper is not applied");
   KyberThemes._safeModeForTests = false;
   KyberThemes.init();
+  KyberThemes._safeModeForTests = undefined;
   Assert.equal(
     KyberThemes.current(),
     "paper",

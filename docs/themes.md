@@ -24,8 +24,11 @@ Import copies the picked `.css` file (at most 1 MB, valid UTF-8, at least one
 rule) to `<profile>/chrome/kyberfox-custom.css` and registers it as a user
 sheet above the palette sheet, wrapped in the same browser-window rule. It is
 read from nowhere else. `kyberfox.theme.custom` records that it is active; a
-later start registers the file again. `@namespace` and `@import` rules in the
-file are ignored because of the wrapper. A failed import changes nothing.
+later start registers the file again. The file is parsed first and only its
+parsed top-level rules are placed inside the wrapper (and the result is
+checked to be a single scope rule), so stray braces cannot widen the scope to
+web pages; the same check runs on every start. `@namespace` and `@import`
+rules are dropped. A failed import changes nothing.
 
 Reset (the button, or Ctrl+Shift+Alt+T in any browser window) removes the
 sheet and the file and applies Ember. In safe mode `init()` does nothing, so a

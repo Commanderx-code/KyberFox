@@ -18,6 +18,7 @@ const { KyberThemes } = ChromeUtils.importESModule(
 );
 
 const ID_PREF = "kyberfox.theme.id";
+const CUSTOM_PREF = "kyberfox.theme.custom";
 
 /**
  * One card per theme. `value` is the current theme id; choosing a card sets
@@ -164,18 +165,18 @@ function setImportError(code) {
 }
 
 async function chooseAndImport() {
-  let fp = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
-  fp.init(
-    window.browsingContext,
-    await document.l10n.formatValue("kyberfox-theme-import-title"),
-    Ci.nsIFilePicker.modeOpen
-  );
-  fp.appendFilter("CSS", "*.css");
-  let result = await new Promise(resolve => fp.open(resolve));
-  if (result != Ci.nsIFilePicker.returnOK) {
-    return;
-  }
   try {
+    let fp = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
+    fp.init(
+      window.browsingContext,
+      await document.l10n.formatValue("kyberfox-theme-import-title"),
+      Ci.nsIFilePicker.modeOpen
+    );
+    fp.appendFilter("CSS", "*.css");
+    let result = await new Promise(resolve => fp.open(resolve));
+    if (result != Ci.nsIFilePicker.returnOK) {
+      return;
+    }
     await KyberThemes.importCustomCss(fp.file);
     setImportError(null);
   } catch (e) {
@@ -224,7 +225,19 @@ Preferences.addSetting({
   }),
   setup: emitChange => {
     errorListeners.add(emitChange);
-    return () => errorListeners.delete(emitChange);
+    // A reset from the keyboard shortcut makes the last error stale.
+    let observer = {
+      observe: () => {
+        if (importErrorCode !== null) {
+          setImportError(null);
+        }
+      },
+    };
+    Services.prefs.addObserver(CUSTOM_PREF, observer);
+    return () => {
+      errorListeners.delete(emitChange);
+      Services.prefs.removeObserver(CUSTOM_PREF, observer);
+    };
   },
 });
 
