@@ -11,3 +11,4 @@ installer-title.patch
 workspaces-init.patch
 workspace-button.patch
 shield-button.patch
+privacy-presets-pane.patch

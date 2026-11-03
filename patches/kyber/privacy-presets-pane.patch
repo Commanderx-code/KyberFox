@@ -1,0 +1,50 @@
+--- a/browser/components/preferences/config/privacy.mjs
++++ b/browser/components/preferences/config/privacy.mjs
+@@ -6,6 +6,7 @@
+ 
+ import { SettingGroupManager } from "chrome://browser/content/preferences/config/SettingGroupManager.mjs";
+ import { Preferences } from "chrome://global/content/preferences/Preferences.mjs";
++import "chrome://kyberfox/content/privacy-presets.mjs";
+ 
+ const XPCOMUtils = ChromeUtils.importESModule(
+   "resource://gre/modules/XPCOMUtils.sys.mjs"
+--- a/browser/components/preferences/config/tabs-browsing.mjs
++++ b/browser/components/preferences/config/tabs-browsing.mjs
+@@ -871,7 +871,7 @@
+       {
+         id: "playDRMContent",
+         subcategory: "drm",
+-        l10nId: "play-drm-content",
++        l10nId: "kyberfox-privacy-drm",
+         supportPage: "drm-content",
+       },
+       {
+@@ -907,7 +907,7 @@
+     items: [
+       {
+         id: "playDRMContent",
+-        l10nId: "play-drm-content",
++        l10nId: "kyberfox-privacy-drm",
+         supportPage: "drm-content",
+       },
+     ],
+--- a/browser/components/preferences/preferences.js
++++ b/browser/components/preferences/preferences.js
+@@ -416,6 +416,7 @@
+     l10nId: "pane-privacy-section",
+     iconSrc: "chrome://browser/skin/preferences/category-privacy-security.svg",
+     groupIds: [
++      "kyberfoxPrivacyPresets",
+       "etpAdvanced",
+       "ipprotection",
+       "cookiesAndSiteData2",
+--- a/browser/components/preferences/preferences.xhtml
++++ b/browser/components/preferences/preferences.xhtml
+@@ -45,6 +45,7 @@
+   <link rel="localization" href="browser/preferences/fonts.ftl"/>
+   <link rel="localization" href="browser/preferences/moreFromMozilla.ftl"/>
+   <link rel="localization" href="browser/preferences/preferences.ftl"/>
++  <link rel="localization" href="browser/kyberfox.ftl"/>
+   <link rel="localization" href="toolkit/branding/brandings.ftl"/>
+   <link rel="localization" href="toolkit/firefoxlabs/features.ftl"/>
+   <link rel="localization" href="toolkit/global/mozPageHeader.ftl"/>

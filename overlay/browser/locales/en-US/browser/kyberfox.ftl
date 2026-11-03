@@ -51,3 +51,29 @@ kyberfox-shield-cookies =
 kyberfox-shield-cookies-note = Also turns off Firefox’s tracker and fingerprint blocking for this site. uBlock Origin keeps blocking ads.
 kyberfox-shield-private-note = Private window: one switch for this site, kept only for this session.
 kyberfox-shield-unreachable = uBlock Origin not reachable.
+
+## Privacy presets. The preset group tops the Privacy pane of about:preferences.
+
+kyberfox-privacy-preset-group =
+    .label = Kyber Fox privacy preset
+    .description = Every option below stays adjustable; changing one switches the preset to Custom.
+kyberfox-privacy-preset-label =
+    .label = Privacy preset
+kyberfox-privacy-preset-standard =
+    .label = Standard
+    .description = Blocks trackers and third-party cookies and upgrades sites to HTTPS. Sites work as usual.
+kyberfox-privacy-preset-strict =
+    .label = Strict
+    .description = Also resists fingerprinting, turns off WebGL, and clears cookies, site data, and the cache when you quit.
+kyberfox-privacy-preset-custom =
+    .label = Custom
+    .description = You changed an option a preset controls. Pick a preset to set them all again.
+kyberfox-privacy-preset-strict-warning =
+    .message = Strict turns on resist fingerprinting. Some sites may break, and the clock reads as UTC.
+
+## DRM. The checkbox sits in the Digital Rights Management (DRM) group.
+
+kyberfox-privacy-drm =
+    .label = Play DRM-controlled content
+    .accesskey = P
+    .description = Uses Google’s closed-source Widevine module, downloaded when you turn this on.

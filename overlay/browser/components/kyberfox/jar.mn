@@ -4,6 +4,7 @@
 
 browser.jar:
 % content kyberfox %content/kyberfox/
+  content/kyberfox/privacy-presets.mjs (content/privacy-presets.mjs)
   content/kyberfox/shield-ublock-frame.js (content/shield-ublock-frame.js)
   content/kyberfox/shield-off.svg (content/shield-off.svg)
   content/kyberfox/shield.css (content/shield.css)
