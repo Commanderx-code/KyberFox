@@ -107,23 +107,25 @@ jobs:
             git commit -m "Bump Firefox to $VERSION"
             git push origin "$branch"
           else
-            # A leftover branch is trusted only if the bot made it and it
-            # changes nothing but the two Firefox values in pins.toml.
-            bad="Branch $branch is not the bot's bump; delete it and rerun."
-            git fetch --quiet --unshallow origin || true
+            # A leftover branch is trusted only if its pins.toml is exactly the
+            # merge-base pins.toml bumped to this version, and nothing else changed.
+            bad="Branch $branch is not the expected bump; delete it and rerun."
+            if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
+              git fetch --quiet --unshallow origin
+            fi
             git fetch --quiet origin \
               "+refs/heads/$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH" \
               "+refs/heads/$branch:refs/remotes/origin/$branch"
-            files=$(git diff --name-only "origin/$DEFAULT_BRANCH...origin/$branch")
-            if [ "$files" != "pins.toml" ]; then
-              echo "::error::$bad (changed files: $files)"; exit 1
+            nfiles=$(git diff --name-only "origin/$DEFAULT_BRANCH...origin/$branch" | wc -l)
+            only=$(git diff --name-only "origin/$DEFAULT_BRANCH...origin/$branch")
+            if [ "$nfiles" != "1" ] || [ "$only" != "pins.toml" ]; then
+              echo "::error::$bad (it changes $nfiles files)"; exit 1
             fi
-            if git log --format=%an "origin/$DEFAULT_BRANCH..origin/$branch" \
-                 | grep -qvx 'github-actions\[bot\]'; then
-              echo "::error::$bad (author is not github-actions[bot])"; exit 1
-            fi
-            git diff "origin/$DEFAULT_BRANCH...origin/$branch" -- pins.toml \
-              | python -m tools.upstream_watch --verify-branch-diff \
+            base=$(git merge-base "origin/$DEFAULT_BRANCH" "origin/$branch")
+            git show "$base:pins.toml" > "$RUNNER_TEMP/base-pins.toml"
+            git show "origin/$branch:pins.toml" > "$RUNNER_TEMP/branch-pins.toml"
+            python -m tools.upstream_watch --verify-branch \
+              "$RUNNER_TEMP/base-pins.toml" "$RUNNER_TEMP/branch-pins.toml" "$VERSION" \
               || { echo "::error::$bad"; exit 1; }
           fi
 

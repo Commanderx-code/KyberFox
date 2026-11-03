@@ -277,28 +277,37 @@ def test_bump_keeps_librewolf_mismatch_fatal(tmp_path, monkeypatch):
         uw.bump(pins, tmp_path, "159.0.1")
 
 
-GOOD_DIFF = f"""\
---- a/pins.toml
-+++ b/pins.toml
-@@ -3,2 +3,2 @@
- [firefox]
--version = "159.0"
--sha256 = "{"a" * 64}"
-+version = "159.0.1"
-+sha256 = "{"b" * 64}"
-"""
+def _branch_files(tmp_path, monkeypatch, branch_edit):
+    base = tmp_path / "base.toml"
+    base.write_bytes(REAL_PINS.read_bytes())
+    branch = tmp_path / "branch.toml"
+    branch.write_bytes(REAL_PINS.read_bytes())
+    uw.bump_pins(branch, "159.0.1", "b" * 64)
+    branch.write_text(branch_edit(branch.read_text()))
+    monkeypatch.setattr(uw, "fetch_sha256", lambda v: "b" * 64)
+    return base, branch
 
 
-def test_verify_branch_diff_accepts_bot_bump():
-    uw.verify_branch_diff(GOOD_DIFF)
+def test_verify_branch_accepts_exact_bump(tmp_path, monkeypatch):
+    base, branch = _branch_files(tmp_path, monkeypatch, lambda t: t)
+    uw.verify_branch(base, branch, "159.0.1")
+    assert uw.main(["--verify-branch", str(base), str(branch), "159.0.1"]) == 0
 
 
-@pytest.mark.parametrize("diff", [
-    GOOD_DIFF + '+extra = "1"\n',
-    GOOD_DIFF.replace('+version = "159.0.1"', '+version = "159.0.1" # x'),
-    GOOD_DIFF.replace("b" * 64, "evil"),
-    "",
+@pytest.mark.parametrize("edit", [
+    lambda t: t.replace('version = "1.75.2"', 'version = "1.75.3"'),  # [ublock] only
+    lambda t: t + 'extra = "1"\n',
+    lambda t: t.replace('version = "159.0.1"', 'version = "150.0"'),  # downgrade
 ])
-def test_verify_branch_diff_rejects_other_changes(diff):
+def test_verify_branch_rejects_other_content(tmp_path, monkeypatch, edit, capsys):
+    base, branch = _branch_files(tmp_path, monkeypatch, edit)
     with pytest.raises(ValueError):
-        uw.verify_branch_diff(diff)
+        uw.verify_branch(base, branch, "159.0.1")
+    assert uw.main(["--verify-branch", str(base), str(branch), "159.0.1"]) == 1
+
+
+def test_verify_branch_rejects_ublock_only_branch(tmp_path, monkeypatch):
+    base, branch = _branch_files(tmp_path, monkeypatch, lambda t: t)
+    branch.write_bytes(base.read_bytes().replace(b'version = "1.75.2"', b'version = "1.75.3"'))
+    with pytest.raises(ValueError):
+        uw.verify_branch(base, branch, "159.0.1")

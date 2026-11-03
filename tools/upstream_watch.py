@@ -76,17 +76,14 @@ def bump_pins(path: Path, version: str, sha256: str) -> None:
     Path(path).write_bytes((text[:start] + body + text[end:]).encode())
 
 
-def verify_branch_diff(diff: str) -> None:
-    """Accept only a diff that changes the two [firefox] values and nothing else."""
-    old, new = [], []
-    for line in diff.splitlines():
-        if line.startswith(("--- ", "+++ ")) or not line.startswith(("-", "+")):
-            continue
-        (old if line[0] == "-" else new).append(line[1:])
-    pat = (r'version\s*=\s*"[0-9]+\.[0-9]+(\.[0-9]+)?"', r'sha256\s*=\s*"[0-9a-f]{64}"')
-    for side in (old, new):
-        if len(side) != 2 or not all(re.fullmatch(p, l) for p, l in zip(pat, side)):
-            raise ValueError("branch changes more than the two [firefox] values")
+def verify_branch(base_pins: Path, branch_pins: Path, version: str) -> None:
+    """Raise unless branch_pins is base_pins bumped to version, byte for byte."""
+    with tempfile.TemporaryDirectory() as tmp:
+        expected = Path(tmp) / "pins.toml"
+        expected.write_bytes(Path(base_pins).read_bytes())
+        bump_pins(expected, version, fetch_sha256(version))
+        if expected.read_bytes() != Path(branch_pins).read_bytes():
+            raise ValueError(f"branch pins.toml is not the base bumped to {version}")
 
 
 def latest_librewolf(tags_json: list) -> str | None:
@@ -234,13 +231,14 @@ def main(argv=None) -> int:
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--bump", metavar="VERSION",
                       help="Firefox version from --check's firefox.latest")
-    mode.add_argument("--verify-branch-diff", action="store_true",
-                      help="read a pins.toml diff on stdin; fail unless only the Firefox values changed")
+    mode.add_argument("--verify-branch", nargs=3, metavar=("BASE_PINS", "BRANCH_PINS", "VERSION"),
+                      help="fail unless BRANCH_PINS is BASE_PINS bumped to VERSION")
     args = ap.parse_args(argv)
-    if args.verify_branch_diff:
+    if args.verify_branch:
+        base, branch, version = args.verify_branch
         try:
-            verify_branch_diff(sys.stdin.read())
-        except ValueError as exc:
+            verify_branch(Path(base), Path(branch), version)
+        except (ValueError, RuntimeError) as exc:
             print(exc, file=sys.stderr)
             return 1
         return 0
