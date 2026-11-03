@@ -32,3 +32,4 @@ pkcs11.txt
 __pycache__/
 .pytest_cache/
 .venv/
+upstream-watch-report.md
