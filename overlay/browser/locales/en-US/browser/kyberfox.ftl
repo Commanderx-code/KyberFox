@@ -77,3 +77,29 @@ kyberfox-privacy-drm =
     .label = Play DRM-controlled content
     .accesskey = P
     .description = Uses Google’s closed-source Widevine module, downloaded when you turn this on.
+
+## Themes. The theme group tops the Appearance pane of about:preferences.
+
+kyberfox-theme-group =
+    .label = Kyber Fox theme
+    .description = Colors for the toolbar, tabs, and menus. A theme applies right away.
+kyberfox-theme-grid =
+    .aria-label = Themes
+kyberfox-theme-card-current = Current
+kyberfox-theme-card-off = Off in this release
+kyberfox-theme-import =
+    .label = Import custom CSS…
+kyberfox-theme-import-title = Import custom CSS
+kyberfox-theme-css-warning =
+    .message = Imported CSS can load images from the internet. Only import files you trust.
+kyberfox-theme-error-too-large =
+    .message = That file is larger than 1 MB.
+kyberfox-theme-error-not-css =
+    .message = That file is not a CSS file.
+kyberfox-theme-error-unreadable =
+    .message = Kyber Fox could not read that file. Your theme is unchanged.
+kyberfox-theme-error-write-failed =
+    .message = Kyber Fox could not save that file in your profile. Your theme is unchanged.
+kyberfox-theme-reset =
+    .label = Reset to Ember
+    .description = Removes imported CSS and switches to Ember. Press Ctrl+Shift+Alt+T in any window to do the same.

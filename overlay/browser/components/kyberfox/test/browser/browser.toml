@@ -23,6 +23,8 @@ support-files = [
   "shield_page.html",
 ]
 
+["browser_theme_picker.js"]
+
 ["browser_themes.js"]
 
 ["browser_ublock_bundled.js"]

@@ -13,7 +13,10 @@
 const THEMES_URI = "chrome://kyberfox/content/themes/";
 const ID_PREF = "kyberfox.theme.id";
 const DISABLED_PREF = "kyberfox.theme.disabled";
+const CUSTOM_PREF = "kyberfox.theme.custom";
 const DEFAULT_ID = "ember";
+const CUSTOM_MAX_BYTES = 1024 * 1024;
+const CUSTOM_NAME = "kyberfox-custom.css";
 
 // Used when palettes.json cannot be read, so the engine still works.
 const FALLBACK = {
@@ -48,6 +51,10 @@ let gBaseUri = null;
 let gPaletteUri = null;
 let gCurrent = DEFAULT_ID;
 let gOnFallback = false;
+let gCustomUri = null;
+let gCustomLoading = Promise.resolve();
+// Awaited by every import so a reset cannot delete a file imported after it.
+let gFileWork = Promise.resolve();
 
 function readJSON(name) {
   let uri = Services.io.newURI(THEMES_URI + name);
@@ -124,7 +131,94 @@ function register(uri) {
   sss.loadAndRegisterSheet(uri, sss.USER_SHEET);
 }
 
+/** The only place custom CSS is ever read from or written to. */
+function customPath() {
+  return PathUtils.join(PathUtils.profileDir, "chrome", CUSTOM_NAME);
+}
+
+/** Thrown by importCustomCss. `code`: too-large, not-css, unreadable or write-failed. */
+export class KyberThemeImportError extends Error {
+  constructor(code, detail) {
+    super(`${code}: ${detail}`);
+    this.name = "KyberThemeImportError";
+    this.code = code;
+  }
+}
+
+/**
+ * Parses text with the engine's own CSS parser. A CSSStyleSheet needs a
+ * window to be constructed in; replaceSync does not throw on bad syntax, it
+ * drops it, so text that yields no rules at all is not CSS.
+ *
+ * @param {string} text
+ */
+function cssHasRules(text) {
+  let win =
+    Services.wm.getMostRecentWindow(null) || Services.appShell.hiddenDOMWindow;
+  if (!win) {
+    throw new KyberThemeImportError("unreadable", "no window to parse in");
+  }
+  try {
+    let sheet = new win.CSSStyleSheet();
+    sheet.replaceSync(text);
+    return !!sheet.cssRules.length;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * The custom file's rules, scoped to the browser window like the palette is:
+ * a user sheet would otherwise also hit every web page.
+ *
+ * @param {string} text
+ */
+function customSheetUri(text) {
+  let css = `@-moz-document url-prefix("chrome://browser/content/browser.xhtml") { ${text} }`;
+  return Services.io.newURI("data:text/css," + encodeURIComponent(css));
+}
+
+/**
+ * Registers (or re-registers) the custom sheet above the palette sheet.
+ *
+ * @param {string} text
+ */
+function registerCustom(text) {
+  unregisterCustom();
+  gCustomUri = customSheetUri(text);
+  register(gCustomUri);
+}
+
+function unregisterCustom() {
+  if (gCustomUri) {
+    sss.unregisterSheet(gCustomUri, sss.USER_SHEET);
+    gCustomUri = null;
+  }
+}
+
+/** Re-registers the stored custom file on start, when the pref says so. */
+async function loadCustom() {
+  if (!Services.prefs.getBoolPref(CUSTOM_PREF, false)) {
+    return;
+  }
+  try {
+    let path = customPath();
+    let info = await IOUtils.stat(path);
+    if (info.type != "regular" || info.size > CUSTOM_MAX_BYTES) {
+      throw new Error("not a regular file within the size limit");
+    }
+    registerCustom(await IOUtils.readUTF8(path));
+  } catch (e) {
+    // A missing or damaged file must not leave the pref claiming otherwise.
+    console.error("KyberThemes: cannot load custom CSS", e);
+    Services.prefs.clearUserPref(CUSTOM_PREF);
+  }
+}
+
 export const KyberThemes = {
+  /** Test hook: overrides Services.appinfo.inSafeMode when not undefined. */
+  _safeModeForTests: undefined,
+
   /** Every theme in palettes.json, with whether it is currently disabled. */
   available() {
     load();
@@ -179,7 +273,15 @@ export const KyberThemes = {
       sss.unregisterSheet(gPaletteUri, sss.USER_SHEET);
     }
     gPaletteUri = next;
+    // Sheets later in registration order win; keep the custom file on top.
+    if (gCustomUri) {
+      let uri = gCustomUri;
+      sss.unregisterSheet(uri, sss.USER_SHEET);
+      register(uri);
+    }
 
+    // Before the pref write: pref observers call current().
+    gCurrent = id;
     if (!keepPref) {
       try {
         Services.prefs.setStringPref(ID_PREF, id);
@@ -189,15 +291,113 @@ export const KyberThemes = {
         Services.prefs.setStringPref(ID_PREF, id);
       }
     }
-    gCurrent = id;
   },
 
-  /** Applies the stored theme. Called from every window; the first call wins. */
+  /**
+   * Applies the stored theme and the stored custom CSS. Called from every
+   * window; the first call wins. Does nothing in safe mode. Returns the
+   * promise of the custom file load.
+   */
   init() {
+    if (this._safeModeForTests ?? Services.appinfo.inSafeMode) {
+      return gCustomLoading;
+    }
     if (gInitialized) {
-      return;
+      return gCustomLoading;
     }
     gInitialized = true;
     this.apply(stringPref(ID_PREF, DEFAULT_ID));
+    gCustomLoading = loadCustom();
+    return gCustomLoading;
+  },
+
+  /**
+   * Copies a CSS file into <profile>/chrome/kyberfox-custom.css and applies
+   * it above the theme. The file's bytes are copied; nothing links to the
+   * original. On any error nothing changes and the promise rejects with a
+   * KyberThemeImportError whose `code` is "too-large", "not-css",
+   * "unreadable" or "write-failed".
+   *
+   * @param {nsIFile} file
+   */
+  async importCustomCss(file) {
+    await gFileWork;
+    if (!file.leafName.toLowerCase().endsWith(".css")) {
+      throw new KyberThemeImportError("not-css", file.leafName);
+    }
+    let bytes;
+    try {
+      let info = await IOUtils.stat(file.path);
+      if (info.type != "regular") {
+        throw new Error("not a regular file");
+      }
+      if (info.size > CUSTOM_MAX_BYTES) {
+        throw new KyberThemeImportError("too-large", `${info.size} bytes`);
+      }
+      bytes = await IOUtils.read(file.path, { maxBytes: CUSTOM_MAX_BYTES + 1 });
+    } catch (e) {
+      if (e instanceof KyberThemeImportError) {
+        throw e;
+      }
+      throw new KyberThemeImportError("unreadable", e.message);
+    }
+    if (bytes.length > CUSTOM_MAX_BYTES) {
+      throw new KyberThemeImportError("too-large", `${bytes.length} bytes`);
+    }
+    let text;
+    try {
+      text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    } catch (e) {
+      throw new KyberThemeImportError("not-css", "not UTF-8 text");
+    }
+    if (!cssHasRules(text)) {
+      throw new KyberThemeImportError("not-css", "no CSS rules");
+    }
+    let dest = customPath();
+    try {
+      await IOUtils.makeDirectory(PathUtils.parent(dest), {
+        createAncestors: true,
+      });
+      // Remove first so a symlink at the destination is replaced, not
+      // written through into some other file.
+      await IOUtils.remove(dest, { ignoreAbsent: true });
+      await IOUtils.write(dest, bytes, { tmpPath: dest + ".tmp" });
+    } catch (e) {
+      throw new KyberThemeImportError("write-failed", e.message);
+    }
+    registerCustom(text);
+    Services.prefs.setBoolPref(CUSTOM_PREF, true);
+  },
+
+  /**
+   * Drops the custom CSS (sheet, file and pref) and applies Ember. This is
+   * the way back from CSS that hides the toolbar; Ctrl+Shift+Alt+T calls it.
+   */
+  resetToDefault() {
+    unregisterCustom();
+    Services.prefs.clearUserPref(CUSTOM_PREF);
+    gFileWork = gFileWork
+      .then(() => IOUtils.remove(customPath(), { ignoreAbsent: true }))
+      .catch(e => console.error("KyberThemes: cannot delete custom CSS", e));
+    this.apply(DEFAULT_ID);
+  },
+
+  /** Resolves when a reset's file deletion has finished. */
+  filesSettled() {
+    return gFileWork;
+  },
+
+  /** Forget everything init() did, so tests can run it again. */
+  _resetForTests() {
+    for (let uri of [gBaseUri, gPaletteUri, gCustomUri]) {
+      if (uri) {
+        sss.unregisterSheet(uri, sss.USER_SHEET);
+      }
+    }
+    gBaseUri = gPaletteUri = gCustomUri = null;
+    gInitialized = false;
+    gCurrent = DEFAULT_ID;
+    gCustomLoading = Promise.resolve();
+    this._safeModeForTests = undefined;
   },
 };

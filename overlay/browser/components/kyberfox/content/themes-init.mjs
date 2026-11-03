@@ -12,3 +12,19 @@ const { KyberThemes } = ChromeUtils.importESModule(
 );
 
 KyberThemes.init();
+
+// Recovery from custom CSS that hides the toolbar: Ctrl+Shift+Alt+T drops the
+// custom file and applies Ember. A listener, not a <key>, so no browser.xhtml
+// patch is needed.
+window.addEventListener("keydown", event => {
+  if (
+    event.ctrlKey &&
+    event.shiftKey &&
+    event.altKey &&
+    !event.metaKey &&
+    event.key.toLowerCase() == "t"
+  ) {
+    event.preventDefault();
+    KyberThemes.resetToDefault();
+  }
+});
