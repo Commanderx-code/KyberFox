@@ -10,7 +10,7 @@ const { KyberWorkspaces } = ChromeUtils.importESModule(
 const LIST_PREF = "kyberfox.workspaces.list";
 
 // Runs `task(win, home, work)` in a fresh window whose workspace list is
-// freshly created: "Home" (active) and "Work".
+// freshly created: "Personal" (active) and "Work".
 async function withWorkspaces(task) {
   Services.prefs.clearUserPref(LIST_PREF);
   let win = await BrowserTestUtils.openNewBrowserWindow();
@@ -104,7 +104,7 @@ add_task(async function test_panel_lists_workspaces() {
     await openPanel(win);
     Assert.deepEqual(
       rows(win).map(r => r.label),
-      ["Home", "Work"],
+      [home.name, work.name],
       "every workspace is listed, in order"
     );
     Assert.equal(
@@ -155,14 +155,37 @@ add_task(async function test_create_rename_delete_from_panel() {
     let list = KyberWorkspaces.list();
     Assert.equal(list.length, 3, "a workspace was created");
     let created = list[2];
+    Assert.equal(created.name, "Workspace 3", "it gets a localized name");
     Assert.equal(KyberWorkspaces.activeId(win), created.id, "it is active");
+    for (let [id, label] of [
+      ["new", "New workspace"],
+      ["rename", "Rename"],
+      ["delete", "Delete"],
+    ]) {
+      await TestUtils.waitForCondition(
+        () => panel(win).querySelector(`#kyber-workspace-${id}`).label == label,
+        `the ${id} item is localized`
+      );
+    }
 
-    // Rename it inline.
-    input.value = "Research";
+    // Rename it inline. The field is selected, so typing replaces the name.
+    // A click inside the field and a Space must not reach the row.
+    EventUtils.synthesizeMouseAtCenter(input, {}, win);
+    input.select();
+    for (let ch of "Deep Research") {
+      EventUtils.synthesizeKey(ch, {}, win);
+    }
+    Assert.equal(input.value, "Deep Research", "spaces can be typed");
+    Assert.equal(panel(win).state, "open", "the panel stays open while typing");
+    Assert.equal(
+      KyberWorkspaces.activeId(win),
+      created.id,
+      "nothing switches during the edit"
+    );
     EventUtils.synthesizeKey("KEY_Enter", {}, win);
     Assert.equal(
       KyberWorkspaces.list()[2].name,
-      "Research",
+      "Deep Research",
       "Enter commits the new name"
     );
     Assert.ok(
@@ -170,7 +193,7 @@ add_task(async function test_create_rename_delete_from_panel() {
       "the input is gone"
     );
     await TestUtils.waitForCondition(
-      () => button(win).label == "Research",
+      () => button(win).label == "Deep Research",
       "the button shows the new name"
     );
 
@@ -183,7 +206,7 @@ add_task(async function test_create_rename_delete_from_panel() {
     EventUtils.synthesizeKey("KEY_Escape", {}, win);
     Assert.equal(
       KyberWorkspaces.list()[2].name,
-      "Research",
+      "Deep Research",
       "Escape keeps the old name"
     );
     Assert.equal(panel(win).state, "open", "Escape only ends the edit");
@@ -203,7 +226,11 @@ add_task(async function test_create_rename_delete_from_panel() {
       () => KyberWorkspaces.list().length == 2,
       "OK deletes the workspace"
     );
-    Assert.equal(KyberWorkspaces.activeId(win), home.id, "Home is active");
+    Assert.equal(
+      KyberWorkspaces.activeId(win),
+      home.id,
+      "the first workspace is active"
+    );
     await closePanel(win);
 
     // A workspace without tabs in this window is deleted without a prompt.
@@ -224,6 +251,39 @@ async function openPanelIfClosed(win) {
     await openPanel(win);
   }
 }
+
+add_task(async function test_row_context_menu_renames_without_switching() {
+  await withWorkspaces(async (win, home, work) => {
+    await openPanel(win);
+    let menu = win.document.getElementById("kyber-workspace-context");
+    let shown = BrowserTestUtils.waitForPopupEvent(menu, "shown");
+    EventUtils.synthesizeMouseAtCenter(
+      rowFor(win, work.id),
+      { type: "contextmenu", button: 2 },
+      win
+    );
+    await shown;
+    let hidden = BrowserTestUtils.waitForPopupEvent(menu, "hidden");
+    menu.activateItem(
+      win.document.getElementById("kyber-workspace-context-rename")
+    );
+    await hidden;
+    let input = await TestUtils.waitForCondition(() =>
+      rowFor(win, work.id).querySelector(".kyber-workspace-rename-input")
+    );
+    Assert.equal(input.value, work.name, "the field holds the current name");
+    EventUtils.synthesizeMouseAtCenter(input, {}, win);
+    EventUtils.synthesizeKey("KEY_Escape", {}, win);
+    Assert.equal(KyberWorkspaces.activeId(win), home.id, "no switch");
+    Assert.equal(panel(win).state, "open", "the panel stays open");
+    Assert.equal(
+      rowFor(win, work.id).label,
+      work.name,
+      "Escape restored the row"
+    );
+    await closePanel(win);
+  });
+});
 
 add_task(async function test_hidden_in_private_window() {
   let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });

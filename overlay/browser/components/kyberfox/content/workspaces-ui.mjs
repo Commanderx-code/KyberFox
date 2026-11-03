@@ -8,17 +8,18 @@
  * Loaded as a module script by browser.xhtml, once per browser window.
  */
 
+const { KyberWorkspaces, TAB_KEY } = ChromeUtils.importESModule(
+  "resource:///modules/KyberWorkspaces.sys.mjs"
+);
+
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
-  KyberWorkspaces: "resource:///modules/KyberWorkspaces.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   SessionStore:
     "moz-src:///browser/components/sessionstore/SessionStore.sys.mjs",
 });
 
 const LIST_PREF = "kyberfox.workspaces.list";
-// The session-store key KyberWorkspaces keeps a tab's workspace id under.
-const TAB_KEY = "kyberWorkspace";
 const HTML_NS = "http://www.w3.org/1999/xhtml";
 
 // Fill is supplied by CSS (context-fill), so one icon serves every color.
@@ -81,12 +82,8 @@ class WorkspaceButton {
     // change the active workspace without touching the list.
     let observer = () => this.refreshAll();
     Services.prefs.addObserver(LIST_PREF, observer);
-    let events = ["TabSelect", "SSWindowStateReady"];
-    let tabs = this.win.gBrowser.tabContainer;
-    for (let type of events) {
-      tabs.addEventListener(type, observer);
-      this.win.addEventListener(type, observer);
-    }
+    this.win.gBrowser.tabContainer.addEventListener("TabSelect", observer);
+    this.win.addEventListener("SSWindowStateReady", observer);
     this.win.addEventListener(
       "unload",
       () => Services.prefs.removeObserver(LIST_PREF, observer),
@@ -95,8 +92,8 @@ class WorkspaceButton {
   }
 
   activeWorkspace() {
-    let id = lazy.KyberWorkspaces.activeId(this.win);
-    return lazy.KyberWorkspaces.list().find(w => w.id == id);
+    let id = KyberWorkspaces.activeId(this.win);
+    return KyberWorkspaces.list().find(w => w.id == id);
   }
 
   setColor(el, id) {
@@ -104,7 +101,9 @@ class WorkspaceButton {
   }
 
   refreshButton() {
-    let active = this.activeWorkspace();
+    // activeId() already falls back to the first workspace; the explicit
+    // fallback keeps the label right if the list changes in between.
+    let active = this.activeWorkspace() ?? KyberWorkspaces.list()[0];
     if (!active) {
       return;
     }
@@ -150,12 +149,23 @@ class WorkspaceButton {
       this.editing = false;
     });
     panel.addEventListener("command", e => this.onCommand(e));
-    panel.addEventListener("dblclick", e => {
-      let row = e.target.closest?.(".kyber-workspace-item");
-      if (row) {
-        this.startRename(row.getAttribute("workspace-id"));
+    panel.setAttribute("context", "kyber-workspace-context");
+    let menu = this.doc.createXULElement("menupopup");
+    menu.id = "kyber-workspace-context";
+    let rename = this.doc.createXULElement("menuitem");
+    rename.id = "kyber-workspace-context-rename";
+    rename.setAttribute("data-l10n-id", "kyberfox-workspace-rename");
+    menu.append(rename);
+    menu.addEventListener("popupshowing", e => {
+      this.contextRow = menu.triggerNode?.closest?.(".kyber-workspace-item");
+      if (!this.contextRow) {
+        e.preventDefault();
       }
     });
+    menu.addEventListener("command", () => {
+      this.startRename(this.contextRow.getAttribute("workspace-id"));
+    });
+    this.doc.getElementById("mainPopupSet").append(menu);
     this.doc.getElementById("mainPopupSet").appendChild(panel);
     this.panel = panel;
     return panel;
@@ -175,8 +185,8 @@ class WorkspaceButton {
 
   /** Redraws the workspace rows and the state of the footer. */
   renderRows() {
-    let active = lazy.KyberWorkspaces.activeId(this.win);
-    let workspaces = lazy.KyberWorkspaces.list();
+    let active = KyberWorkspaces.activeId(this.win);
+    let workspaces = KyberWorkspaces.list();
     let rows = workspaces.map(w => {
       let row = this.doc.createXULElement("toolbarbutton");
       row.className = "subviewbutton kyber-workspace-item";
@@ -195,13 +205,13 @@ class WorkspaceButton {
   }
 
   onCommand(event) {
+    if (this.editing) {
+      return;
+    }
     let target = event.target;
-    let active = lazy.KyberWorkspaces.activeId(this.win);
+    let active = KyberWorkspaces.activeId(this.win);
     if (target.classList.contains("kyber-workspace-item")) {
-      lazy.KyberWorkspaces.switchTo(
-        this.win,
-        target.getAttribute("workspace-id")
-      );
+      KyberWorkspaces.switchTo(this.win, target.getAttribute("workspace-id"));
       this.refreshButton();
       this.panel.hidePopup();
       return;
@@ -222,10 +232,10 @@ class WorkspaceButton {
   async createWorkspace() {
     let defaultName = await this.doc.l10n.formatValue(
       "kyberfox-workspace-default-name",
-      { number: lazy.KyberWorkspaces.list().length + 1 }
+      { number: KyberWorkspaces.list().length + 1 }
     );
-    let created = lazy.KyberWorkspaces.create(defaultName);
-    lazy.KyberWorkspaces.switchTo(this.win, created.id);
+    let created = KyberWorkspaces.create(defaultName);
+    KyberWorkspaces.switchTo(this.win, created.id);
     this.refreshButton();
     this.renderRows();
     this.startRename(created.id);
@@ -254,7 +264,7 @@ class WorkspaceButton {
       this.win.removeEventListener("keydown", onKey, true);
       let newName = input.value.trim();
       if (save && newName) {
-        lazy.KyberWorkspaces.rename(id, newName);
+        KyberWorkspaces.rename(id, newName);
       }
       this.refreshAll();
     };
@@ -269,6 +279,16 @@ class WorkspaceButton {
     };
     this.win.addEventListener("keydown", onKey, true);
     input.addEventListener("blur", () => finish(false));
+    // Nothing typed or clicked in the field may reach the row, which would
+    // switch to it (click, Space) and close the panel.
+    for (let type of ["click", "mousedown", "mouseup", "keypress", "keyup"]) {
+      input.addEventListener(type, e => e.stopPropagation());
+    }
+    input.addEventListener("keydown", e => {
+      if (e.key != "Enter" && e.key != "Escape") {
+        e.stopPropagation();
+      }
+    });
     row.replaceChildren(input);
     row.setAttribute("editing", "true");
     input.focus();
@@ -276,8 +296,8 @@ class WorkspaceButton {
   }
 
   async deleteWorkspace(id) {
-    let workspace = lazy.KyberWorkspaces.list().find(w => w.id == id);
-    if (!workspace || lazy.KyberWorkspaces.list().length < 2) {
+    let workspace = KyberWorkspaces.list().find(w => w.id == id);
+    if (!workspace || KyberWorkspaces.list().length < 2) {
       return;
     }
     let count = this.win.gBrowser.openTabs.filter(
@@ -311,7 +331,7 @@ class WorkspaceButton {
         return;
       }
     }
-    lazy.KyberWorkspaces.remove(id, this.win);
+    KyberWorkspaces.remove(id, this.win);
     this.refreshAll();
   }
 }

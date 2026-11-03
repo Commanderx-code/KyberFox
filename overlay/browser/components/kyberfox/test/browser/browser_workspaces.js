@@ -3,15 +3,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const { KyberWorkspaces } = ChromeUtils.importESModule(
+const { KyberWorkspaces, TAB_KEY } = ChromeUtils.importESModule(
   "resource:///modules/KyberWorkspaces.sys.mjs"
 );
 
 const LIST_PREF = "kyberfox.workspaces.list";
-const TAB_KEY = "kyberWorkspace";
 
 // Runs `task(win, home, work)` in a fresh window whose workspace list is
-// freshly created: "Home" (active) and "Work".
+// freshly created: "Personal" (active) and "Work".
 async function withWorkspaces(task) {
   Services.prefs.clearUserPref(LIST_PREF);
   let win = await BrowserTestUtils.openNewBrowserWindow();

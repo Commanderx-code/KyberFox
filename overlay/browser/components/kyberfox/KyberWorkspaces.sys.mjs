@@ -19,9 +19,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
 });
 
 const LIST_PREF = "kyberfox.workspaces.list";
-const TAB_KEY = "kyberWorkspace";
-const WINDOW_KEY = "kyberActiveWorkspace";
-const DEFAULT_NAME = "Home";
+/** Session-store keys, shared with the workspace UI. */
+export const TAB_KEY = "kyberWorkspace";
+export const WINDOW_KEY = "kyberActiveWorkspace";
+const DEFAULT_NAME = "Personal";
 
 /** Per-window state: the listeners to undo and each workspace's last tab. */
 const gWindows = new WeakMap();
