@@ -122,3 +122,22 @@ jobs:
             echo "Expected '$EXPECTED'"
             exit 1
           fi
+
+      # The front-end tests cannot see the real profile root: the test harness
+      # sets MOZ_APP_DATA, which wins over XDG. A fresh HOME has no legacy
+      # ~/.kyberfox, so identity.patch puts the profiles under
+      # $XDG_CONFIG_HOME/kyberfox/kyberfox and the cache under
+      # $XDG_CACHE_HOME/kyberfox (defaults ~/.config and ~/.cache).
+      - name: Check the profile folders
+        run: |
+          home=$(mktemp -d)
+          chown builder: "$home"
+          runuser -u builder -- env -i HOME="$home" PATH=/usr/bin:/bin \
+            timeout 180 /usr/bin/kyberfox --headless --screenshot "$home/shot.png" about:blank
+          find "$home" -maxdepth 4 | sort
+          test -f "$home/.config/kyberfox/kyberfox/profiles.ini"
+          test -d "$home/.cache/kyberfox"
+          if [ -e "$home/.kyberfox" ]; then
+            echo "Legacy ~/.kyberfox created on a fresh HOME"
+            exit 1
+          fi

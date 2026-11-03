@@ -149,9 +149,16 @@ a full build. Autoconfig does not run under xpcshell, so everything
 Browser tests, whole directory, `--exclude-extension=uBlock0@raymondhill.net.xpi`:
 `Passed: 56  Failed: 5`. `browser_defaults.js` (21/21), `browser_workspaces.js`
 (34/36, 0 unexpected) and `browser_ublock_bundled.js` pass. The 5 failures are
-all `browser_identity.js`: the artifact build runs Mozilla's binary, so the
-application name, vendor and profile root are Firefox's. They need a full
-build.
+all `browser_identity.js`. Three (application name, vendor, binary name) fail
+because the artifact build runs Mozilla's binary; they need a full build. The
+other two were the profile root checks, which no mochitest run can pass:
+mozrunner sets `MOZ_APP_DATA` and `MOZ_LOCAL_APP_DATA`
+(`testing/mozbase/mozrunner/mozrunner/base/browser.py`), and
+`nsXREDirProvider::GetUserDataDirectory` returns those before any XDG logic,
+so the harness sees a temporary `*.moz-appdata` folder. `test_profile_root`
+now records a todo when `MOZ_APP_DATA` is set, and `smoke-arch.yml` checks the
+XDG profile and cache folders by starting the installed package with a fresh
+`HOME`.
 
 Earlier findings on the mochitest harness:
 

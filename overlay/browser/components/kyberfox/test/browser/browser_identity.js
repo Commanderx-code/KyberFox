@@ -10,6 +10,14 @@ add_task(function test_app_identity() {
 });
 
 add_task(function test_profile_root() {
+  // The test harness (mozrunner) sets MOZ_APP_DATA and MOZ_LOCAL_APP_DATA, and
+  // nsXREDirProvider returns those before any XDG or %APPDATA% logic, so the
+  // real profile root cannot be seen here. smoke-arch.yml checks the XDG
+  // folders on the installed package instead.
+  if (Services.env.exists("MOZ_APP_DATA")) {
+    todo(false, "profile root not checkable: MOZ_APP_DATA is set by the harness");
+    return;
+  }
   let root = Services.dirsvc.get("DefProfRt", Ci.nsIFile);
   let localRoot = Services.dirsvc.get("DefProfLRt", Ci.nsIFile);
   if (AppConstants.platform == "win") {
