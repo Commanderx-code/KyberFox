@@ -60,6 +60,9 @@ jobs:
             echo ". \"$GITHUB_WORKSPACE/mozconfigs/linux\""
             echo "ac_add_options --enable-tests"
             echo "ac_add_options --with-ccache=$SCCACHE_PATH"
+            echo "# Test build only: the harness installs its own unsigned add-ons."
+            echo "# The release mozconfigs must never carry this line."
+            echo "export MOZ_REQUIRE_SIGNING="
           } > "$RUNNER_TEMP/mozconfig"
           cat "$RUNNER_TEMP/mozconfig"
           echo "MOZCONFIG=$RUNNER_TEMP/mozconfig" >> "$GITHUB_ENV"
@@ -73,4 +76,4 @@ jobs:
 
       - name: Browser tests
         working-directory: work/tree
-        run: ./mach mochitest --headless browser/components/kyberfox/test/browser/
+        run: ./mach mochitest --headless --exclude-extension=uBlock0@raymondhill.net.xpi browser/components/kyberfox/test/browser/

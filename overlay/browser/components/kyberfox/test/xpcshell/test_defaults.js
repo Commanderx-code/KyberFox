@@ -44,79 +44,14 @@ function checkPrefs(expected) {
   }
 }
 
+// Autoconfig does not run under xpcshell, so everything that kyberfox.cfg sets
+// is checked in test/browser/browser_defaults.js.
 add_task(function test_cfg_is_loaded() {
   Assert.equal(
     Services.prefs.getStringPref("general.config.filename", ""),
     "kyberfox.cfg",
     "local-settings.js names the autoconfig file"
   );
-  Assert.notEqual(
-    Services.prefs.getStringPref("kyberfox.cfg.version", ""),
-    "",
-    "kyberfox.cfg was read"
-  );
-});
-
-add_task(function test_private_defaults() {
-  checkPrefs({
-    "network.cookie.cookieBehavior": 1,
-    "privacy.resistFingerprinting": false,
-    "privacy.fingerprintingProtection": true,
-    "browser.safebrowsing.downloads.remote.enabled": false,
-    "browser.safebrowsing.malware.enabled": true,
-    "dom.push.enabled": false,
-    "identity.fxaccounts.enabled": false,
-    "media.eme.enabled": false,
-    "extensions.blocklist.enabled": true,
-    "security.remote_settings.crlite_filters.enabled": true,
-    "browser.startup.page": 3,
-    "privacy.sanitize.sanitizeOnShutdown": false,
-  });
-});
-
-add_task(function test_strict_is_a_default_not_a_lock() {
-  const category = "browser.contentblocking.category";
-  Assert.equal(
-    Services.prefs.getDefaultBranch(null).getStringPref(category, ""),
-    "strict",
-    "strict is the default content blocking category"
-  );
-  Assert.ok(!Services.prefs.prefIsLocked(category), `${category} is not locked`);
-  Assert.ok(
-    !Services.prefs.prefHasUserValue(category),
-    `${category} is not forced with a user value`
-  );
-});
-
-// A new profile gets its category from matching the feature prefs, so the
-// defaults in kyberfox.cfg must line up with the strict feature list.
-add_task(function test_new_profile_resolves_to_strict() {
-  const { ContentBlockingPrefs } = ChromeUtils.importESModule(
-    "moz-src:///browser/components/protections/ContentBlockingPrefs.sys.mjs"
-  );
-  ContentBlockingPrefs.init();
-  try {
-    Assert.equal(
-      Services.prefs.getStringPref("browser.contentblocking.category"),
-      "strict"
-    );
-  } finally {
-    ContentBlockingPrefs.uninit();
-    Services.prefs.clearUserPref("browser.contentblocking.category");
-  }
-});
-
-add_task(function test_security_lists_stay_reachable() {
-  let allowed = Services.prefs
-    .getStringPref("kyberfox.services.settings.allowedCollections", "")
-    .split(",");
-  for (let collection of [
-    "security-state/*",
-    "blocklists/addons-bloomfilters",
-    "main/tracking-protection-lists",
-  ]) {
-    Assert.ok(allowed.includes(collection), `${collection} is allowed`);
-  }
 });
 
 add_task(function test_display_version_has_build_counter() {

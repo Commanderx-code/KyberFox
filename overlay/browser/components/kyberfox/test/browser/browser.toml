@@ -1,5 +1,9 @@
 [DEFAULT]
-prefs = ["extensions.installDistroAddons=false"]
+# kyberfox.cfg turns HTTPS-only mode on by default; the harness serves its
+# pages over plain HTTP.
+prefs = ["dom.security.https_only_mode=false"]
+
+["browser_defaults.js"]
 
 ["browser_identity.js"]
 

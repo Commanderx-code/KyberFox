@@ -73,7 +73,6 @@
             "SponsoredSuggestions": false,
             "ImproveSuggest": false
         },
-        "HttpsOnlyMode": "enabled",
         "LocalNetworkAccess": {
             "Enabled": true,
             "BlockTrackers": true,

@@ -29,7 +29,8 @@ order as `assemble()`, skipping only the tarball extraction:
    lists), applied with `tools.assemble._apply`.
 2. The LibreWolf icons copy.
 3. Kyber patches from `patches/kyber/series.txt`.
-4. `overlay/` copied over the tree.
+4. `tools.assemble.apply_librewolf_l10n` (LibreWolf's en-US strings), then
+   `overlay/` copied over the tree.
 5. `tools.assemble._finish_tree` (settings, staged uBlock XPI, removed paths,
    Glean ping pref, Cargo checksums, static pref order, display version).
 
@@ -90,6 +91,25 @@ running browser:
 Behavior that depends on these (profile location, remote/DBus names, user
 agent and network handling, autoconfig reading) must be verified on a full
 build.
+
+### Running the tests
+
+- Use `--exclude-extension=uBlock0@raymondhill.net.xpi` on every mochitest
+  run. The harness copies `distribution/extensions/*.xpi` into its profile
+  itself, and the bundled uBlock Origin then fetches filter lists, which the
+  harness treats as a fatal non-local connection.
+- Add `export MOZ_REQUIRE_SIGNING=` to the scratch `mozconfig-artifact` and
+  run `./mach build faster`. The release default makes Marionette refuse to
+  install the unsigned SpecialPowers add-on (`ERROR_SIGNEDSTATE_REQUIRED`).
+  Release mozconfigs must never carry this line.
+- A test browser left over from a timed-out run keeps Marionette port 2828 and
+  makes later runs hang. Kill it first: `pkill -f obj-artifact/dist/bin/firefox`.
+- `kyberfox.cfg` and `policies.json` no longer need to be moved aside:
+  harness-relevant prefs (`browser.dom.window.dump.enabled`,
+  `devtools.console.stdout.chrome`, `dom.security.https_only_mode`) are
+  `defaultPref`s, so the harness profile can override them.
+- Command:
+  `./mach mochitest --headless --app obj-artifact/dist/bin/firefox --exclude-extension=uBlock0@raymondhill.net.xpi browser/components/kyberfox/test/browser/`.
 
 ### Test results
 
