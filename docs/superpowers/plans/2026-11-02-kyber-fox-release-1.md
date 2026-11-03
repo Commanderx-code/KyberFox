@@ -452,6 +452,35 @@ uBlock Origin exposes no external messaging, so controlling it is a spike:
 
 - [ ] **Step 6: Commit.** `git commit -m "Add GX-style and One-style skins"`
 
+### Task 20: Recommended add-ons page
+
+Added 2026-11-03 at the owner's request: on first run, friends pick which recommended add-ons to install. Runs after Task 13, before Phase D.
+
+**Files:**
+- Create: `overlay/browser/components/kyberfox/KyberAddons.sys.mjs`, `overlay/browser/components/kyberfox/content/welcome.xhtml`, `overlay/browser/components/kyberfox/content/welcome.mjs`, `overlay/browser/components/kyberfox/content/welcome.css`, `settings/recommended-addons.json`, `patches/kyber/welcome-tab.patch`
+- Test: `overlay/browser/components/kyberfox/test/browser/browser_welcome.js`, `tests/test_recommended_addons.py`
+
+**Interfaces:**
+- Consumes: `AddonManager.getInstallForURL`, pref `kyberfox.welcome.shown` (bool, default false).
+- Produces: `KyberAddons.recommended(): {id, slug, name, summary, group}[]` read from `settings/recommended-addons.json`; `KyberAddons.install(ids: string[]): Promise<{id, ok: boolean, error?: string}[]>`; `KyberAddons.installed(id): Promise<boolean>`. Page `chrome://kyberfox/content/welcome.xhtml`, opened once per profile on first run after `SessionStore.promiseInitialized`, and reachable later from the Privacy page (Task 10) through a "Recommended add-ons" link.
+
+Decided behavior:
+- Nothing is pre-ticked. The page lists each add-on with a checkbox, its name, one line of plain summary, and its group. Groups: Passwords (Bitwarden `bitwarden-password-manager`, Proton Pass `proton-pass`, KeePassXC-Browser `keepassxc-browser`), Privacy (Privacy Badger `privacy-badger17`, Decentraleyes `decentraleyes`, Consent-O-Matic `consent-o-matic`, Firefox Multi-Account Containers `multi-account-containers`), Video (SponsorBlock `sponsorblock`, Return YouTube Dislike `return-youtube-dislikes`), Appearance (Dark Reader `darkreader`). uBlock Origin is shown as "included" with no checkbox.
+- Install URL is `https://addons.mozilla.org/firefox/downloads/latest/<slug>/latest.xpi` (signed by Mozilla, auto-updated through the normal add-on updater). No XPI is bundled: bundling ten add-ons would bloat the installer and freeze their versions.
+- "Install selected" installs in sequence, shows per-add-on progress and errors, and never blocks the browser. "Skip" closes the page. Either sets `kyberfox.welcome.shown`.
+- No network request is made until the user clicks Install. The page shows no AMO ratings, icons or counts (those would need requests).
+- `settings/recommended-addons.json` is the single source of the list; the Python test checks every entry has `id`, `slug`, `name`, `summary`, `group`, and that `id` matches the add-on id used by AMO (`{...}` GUID or `name@domain`).
+
+- [ ] **Step 1: Write the failing tests:** `test_welcome_opens_once_on_first_run`, `test_welcome_not_opened_when_shown`, `test_nothing_preselected`, `test_ublock_shown_as_included`, `test_install_selected_installs_only_ticked` (stub `AddonManager.getInstallForURL` through a test-only hook on `KyberAddons`), `test_install_error_is_shown_and_others_continue`, `test_skip_sets_pref`, plus `tests/test_recommended_addons.py::test_entries_complete`.
+
+- [ ] **Step 2: Run them.** Expected: FAIL.
+
+- [ ] **Step 3: Implement.** The patch opens the tab from `browser-init.js` after the Task 6 init hook, only when `kyberfox.welcome.shown` is false and the window is not private.
+
+- [ ] **Step 4: Run them.** Expected: PASS.
+
+- [ ] **Step 5: Commit.** `git commit -m "Add recommended add-ons page"`
+
 ---
 
 ## Phase D: Ship It
