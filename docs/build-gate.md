@@ -3,6 +3,17 @@
 Results of the full-build gate are recorded here by the Linux build workflow
 work. This file also holds the local development loop below.
 
+## Gate results (2026-11-03, cold builds, commit 3c99103)
+
+Free GitHub-hosted `ubuntu-latest` runners (4 cores, 15 GB RAM, 145 GB disk) build Kyber Fox. Both builds needed `--disable-debug-symbols` and a 12 GB swapfile: with debug symbols on and the stock 3 GB swap, every attempt (three Linux, two Windows) died 15 to 62 minutes into compiling, reported by GitHub as "The operation was canceled" with no cancelling user, which is how a hosted runner reports memory exhaustion.
+
+| Target | Run | Build step | Package | Job total | Peak disk | Artifact |
+|---|---|---|---|---|---|---|
+| Linux x86_64 | 41575126157 | 94.5 min | 1 min | 99.8 min | 59.6 GB | `kyberfox-linux-x86_64`, 91.9 MB |
+| Windows x86_64 (cross) | 41575126071 | 66.8 min | 1.7 min | 74.5 min | 72.1 GB | `kyberfox-windows-x86_64`, 96.4 MB installer |
+
+Both are well inside the 6 hour job limit and the disk, so the gate passes and the owner pays nothing for build minutes (public repository). The Windows smoke job installed the installer silently on a `windows-latest` runner, checked the install directory and version, and took a headless screenshot in 39 s. sccache was cold for both runs; the warm-cache time is measured on the next push to `build-gate`.
+
 ## Local dev loop
 
 Full builds are not run on the development laptop. Front-end tests run
