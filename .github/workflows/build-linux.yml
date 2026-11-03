@@ -65,6 +65,9 @@ jobs:
       - name: Assemble source tree
         run: make assemble
 
+      - name: Release guard
+        run: make check-forbidden
+
       - name: Install build dependencies
         working-directory: work/tree
         run: ./mach --no-interactive bootstrap --application-choice=browser

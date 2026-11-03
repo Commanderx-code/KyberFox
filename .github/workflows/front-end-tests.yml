@@ -1,0 +1,76 @@
+name: Front-end tests
+
+# Builds Kyber Fox with tests enabled and runs the tests of
+# browser/components/kyberfox/. Later tasks add their tests to the same
+# manifests. workflow_dispatch needs this file on main, so runs before the
+# merge start from a push to the front-end-tests branch.
+on:
+  workflow_dispatch: {}
+  workflow_call: {}
+  push:
+    branches: [front-end-tests]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Kyber Fox xpcshell and browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+        with:
+          disable_annotations: true
+
+      - name: Assemble source tree
+        run: make assemble
+
+      - name: Release guard
+        run: make check-forbidden
+
+      - name: Install build dependencies
+        working-directory: work/tree
+        run: ./mach --no-interactive bootstrap --application-choice=browser
+
+      - name: Write CI mozconfig
+        run: |
+          {
+            echo ". \"$GITHUB_WORKSPACE/mozconfigs/linux\""
+            echo "ac_add_options --enable-tests"
+            echo "ac_add_options --with-ccache=$SCCACHE_PATH"
+          } > "$RUNNER_TEMP/mozconfig"
+          cat "$RUNNER_TEMP/mozconfig"
+          echo "MOZCONFIG=$RUNNER_TEMP/mozconfig" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: make build
+
+      - name: xpcshell tests
+        working-directory: work/tree
+        run: ./mach xpcshell-test browser/components/kyberfox/test/xpcshell/
+
+      - name: Browser tests
+        working-directory: work/tree
+        run: ./mach mochitest --headless browser/components/kyberfox/test/browser/
