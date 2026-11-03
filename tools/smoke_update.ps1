@@ -163,7 +163,7 @@ while ((Get-Date) -lt $deadline -and -not $verdict) {
     foreach ($f in $files) {
         $text = Get-Content $f.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $text) { continue }
-        if ($f.Name -eq 'update.status' -and $text -match '^(failed: ?\d+|succeeded|applied)') { $verdict = $Matches[1] }
+        if ($f.Name -eq 'update.status' -and $text -match '^(failed: ?\d+|succeeded|applied|pending)') { $verdict = $Matches[1] }
         if ($f.Name -in 'active-update.xml', 'updates.xml' -and $text -match 'state="(failed|succeeded)"') { $verdict = "state $($Matches[1])" }
     }
     Write-Host "$(Get-Date -Format T) verdict '$verdict', $($files.Count) update files, server log $((Get-Item $serverLog).Length) bytes"
@@ -174,13 +174,10 @@ Start-Sleep -Seconds 5
 # --- Evidence ------------------------------------------------------------------
 Write-Host '=== server log'
 Get-Content $serverLog
-Write-Host '=== update-looking files anywhere under the user profile, ProgramData and Temp'
-foreach ($root in $env:USERPROFILE, $env:ProgramData, $env:RUNNER_TEMP) {
-    foreach ($filter in '*.mar', 'update.*', 'updates', '*update*.xml', '*update*.log') {
-        Get-ChildItem $root -Recurse -Force -Filter $filter -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -notmatch 'update-refuse\\serve' } |
-            Select-Object -First 40 | ForEach-Object { "$($_.FullName) $($_.Length)" }
-    }
+Write-Host '=== update state directories'
+Get-ChildItem $env:ProgramData -Directory -Filter 'Mozilla-*' -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem (Join-Path $_.FullName 'updates') -Recurse -Force -ErrorAction SilentlyContinue |
+        ForEach-Object { "$($_.FullName) $($_.Length)" }
 }
 Write-Host '=== update files'
 foreach ($f in @(Get-UpdateFiles | Sort-Object FullName -Unique)) {
@@ -199,12 +196,34 @@ $sawManifest = [bool]($requests | Where-Object { $_ -like 'REQUEST /*update.xml*
 $sawMar = [bool]($requests | Where-Object { $_ -like 'REQUEST /kyberfox.complete.mar*' })
 $manifestPath = ($requests | Where-Object { $_ -like 'REQUEST /*update.xml*' } | Select-Object -First 1)
 Write-Host "Manifest request: $manifestPath"
+if (-not $sawManifest) { throw 'The updater never requested update.xml' }
 # The path the updater expands must match where the manifests are published
 # (docs/update-signing.md).
 if ($manifestPath -notlike 'REQUEST /release/WINNT_x86_64-msvc-x64/update.xml*') { throw "Unexpected manifest path: $manifestPath" }
-if (-not $sawManifest) { throw 'The updater never requested update.xml' }
 if (-not $sawMar) { throw 'The updater never downloaded the MAR' }
 $allText = (Get-UpdateFiles | ForEach-Object { Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue }) -join "`n"
+
+if ($Mode -eq 'apply') {
+    # Staging is on, so a good MAR is only staged ('applied') and is swapped in
+    # at the next browser start; --version exits before that. Start the browser
+    # once more with the same profile and wait for the swap.
+    $status = @(Get-UpdateFiles | Where-Object { $_.Name -eq 'update.status' } | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() })
+    Write-Host "update.status before the restart: $($status -join ', ')"
+    $restartDir = Join-Path $work 'restart'
+    New-Item -ItemType Directory -Force -Path $restartDir | Out-Null
+    $restart = Start-Process -FilePath $exe -ArgumentList "--headless --no-remote --profile `"$kyberProfile`" --screenshot about:blank" `
+        -WorkingDirectory $restartDir -NoNewWindow -PassThru
+    $swapDeadline = (Get-Date).AddSeconds(120)
+    while ((Get-Date) -lt $swapDeadline) {
+        Start-Sleep -Seconds 5
+        $status = @(Get-UpdateFiles | Where-Object { $_.Name -eq 'update.status' } | ForEach-Object { (Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue).Trim() })
+        if ((Read-Ini $ini 'BuildID') -ne $oldBuildId -or $status -contains 'succeeded') { break }
+    }
+    Get-Process -Name kyberfox, updater -ErrorAction SilentlyContinue | Stop-Process -Force
+    Start-Sleep -Seconds 3
+    Write-Host "update.status after the restart: $($status -join ', ')"
+    Get-UpdateFiles | Where-Object { $_.Name -eq 'last-update.log' } | ForEach-Object { Get-Content $_.FullName -TotalCount 300 -ErrorAction SilentlyContinue }
+}
 
 $newBuild = Read-Ini $ini 'BuildID'
 $newDisplay = (& $exe --version --wait-for-browser | Out-String).Trim()
