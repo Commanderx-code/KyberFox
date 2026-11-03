@@ -30,4 +30,5 @@ A Firefox security release is shipped within 72 hours of Mozilla publishing it. 
 - Settings, Actions, General: enable "Allow GitHub Actions to create and approve pull requests".
 - Create the labels `upstream` and `security`. Without them the pull request is opened without labels.
 - If PR creation failed after the push (for example the setting above was off), delete the leftover `upstream/firefox-*` branch, or the next run opens the PR from that branch without rebuilding.
+- The leftover-branch path is verified before the PR opens: the branch must change only `pins.toml`, every commit must be authored by `github-actions[bot]`, and the diff must touch only the two `[firefox]` values. If a check fails the run stops with an error; delete the branch and rerun.
 - Pull requests opened with the default token do not start other workflows. Close and reopen the pull request, or push a commit to it, to run checks.

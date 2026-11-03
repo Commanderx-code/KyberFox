@@ -8,7 +8,7 @@ from tests.conftest import pins_newer_firefox
 from tools import assemble as assemble_mod
 from tools import upstream_watch as uw
 from tools.assemble import AssemblyResult
-from tools.sources import HashMismatch, load_pins
+from tools.sources import HashMismatch, LibreWolfMismatch, load_pins
 
 FIXTURES = Path(__file__).parent / "fixtures"
 REAL_PINS = Path(__file__).resolve().parent.parent / "pins.toml"
@@ -264,3 +264,41 @@ def test_unclassified_for_ref_lists_names_directly(tmp_path, monkeypatch):
     (tmp_path / "patches" / "librewolf-keep.txt").write_text("a.patch\n")
     (tmp_path / "patches" / "librewolf-drop.txt").write_text("")
     assert uw.unclassified_for_ref("159.0-2") == ["new.patch"]
+
+
+def test_bump_keeps_librewolf_mismatch_fatal(tmp_path, monkeypatch):
+    pins = _bump_setup(tmp_path, monkeypatch)
+
+    def bad(*a, **k):
+        raise LibreWolfMismatch("x")
+
+    monkeypatch.setattr(assemble_mod, "assemble", bad)
+    with pytest.raises(LibreWolfMismatch):
+        uw.bump(pins, tmp_path, "159.0.1")
+
+
+GOOD_DIFF = f"""\
+--- a/pins.toml
++++ b/pins.toml
+@@ -3,2 +3,2 @@
+ [firefox]
+-version = "159.0"
+-sha256 = "{"a" * 64}"
++version = "159.0.1"
++sha256 = "{"b" * 64}"
+"""
+
+
+def test_verify_branch_diff_accepts_bot_bump():
+    uw.verify_branch_diff(GOOD_DIFF)
+
+
+@pytest.mark.parametrize("diff", [
+    GOOD_DIFF + '+extra = "1"\n',
+    GOOD_DIFF.replace('+version = "159.0.1"', '+version = "159.0.1" # x'),
+    GOOD_DIFF.replace("b" * 64, "evil"),
+    "",
+])
+def test_verify_branch_diff_rejects_other_changes(diff):
+    with pytest.raises(ValueError):
+        uw.verify_branch_diff(diff)

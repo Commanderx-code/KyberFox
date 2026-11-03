@@ -14,7 +14,7 @@ import urllib.request
 from pathlib import Path
 
 from tools.patchset import read_list
-from tools.sources import LIBREWOLF_URL, HashMismatch, Pins, load_pins
+from tools.sources import LIBREWOLF_URL, HashMismatch, LibreWolfMismatch, Pins, load_pins
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PINS = REPO_ROOT / "pins.toml"
@@ -74,6 +74,19 @@ def bump_pins(path: Path, version: str, sha256: str) -> None:
         if n != 1:
             raise ValueError(f"{path}: [firefox] needs exactly one {key}, found {n}")
     Path(path).write_bytes((text[:start] + body + text[end:]).encode())
+
+
+def verify_branch_diff(diff: str) -> None:
+    """Accept only a diff that changes the two [firefox] values and nothing else."""
+    old, new = [], []
+    for line in diff.splitlines():
+        if line.startswith(("--- ", "+++ ")) or not line.startswith(("-", "+")):
+            continue
+        (old if line[0] == "-" else new).append(line[1:])
+    pat = (r'version\s*=\s*"[0-9]+\.[0-9]+(\.[0-9]+)?"', r'sha256\s*=\s*"[0-9a-f]{64}"')
+    for side in (old, new):
+        if len(side) != 2 or not all(re.fullmatch(p, l) for p, l in zip(pat, side)):
+            raise ValueError("branch changes more than the two [firefox] values")
 
 
 def latest_librewolf(tags_json: list) -> str | None:
@@ -207,8 +220,8 @@ def bump(pins_path: Path, report_dir: Path, version: str) -> dict:
         with tempfile.TemporaryDirectory() as work:
             result = assemble_mod.assemble(load_pins(pins_path), Path(work), allow_failed=True)
             failed = list(result.failed)
-    except HashMismatch:
-        raise  # a wrong hash is never a report line
+    except (HashMismatch, LibreWolfMismatch):
+        raise  # an integrity failure is never a report line
     except Exception as exc:  # noqa: BLE001 - a new tree can break assembly in many ways
         error = f"{type(exc).__name__}: {exc}"
     _write_report(info, failed, unclassified, error, report_dir / REPORT)
@@ -221,7 +234,16 @@ def main(argv=None) -> int:
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--bump", metavar="VERSION",
                       help="Firefox version from --check's firefox.latest")
+    mode.add_argument("--verify-branch-diff", action="store_true",
+                      help="read a pins.toml diff on stdin; fail unless only the Firefox values changed")
     args = ap.parse_args(argv)
+    if args.verify_branch_diff:
+        try:
+            verify_branch_diff(sys.stdin.read())
+        except ValueError as exc:
+            print(exc, file=sys.stderr)
+            return 1
+        return 0
     if args.check:
         print(json.dumps(gather(load_pins(PINS)), indent=2))
     else:

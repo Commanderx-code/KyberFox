@@ -161,6 +161,7 @@ def no_network(monkeypatch):
     import urllib.parse
     import urllib.request
 
+    monkeypatch.setenv("GIT_ALLOW_PROTOCOL", "file")
     real = urllib.request.urlopen
 
     def guarded(req, *args, **kwargs):

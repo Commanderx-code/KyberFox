@@ -27,13 +27,13 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:
-      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch || github.ref_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         # The push at the end needs the token; no later step runs fetched code.
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ github.event.repository.default_branch || github.ref_name }}
           persist-credentials: true
 
       - name: Set up Python
@@ -48,7 +48,7 @@ jobs:
           cat check.json
           jq -e '.firefox.newer | type == "boolean"' check.json > /dev/null
           version=$(jq -r '.firefox.latest' check.json)
-          if ! printf '%s' "$version" | grep -Eqx '[0-9]+\.[0-9]+(\.[0-9]+)?'; then
+          if ! [[ $version =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "::error::unexpected Firefox version"
             exit 1
           fi
@@ -69,11 +69,13 @@ jobs:
           prs=$(gh pr list --head "$BRANCH" --state all \
                   --json isCrossRepository,number \
                   --jq '[.[] | select(.isCrossRepository | not)] | length')
-          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null; then
-            branch=yes
-          else
-            branch=no
-          fi
+          rc=0
+          git ls-remote --exit-code --heads origin "refs/heads/$BRANCH" > /dev/null || rc=$?
+          case $rc in
+            0) branch=yes ;;
+            2) branch=no ;;
+            *) echo "::error::git ls-remote failed ($rc)"; exit 1 ;;
+          esac
           echo "prs=$prs" >> "$GITHUB_OUTPUT"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
           if [ "$prs" != "0" ]; then
@@ -104,6 +106,25 @@ jobs:
             git add pins.toml
             git commit -m "Bump Firefox to $VERSION"
             git push origin "$branch"
+          else
+            # A leftover branch is trusted only if the bot made it and it
+            # changes nothing but the two Firefox values in pins.toml.
+            bad="Branch $branch is not the bot's bump; delete it and rerun."
+            git fetch --quiet --unshallow origin || true
+            git fetch --quiet origin \
+              "+refs/heads/$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH" \
+              "+refs/heads/$branch:refs/remotes/origin/$branch"
+            files=$(git diff --name-only "origin/$DEFAULT_BRANCH...origin/$branch")
+            if [ "$files" != "pins.toml" ]; then
+              echo "::error::$bad (changed files: $files)"; exit 1
+            fi
+            if git log --format=%an "origin/$DEFAULT_BRANCH..origin/$branch" \
+                 | grep -qvx 'github-actions\[bot\]'; then
+              echo "::error::$bad (author is not github-actions[bot])"; exit 1
+            fi
+            git diff "origin/$DEFAULT_BRANCH...origin/$branch" -- pins.toml \
+              | python -m tools.upstream_watch --verify-branch-diff \
+              || { echo "::error::$bad"; exit 1; }
           fi
 
           if [ "$SECURITY" = "true" ]; then sec=yes; else sec=no; fi
