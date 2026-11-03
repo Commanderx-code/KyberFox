@@ -1,0 +1,229 @@
+import json
+import re
+from pathlib import Path
+
+import pytest
+import yaml
+
+from tools import set_disabled_skins as S
+
+ROOT = Path(__file__).resolve().parent.parent
+WORKFLOWS = ROOT / ".github/workflows"
+TEXT = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+WORKFLOW = yaml.safe_load(TEXT)
+JOBS = WORKFLOW["jobs"]
+
+
+def triggers():
+    # PyYAML reads the bare key `on` as the boolean True.
+    return WORKFLOW.get("on", WORKFLOW.get(True))
+
+
+def as_list(value):
+    return [value] if isinstance(value, str) else list(value or [])
+
+
+def needs_closure(job):
+    seen, todo = set(), as_list(JOBS[job].get("needs"))
+    while todo:
+        name = todo.pop()
+        if name not in seen:
+            seen.add(name)
+            todo += as_list(JOBS[name].get("needs"))
+    return seen
+
+
+def steps(job):
+    return JOBS[job]["steps"]
+
+
+def step_named(job, fragment):
+    found = [s for s in steps(job) if fragment in s.get("name", "")]
+    assert len(found) == 1, f"{fragment}: {len(found)} steps"
+    return found[0]
+
+
+def test_release_is_manual_only():
+    t = triggers()
+    assert list(t) == ["workflow_dispatch"]
+    inputs = t["workflow_dispatch"]["inputs"]
+    assert inputs["version"]["required"] is True
+    assert inputs["channel"]["default"] == "release"
+    assert inputs["channel"]["options"] == ["release", "test"]
+    assert inputs["set-disabled-skin"]["default"] == ""
+    assert inputs["dry-run"]["default"] is False
+    assert WORKFLOW["concurrency"] == {
+        "group": "release-${{ inputs.channel }}", "cancel-in-progress": False}
+
+
+def test_publish_job_requires_environment():
+    publish = JOBS["publish"]
+    assert publish["environment"] == "release"
+    assert "verify" in as_list(publish["needs"])
+    for name, job in JOBS.items():
+        text = yaml.safe_dump(job)
+        assert ("MAR_SIGNING_KEY" in text) == (name == "publish"), name
+        for secret in ("PACMAN_GPG_KEY", "PACMAN_GPG_KEY_ID"):
+            assert (secret in text) == (name == "publish"), (name, secret)
+        assert ("secrets." in text) == (name == "publish"), name
+    assert "secrets.MAR_SIGNING_KEY" in yaml.safe_dump(publish)
+
+
+def test_only_publish_writes_and_nothing_else_has_environment():
+    assert [n for n, j in JOBS.items() if "environment" in j] == ["publish"]
+    assert WORKFLOW["permissions"] == {"contents": "read"}
+    for name, job in JOBS.items():
+        perms = job.get("permissions", {})
+        assert (perms.get("contents") == "write") == (name == "publish"), name
+        assert "id-token" not in perms
+
+
+def test_verify_runs_every_gate():
+    verify = needs_closure("verify")
+    uses = {JOBS[n]["uses"] for n in verify if "uses" in JOBS[n]}
+    for wf in ("build-linux", "build-windows", "front-end-tests", "smoke-windows", "smoke-arch"):
+        assert f"./.github/workflows/{wf}.yml" in uses
+    commands = "\n".join(s.get("run", "") for s in steps("verify"))
+    assert "make check-forbidden" in commands
+    assert "pytest tests" in commands
+    assert commands.index("make assemble") < commands.index("make check-forbidden")
+    # The build workflow already calls the refuse smoke; release.yml must not call it again.
+    assert "./.github/workflows/smoke-update.yml" not in {
+        j["uses"] for n, j in JOBS.items() if "uses" in j and n != "apply-update"}
+    assert "smoke-update.yml" in (WORKFLOWS / "build-windows.yml").read_text(encoding="utf-8")
+    # Publish waits for all of it.
+    assert set(JOBS) - {"publish", "apply-update"} >= needs_closure("publish") | {"verify"}
+    assert verify <= needs_closure("publish")
+
+
+def test_apply_update_runs_after_publish_with_the_signed_mar():
+    job = JOBS["apply-update"]
+    assert as_list(job["needs"]) == ["publish"]
+    assert job["uses"] == "./.github/workflows/smoke-update.yml"
+    assert job["with"]["signed-mar-run-id"] == "${{ github.run_id }}"
+    assert job["with"]["run-id"] == "${{ inputs.update-from-run-id }}"
+    upload = step_named("publish", "Upload the signed MAR")
+    assert upload["with"]["name"] == "kyberfox-windows-signed-mar"
+
+
+def test_dry_run_never_touches_release_channel():
+    publish_text = yaml.safe_dump(JOBS["publish"])
+    assert "update/release" not in publish_text
+    manifests = step_named("publish", "Publish the update manifests")
+    assert manifests["env"]["MANIFEST_CHANNEL"] == "${{ inputs.dry-run && 'test' || inputs.channel }}"
+    assert "update/$MANIFEST_CHANNEL/WINNT_x86_64-msvc-$cpu/update.xml" in manifests["run"]
+    assert "for cpu in x64 aarch64" in manifests["run"]
+    # The real pacman repo is written only for a non-dry release-channel run.
+    repo_steps = [s for s in steps("publish") if "arch/x86_64" in s.get("run", "")]
+    assert len(repo_steps) == 1
+    assert repo_steps[0]["if"] == "${{ !inputs.dry-run && inputs.channel == 'release' }}"
+    scratch = step_named("publish", "scratch repo")
+    assert scratch["if"] == "${{ inputs.dry-run }}"
+    assert "arch/x86_64" not in scratch["run"]
+    # Every push to gh-pages comes from one of these two steps.
+    pushers = [s["name"] for s in steps("publish") if "push origin HEAD:gh-pages" in s.get("run", "")]
+    assert pushers == ["Publish the update manifests", "Publish the pacman repo"]
+    # Dry runs and test channels make pre-releases with a -test tag.
+    release = step_named("publish", "Create the GitHub Release")
+    assert "--prerelease" in release["run"]
+    prepare = step_named("prepare", "Check the version")
+    assert 'tag="$tag-test"' in prepare["run"]
+    assert prepare["env"]["DRY_RUN"] == "${{ inputs.dry-run }}"
+
+
+def test_publish_orders_release_then_manifest_then_pacman():
+    names = [s["name"] for s in steps("publish")]
+    order = ["Refuse placeholder update certificates", "Sign the MAR",
+             "Build the Arch package", "Tag the release", "Create the GitHub Release",
+             "Publish the update manifests", "Publish the pacman repo"]
+    positions = [names.index(n) for n in order]
+    assert positions == sorted(positions)
+
+
+def test_placeholder_certificates_are_refused_before_signing():
+    gate = step_named("publish", "Refuse placeholder")["run"]
+    assert "openssl x509 -inform DER -noout -subject" in gate
+    assert "PLACEHOLDER" in gate and "release_primary" in gate and "release_secondary" in gate
+    assert "docs/update-signing.md" in gate
+    names = [s["name"] for s in steps("publish")]
+    assert names.index("Refuse placeholder update certificates") < names.index("Sign the MAR")
+
+
+def test_signing_uses_the_tool_and_verifies_against_the_committed_cert():
+    run = step_named("publish", "Sign the MAR")["run"]
+    assert "tools.sign_mar sign" in run
+    assert "--cert overlay/toolkit/mozapps/update/updater/release_primary.der" in run
+    assert "shred -u" in run
+    setup = step_named("publish", "Set up Python")
+    assert setup["with"]["python-version"] == "3.12"
+
+
+def test_set_disabled_skin_writes_status():
+    for wf in ("build-linux", "build-windows"):
+        doc = yaml.safe_load((WORKFLOWS / f"{wf}.yml").read_text(encoding="utf-8"))
+        call = (doc.get("on") or doc.get(True))["workflow_call"]["inputs"]["disabled-skins"]
+        assert call["default"] == "" and call["type"] == "string"
+        names = [s.get("name") for s in doc["jobs"]["build"]["steps"]]
+        write = doc["jobs"]["build"]["steps"][names.index("Disable skins")]
+        assert "tools.set_disabled_skins" in write["run"]
+        assert write["if"] == "${{ inputs.disabled-skins != '' }}"
+        assert names.index("Disable skins") < names.index("Assemble source tree")
+    for job in ("build-linux", "build-windows"):
+        assert JOBS[job]["with"]["disabled-skins"] == "${{ inputs.set-disabled-skin }}"
+    assert "kyberfox-theme-status" in TEXT
+    # verify assembles with the same file.
+    assemble = step_named("verify", "Assemble the release tree")["run"]
+    assert assemble.index("themes/status.json") < assemble.index("make assemble")
+
+
+def test_windows_build_compares_update_certificates():
+    doc = yaml.safe_load((WORKFLOWS / "build-windows.yml").read_text(encoding="utf-8"))
+    names = [s.get("name") for s in doc["jobs"]["build"]["steps"]]
+    step = doc["jobs"]["build"]["steps"][names.index("Check update certificates")]
+    assert "cmp " in step["run"]
+    assert "release_primary release_secondary" in step["run"]
+    assert "work/tree/toolkit/mozapps/update/updater/$name.der" in step["run"]
+    assert names.index("Assemble source tree") < names.index("Check update certificates")
+
+
+def test_every_action_is_pinned_by_sha():
+    for path in WORKFLOWS.glob("*.yml"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            m = re.search(r"uses:\s*(\S+)", line)
+            if m and not m.group(1).startswith("./"):
+                assert re.fullmatch(r"[\w.-]+/[\w./-]+@[0-9a-f]{40}", m.group(1)), (path.name, line)
+                assert re.search(r"# v\d", line), (path.name, line)
+
+
+def test_pins_version_check_matches_pins_toml():
+    prepare = step_named("prepare", "Check the version")["run"]
+    assert "pins['firefox']['version']" in prepare and "pins['kyber']['build']" in prepare
+
+
+# --- tools/set_disabled_skins.py ------------------------------------------------
+
+def test_parse_ids_accepts_known_ids_and_drops_blanks():
+    assert S.parse_ids("") == []
+    assert S.parse_ids(" gx , one,gx,") == ["gx", "one"]
+    assert S.parse_ids("ember") == ["ember"]
+
+
+def test_parse_ids_rejects_unknown_ids():
+    with pytest.raises(ValueError, match="nope"):
+        S.parse_ids("gx,nope")
+
+
+def test_cli_writes_status_json(tmp_path):
+    out = tmp_path / "status.json"
+    assert S.main(["gx,one", "--out", str(out)]) == 0
+    assert json.loads(out.read_text()) == {"disabled": ["gx", "one"]}
+    assert S.main(["", "--out", str(out)]) == 0
+    assert json.loads(out.read_text()) == {"disabled": []}
+    assert S.main(["bogus", "--out", str(out)]) == 1
+    assert json.loads(out.read_text()) == {"disabled": []}
+
+
+def test_cli_default_target_is_the_committed_status_file():
+    committed = json.loads((ROOT / "themes/status.json").read_text())
+    assert set(committed["disabled"]) <= S.known_ids()
+    assert S.THEMES == ROOT / "themes"

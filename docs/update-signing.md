@@ -24,7 +24,7 @@ Installs are per user and the maintenance service is off (`--disable-maintenance
 
 ## The `%BUILD_TARGET%` value
 
-The updater expands `%BUILD_TARGET%` as `Services.appinfo.OS + "_" + ABI` (`toolkit/modules/UpdateUtils.sys.mjs`). The ABI part is `x86_64-msvc` followed by the architecture of the CPU the browser is running on (`UpdateUtils.sys.mjs` appends `gWinCPUArch`), not the architecture it was built for. The Windows x86_64 build on an x64 machine therefore asks for `WINNT_x86_64-msvc-x64`. The same build under x64 emulation on Windows on Arm asks for `WINNT_x86_64-msvc-aarch64`, and would get a 404 and never update. Release 1 publishes the same manifest under both paths (Task 16 does that). The file for the current release lives at:
+The updater expands `%BUILD_TARGET%` as `Services.appinfo.OS + "_" + ABI` (`toolkit/modules/UpdateUtils.sys.mjs`). The ABI part is `x86_64-msvc` followed by the architecture of the CPU the browser is running on (`UpdateUtils.sys.mjs` appends `gWinCPUArch`), not the architecture it was built for. The Windows x86_64 build on an x64 machine therefore asks for `WINNT_x86_64-msvc-x64`. The same build under x64 emulation on Windows on Arm asks for `WINNT_x86_64-msvc-aarch64`, and would get a 404 and never update. The release workflow publishes the same manifest under both paths. The file for the current release lives at:
 
 ```
 update/release/WINNT_x86_64-msvc-x64/update.xml
