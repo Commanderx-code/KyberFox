@@ -1,4 +1,4 @@
-# Release tooling (MAR signing). Installed with: pip install --require-hashes -r requirements-release.txt
+# Release tooling (MAR signing). Needs Python >= 3.11. Installed with: pip install --require-hashes -r requirements-release.txt
 # The PyPI project is named mar; it provides the mardor module. Every file hash of each pinned
 # version is listed so the same file installs on Linux and Windows runners.
 

@@ -8,7 +8,9 @@ URL = "https://github.com/Commanderx-code/KyberFox/releases/download/v159.0.1-1/
 
 def test_update_xml_has_complete_patch():
     root = ET.fromstring(render_update_xml("159.0.1", "20261110000000", URL, "ab" * 64, 123))
+    assert len(root) == 1
     update = root.find("update")
+    assert len(update) == 1
     assert update.get("appVersion") == "159.0.1"
     assert update.get("buildID") == "20261110000000"
     patch = update.find("patch")

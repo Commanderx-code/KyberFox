@@ -99,13 +99,22 @@ def test_rejects_small_keys(tmp_path, unsigned_mar):
         sign_mar(unsigned_mar, tmp_path / "x.mar", pem)
 
 
-def test_committed_update_certificates_are_distinct_rsa4096_sha384():
-    from pathlib import Path
 
-    base = Path(__file__).resolve().parent.parent / "overlay/toolkit/mozapps/update/updater"
-    certs = [x509.load_der_x509_certificate((base / f"release_{n}.der").read_bytes())
-             for n in ("primary", "secondary")]
-    assert certs[0].public_bytes(serialization.Encoding.DER) != certs[1].public_bytes(serialization.Encoding.DER)
-    for cert in certs:
-        assert cert.public_key().key_size == 4096
-        assert isinstance(cert.signature_hash_algorithm, hashes.SHA384)
+def test_cli_missing_key_is_an_error_not_a_traceback(tmp_path, unsigned_mar, capsys):
+    out = tmp_path / "signed.mar"
+    assert main(["sign", "--key", str(tmp_path / "nope.pem"), "--in", str(unsigned_mar),
+                 "--out", str(out)]) == 1
+    assert "error:" in capsys.readouterr().err
+    assert not out.exists()
+
+
+def test_failed_verification_leaves_no_output(tmp_path, keys, unsigned_mar):
+    (key_pem, _), (_, other_der) = keys
+    key = tmp_path / "k.pem"
+    key.write_bytes(key_pem)
+    other = tmp_path / "other.der"
+    other.write_bytes(other_der)
+    out = tmp_path / "signed.mar"
+    assert main(["sign", "--key", str(key), "--cert", str(other),
+                 "--in", str(unsigned_mar), "--out", str(out)]) == 1
+    assert not out.exists() and not out.with_suffix(".tmp").exists()

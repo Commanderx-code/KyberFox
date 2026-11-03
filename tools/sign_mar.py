@@ -108,9 +108,14 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.cmd == "sign":
-            sign_mar(args.src, args.dst, args.key.read_bytes())
-            if args.cert and not verify_mar(args.dst, public_pem(args.cert)):
-                raise SignError(f"{args.dst} does not verify against {args.cert}")
+            tmp = args.dst.with_suffix(".tmp")
+            try:
+                sign_mar(args.src, tmp, args.key.read_bytes())
+                if args.cert and not verify_mar(tmp, public_pem(args.cert)):
+                    raise SignError(f"{args.dst} does not verify against {args.cert}")
+                tmp.replace(args.dst)
+            finally:
+                tmp.unlink(missing_ok=True)
             print(f"signed {args.dst}")
             args.mar = args.dst
         elif args.cmd == "verify":
@@ -123,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"sha512 {sha512}")
             print(f"size {size}")
             print(f"productinfo {product_info(args.mar)}")
-    except SignError as e:
+    except (SignError, OSError, ValueError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
     return 0

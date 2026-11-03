@@ -18,6 +18,7 @@ out=$(realpath -m "$3")
 channel=$4
 
 command -v mar >/dev/null || { echo "mar not found: pip install -r requirements-release.txt" >&2; exit 1; }
+command -v unzip >/dev/null || { echo "unzip not found" >&2; exit 1; }
 command -v xz >/dev/null || { echo "xz not found" >&2; exit 1; }
 
 scratch=$(mktemp -d)
@@ -52,6 +53,14 @@ done
 exec "$real_mar" "\${args[@]}"
 WRAP
 chmod +x "$scratch/mar"
+
+# The updater accepts only the channel ids in update-settings.ini; a MAR stamped
+# with another id would be refused on users' machines after the signature check.
+accepted=$(sed -n 's/^ACCEPTED_MAR_CHANNEL_IDS=//p' "$app/update-settings.ini" | tr -d '\r' | head -n 1)
+case ",$accepted," in
+  *",$channel,"*) ;;
+  *) echo "Channel $channel is not in ACCEPTED_MAR_CHANNEL_IDS ($accepted) of update-settings.ini" >&2; exit 1 ;;
+esac
 
 mkdir -p "$(dirname "$out")"
 rm -f "$out"
