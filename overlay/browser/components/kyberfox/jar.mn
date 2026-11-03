@@ -1,0 +1,26 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+browser.jar:
+% content kyberfox %content/kyberfox/
+  content/kyberfox/recommended-addons.json (recommended-addons.json)
+  content/kyberfox/welcome.xhtml (content/welcome.xhtml)
+  content/kyberfox/welcome.mjs (content/welcome.mjs)
+  content/kyberfox/welcome.css (content/welcome.css)
+  content/kyberfox/themes-init.mjs (content/themes-init.mjs)
+  content/kyberfox/theme-pane.mjs (content/theme-pane.mjs)
+  content/kyberfox/privacy-presets.mjs (content/privacy-presets.mjs)
+  content/kyberfox/shield-ublock-frame.js (content/shield-ublock-frame.js)
+  content/kyberfox/shield-off.svg (content/shield-off.svg)
+  content/kyberfox/shield.css (content/shield.css)
+  content/kyberfox/shield-ui.mjs (content/shield-ui.mjs)
+  content/kyberfox/shield.svg (content/shield.svg)
+  content/kyberfox/workspaces-ui.mjs (content/workspaces-ui.mjs)
+  content/kyberfox/workspaces.css (content/workspaces.css)
+  content/kyberfox/themes/base.css (themes/base.css)
+  content/kyberfox/themes/palettes.json (themes/palettes.json)
+  content/kyberfox/themes/status.json (themes/status.json)
+  content/kyberfox/themes/skins/index.json (themes/skins/index.json)
+  content/kyberfox/themes/skins/gx/ (themes/skins/gx/**)
+  content/kyberfox/themes/skins/one/ (themes/skins/one/**)

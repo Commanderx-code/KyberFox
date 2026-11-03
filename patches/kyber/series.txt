@@ -1,0 +1,22 @@
+# Kyber patches, applied in order after the LibreWolf patches.
+# One file name per line, relative to this directory.
+0001-register-component.patch
+identity.patch
+private-defaults.patch
+updater.patch
+preferences-without-pref-pane.patch
+ublock-bundled.patch
+per-user-install.patch
+installer-title.patch
+workspaces-init.patch
+workspace-button.patch
+shield-button.patch
+privacy-presets-pane.patch
+theme-engine.patch
+theme-pane.patch
+lint-skins.patch
+welcome-tab.patch
+license-notices.patch
+ui-names.patch
+hide-sync-pane.patch
+fix-bool-settings.patch

@@ -1,0 +1,21 @@
+diff --git a/browser/base/content/browser-init.js b/browser/base/content/browser-init.js
+--- a/browser/base/content/browser-init.js
++++ b/browser/base/content/browser-init.js
+@@ -473,6 +473,17 @@
+ 
+     this._handleURIToLoad();
+ 
++    // Kyber Fox workspaces. The session store has to track the window first.
++    SessionStore.promiseInitialized
++      .then(() => {
++        if (!window.closed) {
++          ChromeUtils.importESModule(
++            "resource:///modules/KyberWorkspaces.sys.mjs"
++          ).KyberWorkspaces.init(window);
++        }
++      })
++      .catch(console.error);
++
+     Services.obs.addObserver(gIdentityHandler, "perm-changed");
+     Services.obs.addObserver(gRemoteControl, "devtools-socket");
+     Services.obs.addObserver(gRemoteControl, "marionette-listening");

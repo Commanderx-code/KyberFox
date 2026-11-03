@@ -1,0 +1,40 @@
+diff --git a/browser/components/preferences/config/privacy.mjs b/browser/components/preferences/config/privacy.mjs
+--- a/browser/components/preferences/config/privacy.mjs
++++ b/browser/components/preferences/config/privacy.mjs
+@@ -587,8 +587,8 @@
+   Preferences.addSetting({
+   id: "kyberfoxIPv6",
+   pref: "network.dns.disableIPv6",
+-  get: (value) => value.value = !value,
+-  set: (value) => value.value = !value,
++  get: value => !value,
++  set: value => !value,
+ });
+ 
+   Preferences.addSetting({
+@@ -614,10 +614,23 @@
+   });
+ 
+   Preferences.addSetting({
++    id: "kyberfoxWebGLPrompt",
++    pref: "kyberfox.webgl.prompt",
++    get: value => !value,
++    set: value => !value,
++  });
++  Preferences.addSetting({
++    id: "kyberfoxWebGLPromptHide",
++    pref: "kyberfox.webgl.prompt.hide",
++    deps: ["kyberfoxWebGLPrompt"],
++    disabled: ({ kyberfoxWebGLPrompt }) => kyberfoxWebGLPrompt.value,
++  });
++
++  Preferences.addSetting({
+     id: "kyberfoxJIT",
+     pref: "kyberfox.jit.enabled-by-default",
+-    get: (value) => value.value = !value,
+-    set: (value) => value.value = !value,
++    get: value => !value,
++    set: value => !value,
+   });
+ }
+ 

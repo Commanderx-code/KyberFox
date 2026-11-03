@@ -1,0 +1,7 @@
+# LibreWolf patches Kyber Fox does not apply. Format: path  # reason
+patches/add-mojeek.patch  # adds the Mojeek search engine, which Kyber Fox does not ship
+patches/mullvad-dns-migration.patch  # migrates users to Mullvad DNS, a LibreWolf-specific default
+patches/msix.patch  # Windows MSIX packaging for LibreWolf, not used here
+patches/temp-macos-fix.patch  # temporary macOS build workaround, Kyber Fox does not target macOS
+patches/ui-patches/lw-logo-devtools.patch  # puts the LibreWolf logo in devtools
+patches/updater.patch  # points updates at update.librewolf.net; replaced by patches/kyber/updater.patch with Kyber Fox's own update host (commanderx-code.github.io)

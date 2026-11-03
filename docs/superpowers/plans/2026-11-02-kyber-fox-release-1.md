@@ -202,7 +202,7 @@ def test_translations_not_flagged(tmp_path):
 
 - [ ] **Step 4: Write `settings/`.** Start from LibreWolf `librewolf.cfg` and `distribution/policies.json`. Keep `AIControls` with `Translations: available`, and `PDFAltText`, `SmartTabGroups`, `LinkPreviewKeyPoints`, `SidebarChatbot` and `SmartWindow` as `blocked`. Remove `AppUpdateURL` and `DisableAppUpdate`. Remove the `uBlock0@raymondhill.net` `ExtensionSettings` entry, which Task 4 replaces. Re-enable Safe Browsing with local lists, and set `browser.safebrowsing.downloads.remote.enabled=false`. Read `patches/rs-blocker.patch`, and make sure it leaves blocklist and certificate revocation updates working.
 
-- [ ] **Step 5: Wire branding.** Set `--with-branding=browser/branding/kyberfox`, the app id, `--with-app-name=kyberfox` and the vendor. Pass the Google key through `--with-google-safebrowsing-api-keyfile`. Confirm the profile path is `~/.kyberfox` on Linux and `%APPDATA%\Kyber Fox` on Windows.
+- [ ] **Step 5: Wire branding.** Set `--with-branding=browser/branding/kyberfox`, the app id, `--with-app-name=kyberfox` and the vendor. Pass the Google key through `--with-google-safebrowsing-api-keyfile`. Confirm the profile path is `~/.config/kyberfox` on Linux, with the cache under `~/.cache/kyberfox`, and `%APPDATA%\Kyber Fox` on Windows.
 
 - [ ] **Step 6: Run tests and the release guard.** `pytest tests -v`, then `make check-forbidden`, then `./mach xpcshell-test browser/components/kyberfox/test/xpcshell/`. Expected: PASS and exit 0.
 
@@ -451,6 +451,36 @@ uBlock Origin exposes no external messaging, so controlling it is a spike:
 - [ ] **Step 5: Run them.** Expected: PASS.
 
 - [ ] **Step 6: Commit.** `git commit -m "Add GX-style and One-style skins"`
+
+### Task 20: Recommended add-ons page
+
+Added 2026-11-03 at the owner's request: on first run, friends pick which recommended add-ons to install. Runs after Task 13, before Phase D.
+
+**Files:**
+- Create: `overlay/browser/components/kyberfox/KyberAddons.sys.mjs`, `overlay/browser/components/kyberfox/content/welcome.xhtml`, `overlay/browser/components/kyberfox/content/welcome.mjs`, `overlay/browser/components/kyberfox/content/welcome.css`, `settings/recommended-addons.json`, `patches/kyber/welcome-tab.patch`
+- Test: `overlay/browser/components/kyberfox/test/browser/browser_welcome.js`, `tests/test_recommended_addons.py`
+
+**Interfaces:**
+- Consumes: `AddonManager.getInstallForURL`, pref `kyberfox.welcome.shown` (bool, default false).
+- Produces: `KyberAddons.recommended(): {id, slug, name, summary, group}[]` read from `settings/recommended-addons.json`; `KyberAddons.install(ids: string[]): Promise<{id, ok: boolean, error?: string}[]>`; `KyberAddons.installed(id): Promise<boolean>`. Page `chrome://kyberfox/content/welcome.xhtml`, opened once per profile on first run after `SessionStore.promiseInitialized`, and reachable later from the Privacy page (Task 10) through a "Recommended add-ons" link.
+
+Decided behavior:
+- Nothing is pre-ticked. The page lists each add-on with a checkbox, its name, one line of plain summary, and its group. Groups: Passwords (Bitwarden `bitwarden-password-manager`, Proton Pass `proton-pass`, KeePassXC-Browser `keepassxc-browser`), Privacy (Privacy Badger `privacy-badger17`, LocalCDN `localcdn-fork-of-decentraleyes`, ClearURLs `clearurls`, NoScript `noscript`, Consent-O-Matic `consent-o-matic`, Firefox Multi-Account Containers `multi-account-containers`, Facebook Container `facebook-container`), Mail (ProtonMail Launcher `protonmail-simple-launcher`, ProtonMail Notifier `protonmail-notifier`, Gmail Notifier `gmail-notifier-restartless`), Video (SponsorBlock `sponsorblock`, Return YouTube Dislike `return-youtube-dislikes`), Appearance (Dark Reader `darkreader`, Tabliss `tabliss`, nightTab `nighttab`). uBlock Origin is shown as "included" with no checkbox. Entries carry a `note` shown under the summary where it matters: NoScript ("blocks scripts until you allow them; expect sites to need a click"), the Mail notifiers ("third-party add-on that reads your mailbox session"), nightTab ("last updated 2021"). The list was verified against addons.mozilla.org on 2026-11-03 (slug, add-on id, author, users, permissions).
+- Default search (added 2026-11-03): above the add-ons, a "Default search" section with radio buttons for DuckDuckGo (preselected, the shipped default), Google, Brave Search, Startpage and Ecosia; picking one calls `Services.search.setDefault` (and `setDefaultPrivate`) when the page is confirmed, through `KyberAddons.setSearchDefault(engineName: string): Promise<boolean>`. All five ship: `settings/policies.json` `SearchEngines` keeps Google (remove it from `Remove`), adds Ecosia (`https://www.ecosia.org/search?q={searchTerms}`, suggestions off), keeps Startpage and Brave Search, keeps DuckDuckGo as `Default`/`DefaultPrivate`. Bing, eBay, Perplexity, Reddit and YouTube stay removed. Test: `test_search_choice_sets_default` and `tests/test_policies.py` covers the engine list.
+- Install URL is `https://addons.mozilla.org/firefox/downloads/latest/<slug>/latest.xpi` (signed by Mozilla, auto-updated through the normal add-on updater). No XPI is bundled: bundling ten add-ons would bloat the installer and freeze their versions.
+- "Install selected" installs in sequence, shows per-add-on progress and errors, and never blocks the browser. "Skip" closes the page. Either sets `kyberfox.welcome.shown`.
+- No network request is made until the user clicks Install. The page shows no AMO ratings, icons or counts (those would need requests).
+- `settings/recommended-addons.json` is the single source of the list; the Python test checks every entry has `id`, `slug`, `name`, `summary`, `group`, and that `id` matches the add-on id used by AMO (`{...}` GUID or `name@domain`).
+
+- [ ] **Step 1: Write the failing tests:** `test_welcome_opens_once_on_first_run`, `test_welcome_not_opened_when_shown`, `test_nothing_preselected`, `test_ublock_shown_as_included`, `test_install_selected_installs_only_ticked` (stub `AddonManager.getInstallForURL` through a test-only hook on `KyberAddons`), `test_install_error_is_shown_and_others_continue`, `test_skip_sets_pref`, plus `tests/test_recommended_addons.py::test_entries_complete`.
+
+- [ ] **Step 2: Run them.** Expected: FAIL.
+
+- [ ] **Step 3: Implement.** The patch opens the tab from `browser-init.js` after the Task 6 init hook, only when `kyberfox.welcome.shown` is false and the window is not private.
+
+- [ ] **Step 4: Run them.** Expected: PASS.
+
+- [ ] **Step 5: Commit.** `git commit -m "Add recommended add-ons page"`
 
 ---
 

@@ -1,0 +1,75 @@
+# Kyber Fox Windows x86_64 build, cross-compiled on Linux with clang-cl.
+# Derived from mozconfigs/linux. The win-cross settings follow Zen's
+# configs/windows/mozconfig (MPL-2.0, https://github.com/zen-browser/desktop).
+
+# Wine and the Visual Studio packages live in one directory, by default
+# $HOME/win-cross, laid out as .github/workflows/build-windows.yml creates it:
+# wine/ from Mozilla's linux64-wine toolchain, vs2026/ from get_vs.py.
+KYBERFOX_WIN_CROSS="${KYBERFOX_WIN_CROSS:-$HOME/win-cross}"
+export WINSYSROOT="$KYBERFOX_WIN_CROSS/vs2026"
+export WINE="$KYBERFOX_WIN_CROSS/wine/bin/wine"
+export WINEDEBUG=-all
+
+ac_add_options --target=x86_64-pc-windows-msvc
+# Fetch the other Windows tools (NSIS, UPX, 7-Zip, the windows crate source,
+# winchecksec and the Windows SDK extras) from Mozilla's toolchain index.
+# sccache comes from the CI runner, not from the index.
+ac_add_options --enable-bootstrap=-sccache
+# Ship the MSVC runtime DLLs next to kyberfox.exe.
+ac_add_options --with-redist
+
+ac_add_options --enable-application=browser
+
+ac_add_options --with-app-name=kyberfox
+ac_add_options --with-branding=browser/branding/kyberfox
+ac_add_options --with-distribution-id=io.github.commanderx_code.kyberfox
+
+# Safe Browsing needs the project's Google API key. The key file lives outside
+# the repo; see KYBERFOX_SAFEBROWSING_KEYFILE in .env.example. Without it the
+# build still works, but Safe Browsing lists cannot be downloaded.
+if [ -n "${KYBERFOX_SAFEBROWSING_KEYFILE:-}" ]; then
+  ac_add_options "--with-google-safebrowsing-api-keyfile=$KYBERFOX_SAFEBROWSING_KEYFILE"
+fi
+
+ac_add_options --disable-crashreporter
+ac_add_options --disable-debug
+ac_add_options --disable-default-browser-agent
+ac_add_options --disable-tests
+# Windows ships signed updates, so the updater is on. MAR signature checks are
+# on by default in this Firefox; only --enable-unverified-updates turns them
+# off, and the old --enable-verify-mar option no longer exists.
+ac_add_options --enable-updater
+# The updater accepts only MARs whose product info names this channel, and
+# tools/make_complete_mar.sh stamps the same id on the MAR it builds.
+export MAR_CHANNEL_ID=kyberfox-release
+export ACCEPTED_MAR_CHANNEL_IDS=kyberfox-release
+# Installs are per user, so updates need no elevation and no service.
+ac_add_options --disable-maintenance-service
+ac_add_options --disable-cargo-incremental
+# No LTO and no PGO: keeps the build inside free-runner limits. MOZ_LTO stays unset.
+ac_add_options --disable-lto
+# No debug symbols: a 4-core, 15 GB runner runs out of memory compiling and
+# linking with them, and the runner then drops the job as cancelled.
+ac_add_options --disable-debug-symbols
+ac_add_options --enable-update-channel=release
+ac_add_options --enable-hardening
+ac_add_options --enable-stl-hardening
+ac_add_options --enable-optimize
+ac_add_options --enable-release
+ac_add_options --enable-rust-simd
+ac_add_options --enable-proxy-bypass-protection
+# allow replacing malloc manually, will not affect regular systems
+ac_add_options --enable-replace-malloc
+ac_add_options --enable-jemalloc
+
+export MOZ_TELEMETRY_REPORTING=
+export MOZILLA_OFFICIAL=1
+export MOZ_PKG_VERSION=
+
+mk_add_options MOZ_CRASHREPORTER=0
+mk_add_options MOZ_DATA_REPORTING=0
+mk_add_options MOZ_SERVICES_HEALTHREPORT=0
+mk_add_options MOZ_TELEMETRY_REPORTING=0
+
+export CFLAGS="-ftrivial-auto-var-init=zero -fwrapv -Wno-backend-plugin $CFLAGS"
+export CXXFLAGS="-ftrivial-auto-var-init=zero -fwrapv -Wno-backend-plugin $CXXFLAGS"

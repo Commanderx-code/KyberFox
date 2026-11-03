@@ -1,0 +1,115 @@
+diff --git a/browser/components/preferences/config/account-sync.mjs b/browser/components/preferences/config/account-sync.mjs
+--- a/browser/components/preferences/config/account-sync.mjs
++++ b/browser/components/preferences/config/account-sync.mjs
+@@ -862,7 +862,9 @@
+ SettingGroupManager.registerGroups({
+   accountDisabled: {
+     inProgress: true,
+-    hidden: accountsEnabled,
++    // Kyber Fox: accounts and Sync are not in this build, so this group
++    // (and its Mozilla logo) is never shown.
++    hidden: true,
+     items: [
+       {
+         id: "fxaAccountDisabled",
+@@ -872,10 +874,6 @@
+         supportPage: "managed-browser-firefox",
+         headingLevel: 2,
+       },
+-      {
+-        id: "kyberfoxSync",
+-        l10nId: "kyberfox-sync-checkbox2",
+-      },
+     ],
+   },
+   account: {
+@@ -974,10 +972,6 @@
+           },
+         ],
+       },
+-      {
+-        id: "kyberfoxSync",
+-        l10nId: "kyberfox-sync-checkbox2",
+-      },
+     ],
+   },
+   sync: {
+diff --git a/browser/components/preferences/preferences.js b/browser/components/preferences/preferences.js
+--- a/browser/components/preferences/preferences.js
++++ b/browser/components/preferences/preferences.js
+@@ -457,6 +457,8 @@
+     ],
+     module: "chrome://browser/content/preferences/config/account-sync.mjs",
+     replaces: "sync",
++    // Kyber Fox: no pane, nav button or search result while accounts are off.
++    visible: () => Services.prefs.getBoolPref("identity.fxaccounts.enabled"),
+   },
+   moreFromMozilla: {
+     l10nId: "more-from-moz-page-header",
+@@ -588,7 +590,8 @@
+   if (redesignEnabled) {
+     categorySync.setAttribute("data-l10n-id", "pane-account-sync-title2");
+     categorySync.iconSrc = "chrome://browser/skin/fxa/avatar-empty.svg";
+-    categorySync.hidden = false;
++    // Kyber Fox: no account or Sync category while accounts are disabled.
++    categorySync.hidden = !accountsEnabled;
+   } else if (accountsEnabled) {
+     categorySync.hidden = false;
+     register_module("paneSync", gSyncPane);
+@@ -736,10 +739,19 @@
+ ) {
+   let redesignEnabled = srdSectionPrefs.all;
+   let categories = document.getElementById("categories");
++  // Kyber Fox: the Sync category is hidden when accounts are disabled, so
++  // the Home pane is the default then.
++  let syncShown = Services.prefs.getBoolPref("identity.fxaccounts.enabled");
+   const kDefaultCategoryInternalName = redesignEnabled
+-    ? "paneSync"
++    ? syncShown
++      ? "paneSync"
++      : "paneHome"
+     : "paneGeneral";
+-  const kDefaultCategory = redesignEnabled ? "sync" : "general";
++  const kDefaultCategory = redesignEnabled
++    ? syncShown
++      ? "sync"
++      : "home"
++    : "general";
+   let hash = document.location.hash;
+   let category = aCategory || hash.substring(1) || kDefaultCategoryInternalName;
+ 
+diff --git a/browser/components/migration/MigrationUtils.sys.mjs b/browser/components/migration/MigrationUtils.sys.mjs
+--- a/browser/components/migration/MigrationUtils.sys.mjs
++++ b/browser/components/migration/MigrationUtils.sys.mjs
+@@ -666,6 +666,16 @@
+       return Promise.resolve();
+     }
+ 
++    // Kyber Fox: the Sync category that hosts the wizard in the redesigned
++    // Settings is hidden while accounts are off, so open the wizard on its own.
++    if (
++      !Services.prefs.getBoolPref("identity.fxaccounts.enabled", false) &&
++      Services.prefs.getBoolPref("browser.settings-redesign.enabled", false)
++    ) {
++      openStandaloneWindow(false /* blocking */);
++      return Promise.resolve();
++    }
++
+     if (aOpener?.openPreferences) {
+       if (aOptions.entrypoint == this.MIGRATION_ENTRYPOINTS.NEWTAB) {
+         if (aboutWelcomeBehavior == "autoclose") {
+diff --git a/browser/components/preferences/preferences.xhtml b/browser/components/preferences/preferences.xhtml
+--- a/browser/components/preferences/preferences.xhtml
++++ b/browser/components/preferences/preferences.xhtml
+@@ -222,7 +222,11 @@
+         iconsrc="chrome://global/skin/icons/help.svg"
+         data-l10n-id="help-button-label2">
+       </html:moz-page-nav-button>
++      <!-- Kyber Fox: the legacy Settings design has no privacy presets and no
++           theme picker, so the swap button is hidden and kyberfox.cfg locks
++           browser.settings-redesign.enabled on. -->
+       <html:moz-page-nav-button id="toggleButton"
++        hidden="true"
+         slot="secondary-nav"
+         iconsrc="chrome://global/skin/icons/swap-horizontal-20.svg"
+         data-l10n-id="kyberfox-swap-settings">

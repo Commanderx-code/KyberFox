@@ -1,0 +1,18 @@
+--- a/browser/base/content/browser.xhtml
++++ b/browser/base/content/browser.xhtml
+@@ -47,6 +47,7 @@
+   />
+   <link rel="stylesheet" href="chrome://browser/skin/downloads/downloads.css" />
+   <link rel="stylesheet" href="chrome://kyberfox/content/workspaces.css" />
++  <link rel="stylesheet" href="chrome://kyberfox/content/shield.css" />
+   <link rel="stylesheet" href="chrome://browser/skin/translations/panel.css" />
+   <link rel="stylesheet" href="chrome://browser/skin/places/tree-icons.css" />
+   <link rel="stylesheet" href="chrome://browser/skin/places/editBookmark.css" />
+@@ -116,6 +117,7 @@
+   <script src="chrome://browser/content/global-scripts.js"></script>
+   <script src="chrome://browser/content/browser-main.js"></script>
+   <script type="module" src="chrome://kyberfox/content/workspaces-ui.mjs"></script>
++  <script type="module" src="chrome://kyberfox/content/shield-ui.mjs"></script>
+ </head>
+ <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ # All sets except for popupsets (commands, keys, and stringbundles)

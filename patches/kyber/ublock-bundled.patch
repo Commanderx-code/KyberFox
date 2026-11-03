@@ -1,0 +1,11 @@
+diff --git a/browser/installer/package-manifest.in b/browser/installer/package-manifest.in
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -277,6 +277,7 @@
+ ; Kyber Fox settings
+ @RESPATH@/defaults/pref/local-settings.js
+ @RESPATH@/distribution/policies.json
++@RESPATH@/distribution/extensions/uBlock0@raymondhill.net.xpi
+ @RESPATH@/kyberfox.cfg
+ 
+ # channel-prefs.js has been removed on macOS.

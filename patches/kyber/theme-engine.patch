@@ -1,0 +1,10 @@
+--- a/browser/base/content/browser.xhtml
++++ b/browser/base/content/browser.xhtml
+@@ -118,6 +118,7 @@
+   <script src="chrome://browser/content/browser-main.js"></script>
+   <script type="module" src="chrome://kyberfox/content/workspaces-ui.mjs"></script>
+   <script type="module" src="chrome://kyberfox/content/shield-ui.mjs"></script>
++  <script type="module" src="chrome://kyberfox/content/themes-init.mjs"></script>
+ </head>
+ <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ # All sets except for popupsets (commands, keys, and stringbundles)

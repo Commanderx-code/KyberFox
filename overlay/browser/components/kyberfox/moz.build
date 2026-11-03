@@ -1,0 +1,22 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Kyber Fox browser features. Registered in browser/components/moz.build by
+# patches/kyber/0001-register-component.patch.
+
+JAR_MANIFESTS += ["jar.mn"]
+
+XPCSHELL_TESTS_MANIFESTS += ["test/xpcshell/xpcshell.toml"]
+
+BROWSER_CHROME_MANIFESTS += ["test/browser/browser.toml"]
+
+EXTRA_JS_MODULES += [
+    "KyberAddons.sys.mjs",
+    "KyberPrivacyPresets.sys.mjs",
+    "KyberShield.sys.mjs",
+    "KyberShieldWidget.sys.mjs",
+    "KyberThemes.sys.mjs",
+    "KyberUBlockBridge.sys.mjs",
+    "KyberWorkspaces.sys.mjs",
+]

@@ -1,0 +1,41 @@
+diff --git a/browser/base/content/browser.xhtml b/browser/base/content/browser.xhtml
+--- a/browser/base/content/browser.xhtml
++++ b/browser/base/content/browser.xhtml
+@@ -46,6 +46,7 @@
+     href="chrome://browser/skin/customizableui/panelUI.css"
+   />
+   <link rel="stylesheet" href="chrome://browser/skin/downloads/downloads.css" />
++  <link rel="stylesheet" href="chrome://kyberfox/content/workspaces.css" />
+   <link rel="stylesheet" href="chrome://browser/skin/translations/panel.css" />
+   <link rel="stylesheet" href="chrome://browser/skin/places/tree-icons.css" />
+   <link rel="stylesheet" href="chrome://browser/skin/places/editBookmark.css" />
+@@ -67,6 +68,7 @@
+   <link rel="localization" href="browser/firefoxRelay.ftl"/>
+   <link rel="localization" href="browser/firefoxView.ftl"/>
+   <link rel="localization" href="browser/genai.ftl"/>
++  <link rel="localization" href="browser/kyberfox.ftl"/>
+   <link rel="localization" href="browser/identityCredentialNotification.ftl" />
+   <link rel="localization" href="browser/ipProtection.ftl"/>
+   <link rel="localization" href="browser/menubar.ftl"/>
+@@ -113,6 +115,7 @@
+ 
+   <script src="chrome://browser/content/global-scripts.js"></script>
+   <script src="chrome://browser/content/browser-main.js"></script>
++  <script type="module" src="chrome://kyberfox/content/workspaces-ui.mjs"></script>
+ </head>
+ <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ # All sets except for popupsets (commands, keys, and stringbundles)
+diff --git a/browser/base/content/navigator-toolbox.inc.xhtml b/browser/base/content/navigator-toolbox.inc.xhtml
+--- a/browser/base/content/navigator-toolbox.inc.xhtml
++++ b/browser/base/content/navigator-toolbox.inc.xhtml
+@@ -35,6 +35,10 @@
+ 
+     <hbox flex="1" align="end" class="toolbar-items">
+       <toolbartabstop/>
++      <toolbarbutton id="kyber-workspace-button"
++                     class="toolbarbutton-1"
++                     aria-haspopup="true"
++                     data-l10n-id="kyberfox-workspace-button"/>
+       <hbox id="TabsToolbar-customization-target" flex="1">
+         <tabs id="tabbrowser-tabs"
+               is="tabbrowser-tabs"

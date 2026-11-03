@@ -1,0 +1,49 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# The settings files and the uBlock Origin XPI are copied here by tools/assemble.py.
+FINAL_TARGET_FILES += [
+    "kyberfox.cfg",
+]
+
+FINAL_TARGET_FILES.distribution += [
+    "policies.json",
+]
+
+FINAL_TARGET_FILES.defaults.pref += [
+    "local-settings.js",
+]
+
+# Installed into the profile on first run, so uBlock Origin is present with no network.
+FINAL_TARGET_FILES.distribution.extensions += [
+    "uBlock0@raymondhill.net.xpi",
+]
+
+LICENSES += ["ublock-origin"]
+LICENSES["ublock-origin"].title = "uBlock Origin (GPL-3.0)"
+LICENSES["ublock-origin"].text = "ublock-origin-license.txt"
+LICENSES["ublock-origin"].spdx = "GPL-3.0-or-later"
+LICENSES["ublock-origin"].url = "https://www.gnu.org/licenses/gpl-3.0.html"
+LICENSES["ublock-origin"].notice = """
+<p>This product bundles uBlock Origin, copyright Raymond Hill, as the signed
+add-on <code>distribution/extensions/uBlock0@raymondhill.net.xpi</code>.
+Source code: <a href="https://github.com/gorhill/uBlock">https://github.com/gorhill/uBlock</a></p>
+"""
+
+# Bundled themes. The MPL-2.0 skins keep their LICENSE files under themes/skins/;
+# the MIT notices for the two palettes are reproduced in the text file.
+LICENSES += ["kyberfox-themes"]
+LICENSES["kyberfox-themes"].title = "Kyber Fox bundled themes (MIT and MPL-2.0)"
+LICENSES["kyberfox-themes"].text = "themes-license.txt"
+LICENSES["kyberfox-themes"].spdx = "MIT AND MPL-2.0"
+LICENSES["kyberfox-themes"].notice = """
+<p>The Catppuccin Mocha and Tokyo Night palettes are MIT-licensed; their
+notices follow. The GX-style and One-style skins are by Godiesc
+(<a href="https://github.com/Godiesc/firefox-gx">firefox-gx</a>,
+<a href="https://github.com/Godiesc/firefox-one">firefox-one</a>) and the
+Starry colors derive from
+<a href="https://github.com/sagars007/starry-fox">starry-fox</a>; all three are
+MPL-2.0, and the skins keep their upstream license files and headers. See
+<code>themes/NOTICES.md</code> in the source for what was changed.</p>
+"""

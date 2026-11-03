@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src chrome:; object-src 'none'"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <title data-l10n-id="kyberfox-welcome-title"></title>
+    <link rel="localization" href="browser/kyberfox.ftl" />
+    <link rel="stylesheet" href="chrome://global/skin/in-content/common.css" />
+    <link rel="stylesheet" href="chrome://kyberfox/content/welcome.css" />
+    <script type="module" src="chrome://kyberfox/content/welcome.mjs"></script>
+  </head>
+  <body>
+    <main>
+      <h1 data-l10n-id="kyberfox-welcome-heading"></h1>
+      <p class="intro" data-l10n-id="kyberfox-welcome-intro"></p>
+
+      <section id="search-section">
+        <h2 data-l10n-id="kyberfox-welcome-search-heading"></h2>
+        <div
+          id="search-choices"
+          role="radiogroup"
+          data-l10n-id="kyberfox-welcome-search-group"
+        ></div>
+      </section>
+
+      <section id="addons-section">
+        <h2 data-l10n-id="kyberfox-welcome-addons-heading"></h2>
+        <p class="hint" data-l10n-id="kyberfox-welcome-addons-hint"></p>
+        <div id="addon-groups"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p id="status" role="status"></p>
+      <button
+        id="install"
+        class="primary"
+        data-l10n-id="kyberfox-welcome-install"
+      ></button>
+      <button id="skip" data-l10n-id="kyberfox-welcome-skip"></button>
+    </footer>
+  </body>
+</html>

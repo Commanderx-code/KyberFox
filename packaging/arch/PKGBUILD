@@ -1,0 +1,63 @@
+# Kyber Fox: packages the prebuilt Linux tarball from the release workflow.
+# pkgrel is the Kyber build counter (pins.toml [kyber] build); a test keeps it in sync.
+# The tarball checksum is 'SKIP' in the repo; the release workflow fills it with updpkgsums.
+# For a local or CI build, place the tarball next to this file under the name
+# kyberfox-${pkgver}-${pkgrel}.linux-x86_64.tar.xz and run makepkg --skipchecksums.
+pkgname=kyberfox
+pkgver=159.0
+pkgrel=1
+pkgdesc='Privacy-focused Firefox fork with built-in themes and hardened defaults'
+arch=('x86_64')
+url='https://github.com/Commanderx-code/KyberFox'
+license=('MPL-2.0')
+depends=(
+  'alsa-lib'
+  'dbus-glib'
+  'gtk3'
+  'libxcomposite'
+  'libxcursor'
+  'libxdamage'
+  'libxi'
+  'libxinerama'
+  'libxkbcommon'
+  'libxrandr'
+  'libxt'
+  'mime-types'
+  'ttf-font'
+)
+optdepends=(
+  'hunspell: spell checking'
+  'libnotify: desktop notifications'
+  'pipewire-pulse: audio through PipeWire'
+  'pulseaudio: audio through PulseAudio'
+)
+options=('!strip' '!debug' '!emptydirs')
+source=(
+  "kyberfox-${pkgver}-${pkgrel}.linux-x86_64.tar.xz::${url}/releases/download/v${pkgver}-${pkgrel}/kyberfox-${pkgver}-${pkgrel}.linux-x86_64.tar.xz"
+  'kyberfox.desktop'
+  'LICENSE'
+)
+sha256sums=('SKIP'
+            'b8864c8eb34043b0ad29104c1453a410597f636a4eb1b42893119416da02db36'
+            '66a3107d5ad6a058aab753eaac2047ccb2ed0e39465dd0fe5844da3e300d5172')
+
+package() {
+  install -d "$pkgdir/opt"
+  cp -a "$srcdir/kyberfox" "$pkgdir/opt/kyberfox"
+
+  install -d "$pkgdir/usr/bin"
+  ln -s /opt/kyberfox/kyberfox "$pkgdir/usr/bin/kyberfox"
+
+  install -Dm644 "$srcdir/kyberfox.desktop" "$pkgdir/usr/share/applications/kyberfox.desktop"
+  install -Dm644 "$srcdir/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+  # The tarball ships the sizes it has; link whichever of these exist.
+  local size icon
+  for size in 16 22 24 32 48 64 128 256; do
+    icon="/opt/kyberfox/browser/chrome/icons/default/default${size}.png"
+    if [[ -f $pkgdir$icon ]]; then
+      install -d "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps"
+      ln -s "$icon" "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/kyberfox.png"
+    fi
+  done
+}

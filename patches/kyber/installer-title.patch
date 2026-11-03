@@ -1,0 +1,12 @@
+Kyber Fox: the title of the installer's self-extracting archive dialog.
+
+diff --git a/browser/installer/windows/app.tag b/browser/installer/windows/app.tag
+--- a/browser/installer/windows/app.tag
++++ b/browser/installer/windows/app.tag
+@@ -1,4 +1,4 @@
+ ;!@Install@!UTF-8!
+-Title="Mozilla Firefox"
++Title="Kyber Fox"
+ RunProgram="setup.exe"
+ ;!@InstallEnd@!
+\ No newline at end of file

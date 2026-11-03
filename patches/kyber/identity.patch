@@ -1,0 +1,76 @@
+diff --git a/browser/moz.configure b/browser/moz.configure
+--- a/browser/moz.configure
++++ b/browser/moz.configure
+@@ -11,8 +11,25 @@
+ imply_option("MOZ_PROFILE_MIGRATOR", True)
+ 
+ 
+-imply_option("MOZ_APP_VENDOR", "Mozilla")
++imply_option("MOZ_APP_VENDOR", "Kyber Fox")
++# Kyber Fox keeps Firefox's application ID, so add-ons from addons.mozilla.org
++# stay compatible and keep receiving updates and blocklist entries.
+ imply_option("MOZ_APP_ID", "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}")
++
++
++@depends(target)
++def kyberfox_app_profile(target):
++    if target.kernel == "WINNT":
++        return "Kyber Fox"
++    return "kyberfox"
++
++
++imply_option(
++    "MOZ_APP_PROFILE",
++    kyberfox_app_profile,
++    reason="Kyber Fox profile folder: %APPDATA%\\Kyber Fox on Windows, kyberfox elsewhere",
++)
++
+ # Include the DevTools client, not just the server (which is the default)
+ imply_option("MOZ_DEVTOOLS", "all")
+ imply_option("BROWSER_CHROME_URL", "chrome://browser/content/browser.xhtml")
+diff --git a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
+--- a/toolkit/xre/nsXREDirProvider.cpp
++++ b/toolkit/xre/nsXREDirProvider.cpp
+@@ -333,7 +333,7 @@
+  *   (for 32- and 64-bit systems respsectively)
+  */
+ static nsresult GetSystemParentDirectory(nsIFile** aFile,
+-					 nsCString aName = "Kyber Fox"_ns) {
++					 nsCString aName = "kyberfox"_ns) {
+   nsresult rv;
+   nsCOMPtr<nsIFile> localDir;
+ #  if defined(XP_MACOSX)
+@@ -1352,14 +1352,13 @@
+     profile = "."_ns + nsDependentCString(gAppData->profile);
+     MOZ_TRY(aFile->AppendRelativeNativePath(profile));
+   } else {
+-    nsAutoCString vendor;
+-    nsAutoCString appName;
+-    vendor = gAppData->vendor;
+-    appName = gAppData->name;
+-    ToLowerCase(vendor);
+-    ToLowerCase(appName);
+-
+-    MOZ_TRY(aFile->AppendRelativeNativePath(appName));
++    // The app name, Kyber Fox, has a space, so the XDG folder takes the
++    // profile name instead: $XDG_CONFIG_HOME/kyberfox.
++    nsAutoCString folder(gAppData->profile ? gAppData->profile
++                                           : gAppData->name);
++    ToLowerCase(folder);
++
++    MOZ_TRY(aFile->AppendRelativeNativePath(folder));
+   }
+ 
+   return NS_OK;
+diff --git a/toolkit/locales/en-US/toolkit/branding/brandings.ftl b/toolkit/locales/en-US/toolkit/branding/brandings.ftl
+--- a/toolkit/locales/en-US/toolkit/branding/brandings.ftl
++++ b/toolkit/locales/en-US/toolkit/branding/brandings.ftl
+@@ -51,7 +51,7 @@
+ 
+ # View" can be localized, “Firefox” must be treated as a brand
+ # and kept in English.
+--firefoxview-brand-name = Firefox View
++-firefoxview-brand-name = Kyber Fox View
+ 
+ # Firefox Labs is the name for a page in Settings to allow users to learn about
+ # experimental and in-development features, and turn those features on and off.

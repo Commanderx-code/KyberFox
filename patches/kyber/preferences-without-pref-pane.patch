@@ -1,0 +1,17 @@
+Settings redesign (LibreWolf settings-redesign.patch) registers the LibreWolf
+pref pane, which Kyber Fox does not ship. Without this the settings page stops
+loading on a missing element.
+
+diff --git a/browser/components/preferences/preferences.js b/browser/components/preferences/preferences.js
+--- a/browser/components/preferences/preferences.js
++++ b/browser/components/preferences/preferences.js
+@@ -560,9 +560,6 @@
+     register_module("paneGeneral", gMainPane);
+     document.getElementById("category-general").hidden = false;
+     document.getElementById("nav-separator").hidden = true;
+-    register_module("paneLibrewolf", gLibrewolfPane);
+-  } else {
+-    document.getElementById("category-kyberfox").hidden = true;
+   }
+   register_module("paneSearch", gSearchPane);
+   register_module("panePrivacy", gPrivacyPane);

@@ -1,0 +1,47 @@
+[DEFAULT]
+# kyberfox.cfg turns HTTPS-only mode on by default; the harness serves its
+# pages over plain HTTP.
+# The welcome page would otherwise open in the first test window;
+# browser_welcome.js turns it on by itself.
+prefs = [
+  "dom.security.https_only_mode=false",
+  "kyberfox.welcome.shown=true",
+]
+
+["browser_defaults.js"]
+
+["browser_identity.js"]
+
+["browser_import_wizard.js"]
+
+["browser_sync_hidden.js"]
+
+["browser_privacy_presets.js"]
+
+["browser_shield.js"]
+support-files = [
+  "shield_ad.js",
+  "shield_assets.json",
+  "shield_page.html",
+]
+
+["browser_shield_ui.js"]
+support-files = [
+  "shield_ad.js",
+  "shield_assets.json",
+  "shield_page.html",
+]
+
+["browser_skins.js"]
+
+["browser_theme_picker.js"]
+
+["browser_themes.js"]
+
+["browser_ublock_bundled.js"]
+
+["browser_welcome.js"]
+
+["browser_workspaces.js"]
+
+["browser_workspaces_ui.js"]

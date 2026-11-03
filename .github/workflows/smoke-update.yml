@@ -1,0 +1,122 @@
+name: Smoke test Windows updates
+
+# Proves the Windows updater only trusts Kyber Fox's own signing keys.
+#
+# refuse (runs unless skip-refuse is true): installs the build, signs the build's own complete MAR
+#   with a throwaway key generated inside the job, offers it from a loopback
+#   server, and expects the updater to reject it (error 19, signature check),
+#   the version to stay the same and the browser to keep starting.
+# apply (only when signed-mar-run-id is set): installs the build, offers a MAR
+#   signed with the real release key and expects the install to change to that
+#   MAR's version. The apply-update job of release.yml calls it after publishing:
+#     apply-update:
+#       needs: publish
+#       uses: ./.github/workflows/smoke-update.yml
+#       with:
+#         run-id: <run that uploaded kyberfox-windows-x86_64 for the version to update from>
+#         signed-mar-run-id: ${{ github.run_id }}
+#         skip-refuse: true   # Build Windows already ran refuse
+#   The artifact holds one kyberfox-*.complete.mar. apply has not run yet: it
+#   needs the owner's key (docs/update-signing.md).
+#
+# Both jobs run tools/smoke_update.ps1. By hand, after this file is on main:
+#   gh workflow run smoke-update.yml -f run-id=<Build Windows run id>
+# and with the apply job (needs the real key):
+#   gh workflow run smoke-update.yml -f run-id=<Build Windows run id> \
+#     -f signed-mar-run-id=<run that uploaded kyberfox-windows-signed-mar>
+# Before the merge, Build Windows calls the refuse job after its Windows smoke.
+on:
+  workflow_dispatch:
+    inputs:
+      run-id:
+        description: Id of the Build Windows run that uploaded kyberfox-windows-x86_64
+        required: true
+        type: string
+      signed-mar-run-id:
+        description: Id of the run that uploaded kyberfox-windows-signed-mar; empty skips the apply job
+        required: false
+        type: string
+        default: ""
+  workflow_call:
+    inputs:
+      run-id:
+        description: Id of the run that uploaded kyberfox-windows-x86_64; empty means the calling run
+        required: false
+        type: string
+        default: ""
+      signed-mar-run-id:
+        description: Id of the run that uploaded kyberfox-windows-signed-mar; empty skips the apply job
+        required: false
+        type: string
+        default: ""
+      skip-refuse:
+        description: Skip the refuse job; the release workflow sets it because Build Windows already ran it
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  refuse:
+    name: Refuse a wrongly signed update
+    if: ${{ !inputs.skip-refuse }}
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download installer and MAR
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kyberfox-windows-x86_64
+          path: ${{ runner.temp }}/kyberfox
+          run-id: ${{ inputs.run-id || github.run_id }}
+          github-token: ${{ inputs.run-id && github.token || '' }}
+
+      - name: Offer a wrongly signed update
+        run: ./tools/smoke_update.ps1 -Mode refuse -InstallerDir "$env:RUNNER_TEMP\kyberfox"
+
+  apply:
+    name: Apply a correctly signed update
+    if: ${{ inputs.signed-mar-run-id != '' }}
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download installer
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kyberfox-windows-x86_64
+          path: ${{ runner.temp }}/kyberfox
+          run-id: ${{ inputs.run-id || github.run_id }}
+          github-token: ${{ inputs.run-id && github.token || '' }}
+
+      - name: Download signed MAR
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kyberfox-windows-signed-mar
+          path: ${{ runner.temp }}/signed
+          run-id: ${{ inputs.signed-mar-run-id }}
+          github-token: ${{ github.token }}
+
+      - name: Apply the signed update
+        run: |
+          $mar = @(Get-ChildItem "$env:RUNNER_TEMP\signed\kyberfox-*.complete.mar")
+          if ($mar.Count -ne 1) { throw "Expected one signed MAR, found $($mar.Count)" }
+          ./tools/smoke_update.ps1 -Mode apply -InstallerDir "$env:RUNNER_TEMP\kyberfox" -SignedMar $mar[0].FullName

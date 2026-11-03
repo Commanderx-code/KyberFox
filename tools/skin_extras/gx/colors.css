@@ -1,0 +1,29 @@
+/* Written for Kyber Fox, not copied from upstream. Stands in for the color
+   theme add-on the GX-style skin expects: it sets the lightweight-theme and
+   toolbar variables the skin's CSS reads. */
+
+@-moz-document url-prefix("chrome://")
+{
+  :root {
+    --lwt-accent-color: #0d0d14 !important;
+    --toolbox-background-color: #0d0d14 !important;
+    --toolbox-text-color: #f2f2f7 !important;
+    --lwt-text-color: #f2f2f7 !important;
+    --toolbar-background-color: #16161f !important;
+    --toolbar-text-color: #f2f2f7 !important;
+    --toolbarbutton-icon-fill: #f2f2f7 !important;
+    --toolbarbutton-icon-fill-attention: #fa1e4e !important;
+    --color-accent-primary: #fa1e4e !important;
+    --tab-text-color: #a9a9ba !important;
+    --tab-text-color-selected: #f2f2f7 !important;
+    --tab-background-color-selected: #16161f !important;
+    --toolbar-field-background-color: #1f1f2b !important;
+    --toolbar-field-background-color-focus: #1f1f2b !important;
+    --toolbar-field-text-color: #f2f2f7 !important;
+    --toolbar-field-text-color-focus: #f2f2f7 !important;
+    --panel-background-color: #1f1f2b !important;
+    --panel-text-color: #f2f2f7 !important;
+    --panel-border-color: #2c2c3a !important;
+    --chrome-content-separator-color: #2c2c3a !important;
+  }
+}

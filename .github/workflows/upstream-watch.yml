@@ -1,0 +1,155 @@
+name: Upstream watch
+
+# Every 3 hours: look for a newer Firefox. When there is one, bump pins.toml on
+# the branch upstream/firefox-<version>, assemble the tree with failed patches
+# allowed, and open a pull request with the failed patch list and the 72-hour
+# deadline. docs/upstream-watch.md explains the follow-up.
+# workflow_dispatch needs this file on main.
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+defaults:
+  run:
+    shell: bash  # bash -eo pipefail
+
+concurrency:
+  group: upstream-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch || github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        # The push at the end needs the token; no later step runs fetched code.
+        with:
+          ref: ${{ github.event.repository.default_branch || github.ref_name }}
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Check upstream
+        id: check
+        run: |
+          python -m tools.upstream_watch --check > check.json
+          cat check.json
+          jq -e '.firefox.newer | type == "boolean"' check.json > /dev/null
+          version=$(jq -r '.firefox.latest' check.json)
+          if ! [[ $version =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "::error::unexpected Firefox version"
+            exit 1
+          fi
+          {
+            echo "newer=$(jq -r '.firefox.newer' check.json)"
+            echo "version=$version"
+            echo "security=$(jq -r '.firefox.security' check.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Look for an existing branch or pull request
+        if: steps.check.outputs.newer == 'true'
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: upstream/firefox-${{ steps.check.outputs.version }}
+        run: |
+          # A pull request from a fork with the same branch name does not count.
+          prs=$(gh pr list --head "$BRANCH" --state all \
+                  --json isCrossRepository,number \
+                  --jq '[.[] | select(.isCrossRepository | not)] | length')
+          rc=0
+          git ls-remote --exit-code --heads origin "refs/heads/$BRANCH" > /dev/null || rc=$?
+          case $rc in
+            0) branch=yes ;;
+            2) branch=no ;;
+            *) echo "::error::git ls-remote failed ($rc)"; exit 1 ;;
+          esac
+          echo "prs=$prs" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          if [ "$prs" != "0" ]; then
+            echo "A pull request for $BRANCH already exists; nothing to do."
+          fi
+
+      - name: Bump pins and assemble
+        if: >-
+          steps.check.outputs.newer == 'true' && steps.existing.outputs.prs == '0'
+          && steps.existing.outputs.branch == 'no'
+        env:
+          VERSION: ${{ steps.check.outputs.version }}
+        run: python -m tools.upstream_watch --bump "$VERSION"
+
+      - name: Open the pull request
+        if: steps.check.outputs.newer == 'true' && steps.existing.outputs.prs == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.check.outputs.version }}
+          SECURITY: ${{ steps.check.outputs.security }}
+          BRANCH_EXISTS: ${{ steps.existing.outputs.branch }}
+        run: |
+          branch="upstream/firefox-$VERSION"
+          if [ "$BRANCH_EXISTS" = "no" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git switch -c "$branch"
+            git add pins.toml
+            git commit -m "Bump Firefox to $VERSION"
+            git push origin "$branch"
+          else
+            # A leftover branch is trusted only if its pins.toml is exactly the
+            # merge-base pins.toml bumped to this version, and nothing else changed.
+            bad="Branch $branch is not the expected bump; delete it and rerun."
+            if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
+              git fetch --quiet --unshallow origin
+            fi
+            git fetch --quiet origin \
+              "+refs/heads/$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH" \
+              "+refs/heads/$branch:refs/remotes/origin/$branch"
+            nfiles=$(git diff --name-only "origin/$DEFAULT_BRANCH...origin/$branch" | wc -l)
+            only=$(git diff --name-only "origin/$DEFAULT_BRANCH...origin/$branch")
+            if [ "$nfiles" != "1" ] || [ "$only" != "pins.toml" ]; then
+              echo "::error::$bad (it changes $nfiles files)"; exit 1
+            fi
+            base=$(git merge-base "origin/$DEFAULT_BRANCH" "origin/$branch")
+            git show "$base:pins.toml" > "$RUNNER_TEMP/base-pins.toml"
+            git show "origin/$branch:pins.toml" > "$RUNNER_TEMP/branch-pins.toml"
+            python -m tools.upstream_watch --verify-branch \
+              "$RUNNER_TEMP/base-pins.toml" "$RUNNER_TEMP/branch-pins.toml" "$VERSION" \
+              || { echo "::error::$bad"; exit 1; }
+          fi
+
+          if [ "$SECURITY" = "true" ]; then sec=yes; else sec=no; fi
+          deadline=$(date -u -d "+72 hours" +%Y-%m-%dT%H:%MZ)
+          {
+            echo "Security release: $sec"
+            echo "Deadline: $deadline"
+            echo
+            if [ -f upstream-watch-report.md ]; then
+              cat upstream-watch-report.md
+            else
+              echo "The branch already existed, so no new assembly ran. Run"
+              echo "python -m tools.assemble --allow-failed to list failed patches."
+            fi
+          } > body.md
+
+          labels=()
+          existing=$(gh label list --limit 200 --json name --jq ".[].name")
+          for want in upstream "$([ "$SECURITY" = "true" ] && echo security)"; do
+            if [ -n "$want" ] && printf '%s\n' "$existing" | grep -qx "$want"; then
+              labels+=(--label "$want")
+            fi
+          done
+
+          gh pr create --base "$DEFAULT_BRANCH" --head "$branch" \
+            --title "Bump Firefox to $VERSION" --body-file body.md "${labels[@]}"

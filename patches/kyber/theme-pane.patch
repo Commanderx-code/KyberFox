@@ -1,0 +1,20 @@
+--- a/browser/components/preferences/config/appearance.mjs
++++ b/browser/components/preferences/config/appearance.mjs
+@@ -4,6 +4,7 @@
+ 
+ import { Preferences } from "chrome://global/content/preferences/Preferences.mjs";
+ import { SettingGroupManager } from "chrome://browser/content/preferences/config/SettingGroupManager.mjs";
++import "chrome://kyberfox/content/theme-pane.mjs";
+ 
+ const { AppConstants } = ChromeUtils.importESModule(
+   "resource://gre/modules/AppConstants.sys.mjs"
+--- a/browser/components/preferences/preferences.js
++++ b/browser/components/preferences/preferences.js
+@@ -263,6 +263,7 @@
+   appearance: {
+     l10nId: "preferences-appearance-header",
+     groupIds: [
++      "kyberfoxTheme",
+       "appearance",
+       "browserTheme",
+       "browserIconEntry",

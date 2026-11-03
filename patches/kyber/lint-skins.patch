@@ -1,0 +1,22 @@
+diff --git a/.prettierignore b/.prettierignore
+index 3cbfaf15bc..048e3fe059 100644
+--- a/.prettierignore
++++ b/.prettierignore
+@@ -1807,3 +1807,7 @@ tools/ts/test/baselines/
+ try_task_config.json
+ xpcom/idl-parser/xpidl/fixtures/xpctest.d.json
+ **/package-lock.json
++
++# Kyber Fox: vendored skins
++browser/components/kyberfox/themes/skins/gx/userChrome.css
++browser/components/kyberfox/themes/skins/one/userChrome.css
+diff --git a/tools/rewriting/ThirdPartyPaths.txt b/tools/rewriting/ThirdPartyPaths.txt
+index 53d61b3f3a..6b643a8943 100644
+--- a/tools/rewriting/ThirdPartyPaths.txt
++++ b/tools/rewriting/ThirdPartyPaths.txt
+@@ -210,3 +210,5 @@ unicode/
+ xpcom/build/mach_override.c
+ xpcom/build/mach_override.h
+ xpcom/io/crc32c.c
++browser/components/kyberfox/themes/skins/gx/userChrome.css
++browser/components/kyberfox/themes/skins/one/userChrome.css

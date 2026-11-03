@@ -1,0 +1,128 @@
+{
+  "ember": {
+    "name": "Ember",
+    "kind": "color",
+    "scheme": "dark",
+    "vars": {
+      "--kf-bg": "#1c1b22",
+      "--kf-bg-toolbar": "#2b2a33",
+      "--kf-bg-tab-active": "#42414d",
+      "--kf-bg-urlbar": "#42414d",
+      "--kf-fg": "#fbfbfe",
+      "--kf-fg-muted": "#cfcfd8",
+      "--kf-accent": "#ff7139",
+      "--kf-border": "#52525e",
+      "--kf-radius": "4px",
+      "--kf-font": "inherit",
+      "--kf-bg-image": "none"
+    }
+  },
+  "paper": {
+    "name": "Paper",
+    "kind": "color",
+    "scheme": "light",
+    "vars": {
+      "--kf-bg": "#f3ecdf",
+      "--kf-bg-toolbar": "#faf5ea",
+      "--kf-bg-tab-active": "#fffdf7",
+      "--kf-bg-urlbar": "#fffdf7",
+      "--kf-fg": "#2d2419",
+      "--kf-fg-muted": "#6b5e4b",
+      "--kf-accent": "#a3512b",
+      "--kf-border": "#d9cdb8",
+      "--kf-radius": "6px",
+      "--kf-font": "Georgia, \"Noto Serif\", \"Times New Roman\", serif",
+      "--kf-bg-image": "none"
+    }
+  },
+  "frost": {
+    "name": "Frost",
+    "kind": "color",
+    "scheme": "dark",
+    "vars": {
+      "--kf-bg": "#232a34",
+      "--kf-bg-toolbar": "#2c3542",
+      "--kf-bg-tab-active": "#3a4656",
+      "--kf-bg-urlbar": "#3a4656",
+      "--kf-fg": "#e3ebf5",
+      "--kf-fg-muted": "#a6b4c5",
+      "--kf-accent": "#7fb3e6",
+      "--kf-border": "#44536a",
+      "--kf-radius": "8px",
+      "--kf-font": "inherit",
+      "--kf-bg-image": "none"
+    }
+  },
+  "terminal": {
+    "name": "Terminal",
+    "kind": "color",
+    "scheme": "dark",
+    "vars": {
+      "--kf-bg": "#000000",
+      "--kf-bg-toolbar": "#0a0a0a",
+      "--kf-bg-tab-active": "#141414",
+      "--kf-bg-urlbar": "#0a0a0a",
+      "--kf-fg": "#39ff14",
+      "--kf-fg-muted": "#1fa80d",
+      "--kf-accent": "#39ff14",
+      "--kf-border": "#1f3d1a",
+      "--kf-radius": "0px",
+      "--kf-font": "\"JetBrains Mono\", \"Fira Code\", \"DejaVu Sans Mono\", Consolas, monospace",
+      "--kf-bg-image": "none"
+    }
+  },
+  "catppuccin": {
+    "name": "Catppuccin Mocha",
+    "kind": "color",
+    "scheme": "dark",
+    "vars": {
+      "--kf-bg": "#1e1e2e",
+      "--kf-bg-toolbar": "#181825",
+      "--kf-bg-tab-active": "#313244",
+      "--kf-bg-urlbar": "#313244",
+      "--kf-fg": "#cdd6f4",
+      "--kf-fg-muted": "#a6adc8",
+      "--kf-accent": "#cba6f7",
+      "--kf-border": "#45475a",
+      "--kf-radius": "6px",
+      "--kf-font": "inherit",
+      "--kf-bg-image": "none"
+    }
+  },
+  "tokyo-night": {
+    "name": "Tokyo Night",
+    "kind": "color",
+    "scheme": "dark",
+    "vars": {
+      "--kf-bg": "#1a1b26",
+      "--kf-bg-toolbar": "#16161e",
+      "--kf-bg-tab-active": "#1e202e",
+      "--kf-bg-urlbar": "#1e202e",
+      "--kf-fg": "#c0caf5",
+      "--kf-fg-muted": "#787c99",
+      "--kf-accent": "#7aa2f7",
+      "--kf-border": "#363b54",
+      "--kf-radius": "6px",
+      "--kf-font": "inherit",
+      "--kf-bg-image": "none"
+    }
+  },
+  "starry": {
+    "name": "Starry",
+    "kind": "color",
+    "scheme": "dark",
+    "vars": {
+      "--kf-bg": "#101010",
+      "--kf-bg-toolbar": "#000000",
+      "--kf-bg-tab-active": "#313131",
+      "--kf-bg-urlbar": "#111111",
+      "--kf-fg": "#e6e6e6",
+      "--kf-fg-muted": "#a8a8b0",
+      "--kf-accent": "#9f1aff",
+      "--kf-border": "#303030",
+      "--kf-radius": "6px",
+      "--kf-font": "inherit",
+      "--kf-bg-image": "radial-gradient(1px 1px at 20px 30px, #ffffff, transparent), radial-gradient(1px 1px at 90px 12px, #00ddff, transparent), radial-gradient(1.5px 1.5px at 150px 40px, #ffffff, transparent), radial-gradient(1px 1px at 210px 18px, #c9a6ff, transparent)"
+    }
+  }
+}

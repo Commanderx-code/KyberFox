@@ -1,0 +1,77 @@
+# Themes
+
+The theme engine (`KyberThemes.sys.mjs`) restyles the browser window with two
+user style sheets registered through `nsIStyleSheetService`: `themes/base.css`,
+which maps Kyber variables onto Firefox's own, and a generated palette sheet
+that sets the variables for the chosen theme. Both are limited to
+`chrome://browser/content/browser.xhtml`, so web pages are unaffected.
+
+The theme is stored in `kyberfox.theme.id`. `themes/palettes.json` holds the
+palettes and `themes/status.json` lists disabled ids. Every palette defines
+all of: `--kf-bg`, `--kf-bg-toolbar`, `--kf-bg-tab-active`, `--kf-bg-urlbar`,
+`--kf-fg`, `--kf-fg-muted`, `--kf-accent`, `--kf-border`, `--kf-radius`,
+`--kf-font`, `--kf-bg-image`. The palette's `scheme` sets `color-scheme` on
+the window root, menus, panels and tooltips.
+
+## Picker and custom CSS
+
+Settings > Appearance starts with a Kyber Fox theme group
+(`content/theme-pane.mjs`, wired in by `patches/kyber/theme-pane.patch`): one
+card per `KyberThemes.available()` entry, an Import custom CSS button and a
+Reset button. Clicking a card applies it at once.
+
+Import copies the picked `.css` file (at most 1 MB, valid UTF-8, at least one
+rule) to `<profile>/chrome/kyberfox-custom.css` and registers it as a user
+sheet above the palette sheet, wrapped in the same browser-window rule. It is
+read from nowhere else. `kyberfox.theme.custom` records that it is active; a
+later start registers the file again. The file is parsed first and only its
+parsed top-level rules are placed inside the wrapper (and the result is
+checked to be a single scope rule), so stray braces cannot widen the scope to
+web pages; the same check runs on every start. `@namespace` and `@import`
+rules are dropped. A failed import changes nothing.
+
+Reset (the button, or Ctrl+Shift+Alt+T in any browser window) removes the
+sheet and the file and applies Ember. In safe mode `init()` does nothing, so a
+broken theme or custom file cannot lock you out.
+
+## Skins
+
+`themes/skins/<id>/` holds full skins (kind `skin`): GX-style (`gx`) and
+One-style (`one`), vendored from Godiesc's projects by
+`python -m tools.vendor_skins` at the commits pinned in `pins.toml` (see
+`themes/NOTICES.md` for what is kept and changed). `skins/index.json` lists
+the ids; each `skin.json` has `name`, `scheme`, `sheets`, `prefs` and the
+`--kf-*` `vars` used for the picker card.
+
+`apply("gx")` removes `base.css` and the color palette, registers a sheet
+that sets only `color-scheme` (from `scheme`), then each sheet of the skin
+as a user sheet (`colors.css` first, `userChrome.css` last). Every skin sheet
+is wrapped in `@-moz-document url-prefix("chrome://")`, so it styles browser
+windows and dialogs and never web pages. In-content `about:` pages are not
+styled; the skins' `userContent.css` is not shipped.
+
+The skin's `prefs` are set on apply. The user's own values (or the fact that
+there was none) are first saved as JSON in `kyberfox.theme.skinPrefBackup`
+and put back when another theme is applied or `resetToDefault()` runs. After
+a restart a backup that already covers the skin's prefs is kept, so a crash
+cannot save the skin's values as the user's. Some prefs may need a restart
+or a tab reload to show fully: `browser.tabs.allow_transparent_browser`.
+
+A skin that cannot be loaded, or that is listed in `status.json` `disabled`,
+falls back to Ember like any theme.
+
+To update a skin: change its pin in `pins.toml`, run
+`python -m tools.vendor_skins <gx|one>`, commit the diff, and run
+`browser_skins.js`.
+
+## Known limits
+
+- `@media (prefers-color-scheme: ...)` blocks in Firefox's own CSS follow the
+  operating system's scheme, not `color-scheme`. A light palette on a dark OS
+  can show a few dark-styled details.
+- In-content pages such as about:preferences and about:newtab follow the OS or
+  the default theme, not the palette.
+- User style sheets are sent to and parsed in every content process. The cost
+  is small and accepted.
+- If `palettes.json` cannot be read, the engine runs on a built-in Ember
+  palette and leaves the stored theme id alone.

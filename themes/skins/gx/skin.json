@@ -1,0 +1,28 @@
+{
+  "id": "gx",
+  "name": "GX-style",
+  "kind": "skin",
+  "scheme": "dark",
+  "sheets": ["colors.css", "userChrome.css"],
+  "prefs": {
+    "browser.tabs.delayHidingAudioPlayingIconMS": 0,
+    "browser.tabs.allow_transparent_browser": true,
+    "sidebar.revamp.round-content-area": false,
+    "privacy.userContext.enabled": true,
+    "privacy.userContext.ui.enabled": true,
+    "privacy.userContext.longPressBehavior": 2
+  },
+  "vars": {
+    "--kf-bg": "#0d0d14",
+    "--kf-bg-toolbar": "#16161f",
+    "--kf-bg-tab-active": "#1f1f2b",
+    "--kf-bg-urlbar": "#1f1f2b",
+    "--kf-fg": "#f2f2f7",
+    "--kf-fg-muted": "#a9a9ba",
+    "--kf-accent": "#fa1e4e",
+    "--kf-border": "#2c2c3a",
+    "--kf-radius": "0px",
+    "--kf-font": "inherit",
+    "--kf-bg-image": "none"
+  }
+}

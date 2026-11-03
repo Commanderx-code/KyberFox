@@ -1,0 +1,510 @@
+name: Release
+
+# One-click release. Run it from the Actions tab or with:
+#   gh workflow run release.yml -f version=159.0 -f channel=release
+# Dry run (a test manifest and a pre-release; the release manifest and the pacman repo stay untouched):
+#   gh workflow run release.yml -f version=159.0 -f channel=test -f dry-run=true
+#
+# Stages: prepare, build (Linux and Windows), verify, then publish, which waits
+# for the owner's approval in the `release` environment. Only publish sees the
+# signing secrets; the two builds get only the Safe Browsing key, which the
+# binary embeds anyway. docs/release.md explains each job and the owner setup.
+# workflow_dispatch needs this file on main.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Firefox version to release; must equal [firefox] version in pins.toml
+        required: true
+        type: string
+      channel:
+        description: Pages channel for the update manifest (test is never read by a shipped browser)
+        required: false
+        type: choice
+        options: [release, test]
+        default: release
+      set-disabled-skin:
+        description: Comma-separated skin ids to ship disabled (themes/status.json), for example gx,one
+        required: false
+        type: string
+        default: ""
+      dry-run:
+        description: Publish a test manifest and a pre-release only; skip the release manifest and the pacman repo
+        required: false
+        type: boolean
+        default: false
+      update-from-run-id:
+        description: Run id of the previous Release run (its artifacts must not have expired); when set, the signed update is applied to that install after publishing
+        required: false
+        type: string
+        default: ""
+
+# Runs that publish the same tag never overlap: a dry run and a test-channel run both
+# make v<version>-<build>-test, so they share the group release-true; real releases use
+# release-false. One more run may queue; a newer dispatch replaces a queued one.
+concurrency:
+  group: release-${{ inputs.dry-run || inputs.channel == 'test' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  # Fails in seconds on a wrong version or an unknown skin id, before any build starts.
+  prepare:
+    name: Check inputs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.pins.outputs.version }}
+      build: ${{ steps.pins.outputs.build }}
+      tag: ${{ steps.pins.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check the version and the tag
+        id: pins
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry-run }}
+          CHANNEL: ${{ inputs.channel }}
+        run: |
+          eval "$(python3 -I - <<'PY'
+          import tomllib
+          with open('pins.toml', 'rb') as f:
+              pins = tomllib.load(f)
+          print('pinned={} build={}'.format(pins['firefox']['version'], pins['kyber']['build']))
+          PY
+          )"
+          if [ "$INPUT_VERSION" != "$pinned" ]; then
+            echo "::error::version $INPUT_VERSION does not match pins.toml ($pinned)"
+            exit 1
+          fi
+          tag="v$pinned-$build"
+          if [ "$DRY_RUN" = "true" ] || [ "$CHANNEL" != "release" ]; then
+            tag="$tag-test"
+          fi
+          # ls-remote --exit-code: 0 found, 2 not found, anything else is a failure.
+          status=0
+          git ls-remote --exit-code --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$tag" >/dev/null || status=$?
+          case "$status" in
+            0)
+              echo "::error::tag $tag already exists; raise [kyber] build in pins.toml, or see docs/release.md (Recovering from a failed publish)"
+              exit 1
+              ;;
+            2) ;;
+            *)
+              echo "::error::could not list the remote tags (git ls-remote exited $status)"
+              exit 1
+              ;;
+          esac
+          {
+            echo "version=$pinned"
+            echo "build=$build"
+            echo "tag=$tag"
+          } >> "$GITHUB_OUTPUT"
+
+      # Settings shows Safe Browsing as on, so a release build must carry the key.
+      # Test and dry runs only warn (the build workflows print the warning).
+      - name: Refuse a release build without the Safe Browsing key
+        if: inputs.channel == 'release' && !inputs.dry-run
+        env:
+          HAVE_KEY: ${{ secrets.KYBERFOX_SAFEBROWSING_KEY != '' }}
+        run: |
+          if [ "$HAVE_KEY" != "true" ]; then
+            echo "::error::KYBERFOX_SAFEBROWSING_KEY is not set; a release build would ship without Safe Browsing lists. See docs/release.md (Owner steps)."
+            exit 1
+          fi
+
+      - name: Write the theme status
+        env:
+          DISABLED_SKINS: ${{ inputs.set-disabled-skin }}
+        run: |
+          # An empty input ships the committed list; otherwise the input replaces it.
+          if [ -n "$DISABLED_SKINS" ]; then
+            python3 -m tools.set_disabled_skins "$DISABLED_SKINS" --out "$RUNNER_TEMP/status.json"
+          else
+            cp themes/status.json "$RUNNER_TEMP/status.json"
+          fi
+
+      - name: Upload the theme status
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: kyberfox-theme-status
+          path: ${{ runner.temp }}/status.json
+          if-no-files-found: error
+
+  # Both builds write the disabled skins into themes/status.json before assembling.
+  # Build Windows also runs the Windows smoke and the refuse smoke-update itself.
+  build-linux:
+    needs: prepare
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      disabled-skins: ${{ inputs.set-disabled-skin }}
+    secrets:
+      KYBERFOX_SAFEBROWSING_KEY: ${{ secrets.KYBERFOX_SAFEBROWSING_KEY }}
+
+  build-windows:
+    needs: prepare
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      disabled-skins: ${{ inputs.set-disabled-skin }}
+    secrets:
+      KYBERFOX_SAFEBROWSING_KEY: ${{ secrets.KYBERFOX_SAFEBROWSING_KEY }}
+
+  front-end-tests:
+    needs: prepare
+    permissions:
+      contents: read
+    uses: ./.github/workflows/front-end-tests.yml
+
+  smoke-windows:
+    needs: build-windows
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/smoke-windows.yml
+
+  smoke-arch:
+    needs: build-linux
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/smoke-arch.yml
+
+  verify:
+    name: Verify
+    needs: [prepare, build-linux, build-windows, front-end-tests, smoke-windows, smoke-arch]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Download the theme status
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kyberfox-theme-status
+          path: ${{ runner.temp }}/status
+
+      - name: Assemble the release tree
+        run: |
+          cp "$RUNNER_TEMP/status/status.json" themes/status.json
+          make assemble
+
+      - name: Check forbidden content
+        run: make check-forbidden
+
+      - name: Tools tests
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet --require-hashes -r requirements-release.txt
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet --require-hashes -r requirements-dev.txt
+          "$RUNNER_TEMP/venv/bin/python" -m pytest tests -q
+
+  # The only job with signing secrets. It waits for the owner's approval of the `release` environment.
+  publish:
+    name: Publish
+    needs: [prepare, verify]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: release
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      BUILD: ${{ needs.prepare.outputs.build }}
+      TAG: ${{ needs.prepare.outputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+      SITE_URL: https://commanderx-code.github.io/KyberFox
+      # archlinux:base-devel as of 2026-11-03. The signing steps give this image the pacman
+      # key, so it is pinned by digest; docs/release.md says how to update it.
+      ARCH_IMAGE: archlinux:base-devel@sha256:767de6eaa40dcfeda5263a48737ea03a782caabdf3a403b6e6a203c7fd333681
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Refuse placeholder update certificates
+        run: |
+          for name in release_primary release_secondary; do
+            cert="overlay/toolkit/mozapps/update/updater/$name.der"
+            subject=$(openssl x509 -inform DER -noout -subject -in "$cert")
+            echo "$name: $subject"
+            case "$subject" in
+              *PLACEHOLDER*)
+                echo "::error::$cert is a placeholder certificate; no update signed by the release key would verify. See docs/update-signing.md (Owner steps)."
+                exit 1
+                ;;
+            esac
+          done
+
+      - name: Download the Windows build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kyberfox-windows-x86_64
+          path: ${{ runner.temp }}/windows
+
+      - name: Download the Linux build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kyberfox-linux-x86_64
+          path: ${{ runner.temp }}/linux
+
+      - name: Download the theme status
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kyberfox-theme-status
+          path: ${{ runner.temp }}/status
+
+      - name: Install the release tools
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet --require-hashes -r requirements-release.txt
+
+      - name: Locate the build files
+        run: |
+          display="$VERSION-$BUILD"
+          mapfile -t installers < <(find "$RUNNER_TEMP/windows" -name 'kyberfox-*.installer.exe')
+          mapfile -t mars < <(find "$RUNNER_TEMP/windows" -name 'kyberfox-*.complete.mar')
+          mapfile -t tarballs < <(find "$RUNNER_TEMP/linux" -name 'kyberfox-*.linux-x86_64.tar.xz')
+          if [ "${#installers[@]}" -ne 1 ] || [ "${#mars[@]}" -ne 1 ] || [ "${#tarballs[@]}" -ne 1 ]; then
+            echo "::error::expected one installer, one MAR and one tarball, found ${installers[*]} ${mars[*]} ${tarballs[*]}"
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/assets" "$RUNNER_TEMP/signed" "$RUNNER_TEMP/pkg"
+          cp "${installers[0]}" "$RUNNER_TEMP/assets/kyberfox-$display.installer.exe"
+          # The PKGBUILD downloads the tarball under this name.
+          cp "${tarballs[0]}" "$RUNNER_TEMP/assets/kyberfox-$display.linux-x86_64.tar.xz"
+          {
+            echo "DISPLAY_VERSION=$display"
+            echo "UNSIGNED_MAR=${mars[0]}"
+          } >> "$GITHUB_ENV"
+
+      - name: Read the build id from the MAR
+        run: |
+          mkdir "$RUNNER_TEMP/mar-extract"
+          cd "$RUNNER_TEMP/mar-extract"
+          "$RUNNER_TEMP/venv/bin/python" -c "import sys; from mardor.cli import main; main(sys.argv[1:])" --auto -x "$UNSIGNED_MAR"
+          ini=application.ini
+          mar_version=$(sed -n 's/^Version=//p' "$ini")
+          build_id=$(sed -n 's/^BuildID=//p' "$ini")
+          if [ "$mar_version" != "$VERSION" ] || [ -z "$build_id" ]; then
+            echo "::error::application.ini says version '$mar_version' build '$build_id', expected $VERSION"
+            exit 1
+          fi
+          echo "BUILD_ID=$build_id" >> "$GITHUB_ENV"
+
+      - name: Sign the MAR
+        env:
+          MAR_SIGNING_KEY: ${{ secrets.MAR_SIGNING_KEY }}
+        run: |
+          if [ -z "$MAR_SIGNING_KEY" ]; then
+            echo "::error::secret MAR_SIGNING_KEY is empty; see docs/release.md (Owner setup)"
+            exit 1
+          fi
+          key="$RUNNER_TEMP/mar-signing.pem"
+          trap 'shred -u "$key" 2>/dev/null || rm -f "$key"' EXIT
+          (umask 077 && printf '%s\n' "$MAR_SIGNING_KEY" > "$key")
+          signed="$RUNNER_TEMP/signed/kyberfox-$DISPLAY_VERSION.complete.mar"
+          "$RUNNER_TEMP/venv/bin/python" -m tools.sign_mar sign --key "$key" \
+            --cert overlay/toolkit/mozapps/update/updater/release_primary.der \
+            --in "$UNSIGNED_MAR" --out "$signed"
+          cp "$signed" "$RUNNER_TEMP/assets/"
+
+      - name: Upload the signed MAR
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: kyberfox-windows-signed-mar
+          path: ${{ runner.temp }}/signed/
+          overwrite: true
+          if-no-files-found: error
+
+      - name: Build the Arch package
+        run: |
+          docker run --rm \
+            -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
+            -v "$GITHUB_WORKSPACE:/work:ro" \
+            -v "$RUNNER_TEMP/assets:/in:ro" \
+            -v "$RUNNER_TEMP/pkg:/out" \
+            "$ARCH_IMAGE" \
+            /work/packaging/arch/release-package.sh \
+            "/in/kyberfox-$DISPLAY_VERSION.linux-x86_64.tar.xz" "$VERSION" "$BUILD" /out
+          cp "$RUNNER_TEMP/pkg/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" "$RUNNER_TEMP/assets/"
+
+      - name: Write SHA256SUMS
+        run: |
+          cd "$RUNNER_TEMP/assets"
+          sha256sum -- * > "$RUNNER_TEMP/SHA256SUMS"
+          mv "$RUNNER_TEMP/SHA256SUMS" .
+          cat SHA256SUMS
+
+      # The tag points at a commit that carries the shipped themes/status.json, so the
+      # release source matches the binaries. Nothing is pushed to a branch.
+      - name: Tag the release
+        run: |
+          gh auth setup-git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! cmp -s "$RUNNER_TEMP/status/status.json" themes/status.json; then
+            cp "$RUNNER_TEMP/status/status.json" themes/status.json
+            git add themes/status.json
+            git commit -m "Ship release $TAG with the skins in status.json disabled"
+          fi
+          # A re-run after a partial failure reuses the tag a first attempt pushed, but only
+          # when it holds the same source tree as this run.
+          if git ls-remote --exit-code --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG" >/dev/null; then
+            git fetch --no-tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG:refs/tags/existing-$TAG"
+            if [ "$(git rev-parse "existing-$TAG^{tree}")" != "$(git rev-parse 'HEAD^{tree}')" ]; then
+              echo "::error::tag $TAG exists and holds a different tree than this run; see docs/release.md (Recovering from a failed publish)"
+              exit 1
+            fi
+            echo "Tag $TAG already exists with the same tree; keeping it"
+          else
+            git tag "$TAG"
+            git push "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG"
+          fi
+
+      - name: Create the GitHub Release
+        env:
+          DRY_RUN: ${{ inputs.dry-run }}
+          CHANNEL: ${{ inputs.channel }}
+          DISABLED_SKINS: ${{ inputs.set-disabled-skin }}
+        run: |
+          flags=()
+          if [ "$DRY_RUN" = "true" ] || [ "$CHANNEL" != "release" ]; then
+            flags+=(--prerelease)
+          fi
+          {
+            echo "Kyber Fox $DISPLAY_VERSION (Firefox $VERSION)."
+            echo
+            echo "Windows: run the installer; installed browsers update themselves."
+            echo "Arch Linux: install from the pacman repository (packaging/arch/README.md)."
+            echo "Linux tarball: unpack it anywhere and run kyberfox."
+            if [ -n "$DISABLED_SKINS" ]; then
+              echo
+              echo "Shipped with these skins disabled: $DISABLED_SKINS."
+            fi
+            echo
+            echo "SHA256SUMS lists the checksum of every file."
+          } > "$RUNNER_TEMP/notes.md"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists; uploading the assets again"
+            gh release upload "$TAG" --clobber "$RUNNER_TEMP"/assets/*
+          else
+            gh release create "$TAG" "${flags[@]}" --verify-tag \
+              --title "Kyber Fox $DISPLAY_VERSION" --notes-file "$RUNNER_TEMP/notes.md" \
+              "$RUNNER_TEMP"/assets/*
+          fi
+
+      - name: Check out gh-pages
+        run: |
+          gh auth setup-git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads "https://github.com/$GITHUB_REPOSITORY" gh-pages >/dev/null; then
+            git clone --branch gh-pages --depth 1 "https://github.com/$GITHUB_REPOSITORY" "$RUNNER_TEMP/site"
+          else
+            git init --initial-branch gh-pages "$RUNNER_TEMP/site"
+            git -C "$RUNNER_TEMP/site" remote add origin "https://github.com/$GITHUB_REPOSITORY"
+          fi
+          touch "$RUNNER_TEMP/site/.nojekyll"
+
+      # The release assets exist now, so the manifest never points at a missing file.
+      # The same manifest is written for both CPU names the updater can report.
+      - name: Publish the update manifests
+        env:
+          MANIFEST_CHANNEL: ${{ inputs.dry-run && 'test' || inputs.channel }}
+        run: |
+          signed="$RUNNER_TEMP/signed/kyberfox-$DISPLAY_VERSION.complete.mar"
+          release_url="https://github.com/$GITHUB_REPOSITORY/releases"
+          for cpu in x64 aarch64; do
+            "$RUNNER_TEMP/venv/bin/python" -m tools.update_manifest \
+              --version "$VERSION" --display-version "$DISPLAY_VERSION" --build-id "$BUILD_ID" \
+              --mar "$signed" --url "$release_url/download/$TAG/kyberfox-$DISPLAY_VERSION.complete.mar" \
+              --details-url "$release_url/tag/$TAG" \
+              --out "$RUNNER_TEMP/site/update/$MANIFEST_CHANNEL/WINNT_x86_64-msvc-$cpu/update.xml"
+          done
+          cd "$RUNNER_TEMP/site"
+          git add -A
+          # A re-run writes byte-identical files; commit and push only a change.
+          git diff --cached --quiet || git commit -m "Update manifest for $TAG on the $MANIFEST_CHANNEL channel"
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            git pull --rebase origin gh-pages
+          fi
+          git push origin HEAD:gh-pages
+
+      # Exercises the signing key without publishing anything.
+      - name: Check pacman signing in a scratch repo
+        if: ${{ inputs.dry-run }}
+        env:
+          PACMAN_GPG_KEY: ${{ secrets.PACMAN_GPG_KEY }}
+          KYBERFOX_PACMAN_KEY_ID: ${{ secrets.PACMAN_GPG_KEY_ID }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/arch-scratch"
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp -e GNUPGHOME=/tmp/gnupg \
+            -e PACMAN_GPG_KEY -e KYBERFOX_PACMAN_KEY_ID \
+            -v "$GITHUB_WORKSPACE:/work:ro" \
+            -v "$RUNNER_TEMP/pkg:/in:ro" \
+            -v "$RUNNER_TEMP/arch-scratch:/repo" \
+            "$ARCH_IMAGE" \
+            /work/packaging/arch/sign-and-publish.sh "/in/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" /repo
+
+      - name: Publish the pacman repo
+        if: ${{ !inputs.dry-run && inputs.channel == 'release' }}
+        env:
+          PACMAN_GPG_KEY: ${{ secrets.PACMAN_GPG_KEY }}
+          KYBERFOX_PACMAN_KEY_ID: ${{ secrets.PACMAN_GPG_KEY_ID }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/site/arch/x86_64"
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp -e GNUPGHOME=/tmp/gnupg \
+            -e PACMAN_GPG_KEY -e KYBERFOX_PACMAN_KEY_ID \
+            -v "$GITHUB_WORKSPACE:/work:ro" \
+            -v "$RUNNER_TEMP/pkg:/in:ro" \
+            -v "$RUNNER_TEMP/site/arch/x86_64:/repo" \
+            "$ARCH_IMAGE" \
+            /work/packaging/arch/sign-and-publish.sh "/in/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" /repo
+          cd "$RUNNER_TEMP/site"
+          git add -A
+          git diff --cached --quiet || git commit -m "Pacman repo: kyberfox $DISPLAY_VERSION"
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            git pull --rebase origin gh-pages
+          fi
+          git push origin HEAD:gh-pages
+
+  # Applies the signed update to an older install. Needs the previous Release run's id; the first release has none, so it is skipped.
+  apply-update:
+    needs: publish
+    if: ${{ inputs.update-from-run-id != '' }}
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/smoke-update.yml
+    with:
+      run-id: ${{ inputs.update-from-run-id }}
+      signed-mar-run-id: ${{ github.run_id }}
+      skip-refuse: true

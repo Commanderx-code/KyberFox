@@ -1,0 +1,93 @@
+diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
+--- a/browser/app/profile/firefox.js
++++ b/browser/app/profile/firefox.js
+@@ -1191,7 +1191,7 @@
+ // Bug 2052293: temporarily disabled while tab groups move away from the list all tabs menu.
+ pref("browser.tabs.groups.onboardingCallouts.enabled", false);
+ 
+-pref("browser.tabs.groups.smart.enabled", true);
++pref("browser.tabs.groups.smart.enabled", false);
+ 
+ pref("browser.tabs.notes.enabled", false);
+ 
+@@ -1665,7 +1665,7 @@
+ pref("browser.zoom.updateBackgroundTabs", true);
+ 
+ // The breakpad report server to link to in about:crashes
+-pref("breakpad.reportURL", "https://crash-stats.mozilla.org/report/index/");
++pref("breakpad.reportURL", "");
+ 
+ // URL for "Learn More" for DataCollection
+ pref("toolkit.datacollection.infoURL",
+@@ -2382,7 +2382,7 @@
+   '{"visibilityPref":"browser.resourceMonitor.enabled"}'
+ );
+ 
+-pref("browser.ml.chat.enabled", true);
++pref("browser.ml.chat.enabled", false);
+ pref("browser.ml.chat.hideLocalhost", true);
+ pref("browser.ml.chat.maxLength", 7000);
+ pref("browser.ml.chat.menu", true);
+@@ -2406,7 +2406,7 @@
+ pref("browser.ml.linkPreview.allowedLanguages", "en");
+ pref("browser.ml.linkPreview.blockListEnabled", true);
+ pref("browser.ml.linkPreview.collapsed", false);
+-pref("browser.ml.linkPreview.enabled", true);
++pref("browser.ml.linkPreview.enabled", false);
+ pref("browser.ml.linkPreview.ignoreMs", 2000);
+ pref("browser.ml.linkPreview.longPress", true);
+ pref("browser.ml.linkPreview.longPressMs", 1000);
+@@ -3090,18 +3090,14 @@
+ // Normandy client preferences
+ pref("app.normandy.api_url", "https://normandy.cdn.mozilla.net/api/v1");
+ pref("app.normandy.dev_mode", false);
+-pref("app.normandy.enabled", true);
++pref("app.normandy.enabled", false);
+ pref("app.normandy.first_run", true);
+ pref("app.normandy.logging.level", 50); // Warn
+ pref("app.normandy.run_interval_seconds", 21600); // 6 hours
+ pref("app.normandy.shieldLearnMoreUrl", "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/shield");
+ pref("app.normandy.last_seen_buildid", "");
+ pref("app.normandy.onsync_skew_sec", 600);
+-#ifdef MOZ_DATA_REPORTING
+-  pref("app.shield.optoutstudies.enabled", true);
+-#else
+-  pref("app.shield.optoutstudies.enabled", false);
+-#endif
++pref("app.shield.optoutstudies.enabled", false);
+ 
+ // Multi-lingual preferences:
+ //  *.enabled - Are langpacks available for the build of Firefox?
+diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
+--- a/modules/libpref/init/all.js
++++ b/modules/libpref/init/all.js
+@@ -3646,7 +3646,7 @@
+ pref("browser.ai.control.speechRecognition", "default");
+ 
+ // Enable the experimental machine learning inference engine.
+-pref("browser.ml.enable", true);
++pref("browser.ml.enable", false);
+ // Set to "All" to see all logs, which are useful for debugging.
+ pref("browser.ml.logLevel", "Error");
+ // Model hub root URL used to download models.
+@@ -3754,7 +3754,7 @@
+ 
+     // Health Report is enabled by default on all channels.
+     // Do note that the toggle on Fenix and Focus does NOT reflect to this pref.
+-    pref("datareporting.healthreport.uploadEnabled", true);
++    pref("datareporting.healthreport.uploadEnabled", false);
+     pref("datareporting.usage.uploadEnabled", true);
+   #endif
+ #endif
+diff --git a/toolkit/components/pdfjs/PdfJsOverridePrefs.js b/toolkit/components/pdfjs/PdfJsOverridePrefs.js
+--- a/toolkit/components/pdfjs/PdfJsOverridePrefs.js
++++ b/toolkit/components/pdfjs/PdfJsOverridePrefs.js
+@@ -32,7 +32,7 @@
+   pref("pdfjs.enableHighlightFloatingButton", true);
+ 
+   pref("pdfjs.enableAltTextForEnglish", false);
+-  pref("pdfjs.enableAltText", true);
++  pref("pdfjs.enableAltText", false);
+   pref("pdfjs.enableAltTextModelDownload", false);
+   pref("pdfjs.enableGuessAltText", false);
+ 

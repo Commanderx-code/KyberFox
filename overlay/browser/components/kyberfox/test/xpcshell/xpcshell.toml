@@ -1,0 +1,8 @@
+[DEFAULT]
+# The harness picks the app dir from "<appname>-appdir", and this build's
+# appname is kyberfox. firefox-appdir alone leaves resource:/// pointing at
+# dist/bin, so the policies schema module is missing and xpcshell crashes.
+firefox-appdir = "browser"
+kyberfox-appdir = "browser"
+
+["test_defaults.js"]
