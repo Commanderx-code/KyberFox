@@ -2,9 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/* Kyber Fox branding, derived from Firefox's unofficial branding. */
+
 @media not ((prefers-contrast) and (prefers-color-scheme: light)) {
   #aboutDialogContainer {
-    background-color: #130829;
+    background-color: #1b1530;
     color: #fff;
     color-scheme: dark;
   }

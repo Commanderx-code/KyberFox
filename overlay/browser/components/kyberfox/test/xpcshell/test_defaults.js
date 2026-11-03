@@ -1,5 +1,6 @@
-/* Any copyright is dedicated to the Public Domain.
- * http://creativecommons.org/publicdomain/zero/1.0/ */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
 // Checks the shipped kyberfox.cfg and distribution/policies.json in a built
@@ -69,7 +70,40 @@ add_task(function test_private_defaults() {
     "extensions.blocklist.enabled": true,
     "security.remote_settings.crlite_filters.enabled": true,
     "browser.startup.page": 3,
+    "privacy.sanitize.sanitizeOnShutdown": false,
   });
+});
+
+add_task(function test_strict_is_a_default_not_a_lock() {
+  const category = "browser.contentblocking.category";
+  Assert.equal(
+    Services.prefs.getDefaultBranch(null).getStringPref(category, ""),
+    "strict",
+    "strict is the default content blocking category"
+  );
+  Assert.ok(!Services.prefs.prefIsLocked(category), `${category} is not locked`);
+  Assert.ok(
+    !Services.prefs.prefHasUserValue(category),
+    `${category} is not forced with a user value`
+  );
+});
+
+// A new profile gets its category from matching the feature prefs, so the
+// defaults in kyberfox.cfg must line up with the strict feature list.
+add_task(function test_new_profile_resolves_to_strict() {
+  const { ContentBlockingPrefs } = ChromeUtils.importESModule(
+    "moz-src:///browser/components/protections/ContentBlockingPrefs.sys.mjs"
+  );
+  ContentBlockingPrefs.init();
+  try {
+    Assert.equal(
+      Services.prefs.getStringPref("browser.contentblocking.category"),
+      "strict"
+    );
+  } finally {
+    ContentBlockingPrefs.uninit();
+    Services.prefs.clearUserPref("browser.contentblocking.category");
+  }
 });
 
 add_task(function test_security_lists_stay_reachable() {
