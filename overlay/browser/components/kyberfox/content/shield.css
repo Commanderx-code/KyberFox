@@ -10,14 +10,12 @@
   &[shield-off] {
     list-style-image: url("chrome://kyberfox/content/shield-off.svg");
   }
-
-  &[disabled] {
-    opacity: 0.4;
-  }
 }
 
 #kyber-shield-panel {
   --arrowpanel-padding: 12px;
+  /* No design token for a panel width. */
+  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
   min-width: 280px;
 }
 
@@ -27,19 +25,20 @@
 
 #kyber-shield-site {
   margin: 0;
-  font-size: 1.15em;
+  font-size: var(--font-size-large);
   font-weight: var(--font-weight-semibold);
 }
 
 .kyber-shield-rows {
-  gap: 6px;
+  gap: var(--space-xsmall);
   padding-inline-start: var(--space-xsmall);
 }
 
 .kyber-shield-note {
   margin: 0;
   color: var(--text-color-deemphasized);
-  font-size: 0.9em;
+  font-size: var(--font-size-small);
+  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
   max-width: 280px;
 }
 

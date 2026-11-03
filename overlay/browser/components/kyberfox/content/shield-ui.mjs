@@ -12,6 +12,10 @@ const { KyberShield } = ChromeUtils.importESModule(
   "resource:///modules/KyberShield.sys.mjs"
 );
 
+const { KyberShieldWidget } = ChromeUtils.importESModule(
+  "resource:///modules/KyberShieldWidget.sys.mjs"
+);
+
 const CONTROLS = ["ads", "fingerprinting", "cookies"];
 
 // uBlock may count a few more blocked requests after the page has loaded.
@@ -24,22 +28,40 @@ class ShieldButton {
   constructor(win) {
     this.win = win;
     this.doc = win.document;
-    this.button = this.doc.getElementById("kyber-shield-button");
+    this.button = null;
     this.panel = null;
     this.busy = false;
     this.unreachable = false;
-    this.lateTimer = null;
+    this.lateTimers = new WeakMap();
+    this.started = false;
+    this.unloaded = false;
   }
 
-  async init() {
-    if (!this.button) {
+  /**
+   * Wires the button node CustomizableUI built for this window. Called from
+   * the widget's onCreated, which may run before or after delayed startup.
+   *
+   * @param {XULElement} node
+   */
+  attach(node) {
+    if (this.button == node) {
       return;
     }
-    // gBrowser does not exist yet while module scripts run.
-    await this.win.delayedStartupPromise;
+    this.button = node;
+    node.addEventListener("command", () => this.openPanel());
+    this.start().catch(console.error);
+  }
+
+  async start() {
+    if (this.started) {
+      return;
+    }
+    this.started = true;
+    // gBrowser does not exist yet while module scripts run, and the widget's
+    // node can be built that early.
+    await this.delayedStartup();
     let { gBrowser } = this.win;
 
-    this.button.addEventListener("command", () => this.openPanel());
     this.refreshButton();
 
     let listener = {
@@ -68,10 +90,26 @@ class ShieldButton {
       () => {
         gBrowser.removeTabsProgressListener(listener);
         gBrowser.tabContainer.removeEventListener("TabSelect", onSelect);
-        this.win.clearTimeout(this.lateTimer);
+        this.unloaded = true;
       },
       { once: true }
     );
+  }
+
+  delayedStartup() {
+    if (this.win.gBrowserInit?.delayedStartupFinished) {
+      return Promise.resolve();
+    }
+    const TOPIC = "browser-delayed-startup-finished";
+    return new Promise(resolve => {
+      let observer = subject => {
+        if (subject == this.win) {
+          Services.obs.removeObserver(observer, TOPIC);
+          resolve();
+        }
+      };
+      Services.obs.addObserver(observer, TOPIC);
+    });
   }
 
   get browser() {
@@ -88,10 +126,16 @@ class ShieldButton {
   }
 
   refreshLater(browser) {
-    this.win.clearTimeout(this.lateTimer);
-    this.lateTimer = this.win.setTimeout(
-      () => this.refreshFor(browser),
-      LATE_COUNT_MS
+    // One timer per browser: a background tab finishing must not cancel the
+    // foreground tab's late refresh.
+    this.win.clearTimeout(this.lateTimers.get(browser));
+    this.lateTimers.set(
+      browser,
+      this.win.setTimeout(() => {
+        if (!this.unloaded) {
+          this.refreshFor(browser);
+        }
+      }, LATE_COUNT_MS)
     );
   }
 
@@ -233,8 +277,11 @@ class ShieldButton {
           : await KyberShield.setControl(browser, control, value);
       this.unreachable = !ok;
       this.render();
-      // The page must reload for the change to take effect.
-      browser.reload();
+      // The page must reload for the change to take effect. If uBlock could
+      // not be reached nothing changed, so there is nothing to reload.
+      if (ok) {
+        browser.reload();
+      }
       this.refreshButton();
     } finally {
       this.busy = false;
@@ -244,4 +291,7 @@ class ShieldButton {
 
 // The module is evaluated by a script element, so `window` is the browser
 // window itself.
-new ShieldButton(window).init().catch(console.error);
+const shield = new ShieldButton(window);
+// CustomizableUI builds this window's button later and hands it over here.
+window.kyberShieldAttach = node => shield.attach(node);
+KyberShieldWidget.ensure();

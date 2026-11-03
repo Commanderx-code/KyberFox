@@ -16,20 +16,3 @@
  </head>
  <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
  # All sets except for popupsets (commands, keys, and stringbundles)
---- a/browser/base/content/navigator-toolbox.inc.xhtml
-+++ b/browser/base/content/navigator-toolbox.inc.xhtml
-@@ -444,6 +444,14 @@
-         <toolbartabstop/>
-       </toolbaritem>
- 
-+      <toolbarbutton id="kyber-shield-button"
-+                     class="toolbarbutton-1 chromeclass-toolbar-additional"
-+                     delegatesanchor="true"
-+                     badged="true"
-+                     removable="true"
-+                     cui-areatype="toolbar"
-+                     data-l10n-id="kyberfox-shield-button"/>
-+
-       <toolbarspring cui-areatype="toolbar" class="chromeclass-toolbar-additional"/>
- 
-       <toolbarbutton id="downloads-button"

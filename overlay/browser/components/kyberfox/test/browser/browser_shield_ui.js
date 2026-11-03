@@ -151,7 +151,11 @@ add_task(async function test_badge_updates_on_navigation() {
     KyberShield.blockedCount(browser),
     "the badge is uBlock's count"
   );
-  Assert.ok(button().hasAttribute("badged"), "the button is badged");
+  Assert.equal(
+    button().querySelector(".toolbarbutton-badge").textContent,
+    button().getAttribute("badge"),
+    "the badge element shows the count"
+  );
 
   // A page with nothing to block: the badge goes away, it does not read 0.
   BrowserTestUtils.startLoadingURIString(
@@ -295,6 +299,52 @@ add_task(async function test_toggle_reloads_page() {
     "turning everything back on leaves nothing stored"
   );
 
+  await closePanel();
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_ublock_not_reachable() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let browser = tab.linkedBrowser;
+  // A reload would drop this marker from the page.
+  await SpecialPowers.spawn(browser, [], () => {
+    content.wrappedJSObject.notReloaded = true;
+  });
+  let original = KyberShield.setControl;
+  KyberShield.setControl = async () => false;
+  registerCleanupFunction(() => {
+    KyberShield.setControl = original;
+  });
+
+  let p = await openPanel();
+  Assert.ok(
+    p.querySelector("#kyber-shield-error").hidden,
+    "no error before anything is changed"
+  );
+  EventUtils.synthesizeMouseAtCenter(toggle("ads").buttonEl, {});
+  await TestUtils.waitForCondition(
+    () => !p.querySelector("#kyber-shield-error").hidden,
+    "the panel says uBlock Origin is not reachable"
+  );
+  Assert.ok(toggle("ads").pressed, "the row keeps its stored state");
+  Assert.ok(KyberShield.state(browser).ads, "nothing was stored");
+
+  // The absence of a reload cannot be awaited, so give one time to show up.
+  // eslint-disable-next-line mozilla/no-arbitrary-setTimeout
+  await new Promise(resolve => setTimeout(resolve, 500));
+  Assert.ok(
+    await SpecialPowers.spawn(
+      browser,
+      [],
+      () => !!content.wrappedJSObject.notReloaded
+    ),
+    "the page was not reloaded"
+  );
+
+  KyberShield.setControl = original;
   await closePanel();
   BrowserTestUtils.removeTab(tab);
 });
