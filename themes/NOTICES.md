@@ -12,6 +12,9 @@ License: MIT. Copyright (c) 2021 Catppuccin.
 
 Palette: https://github.com/enkia/tokyo-night-vscode-theme (`LICENSE.txt`,
 fetched 2026-11-03). License: MIT. Copyright (c) 2018-present Enkia.
+Every value used (`#1a1b26`, `#16161e`, `#1e202e`, `#c0caf5`, `#787c99`,
+`#7aa2f7`, `#363b54`) occurs in `themes/tokyo-night-color-theme.json` of that
+repository (the Tokyo Night variant, not Storm).
 
 ## Starry
 

@@ -43,19 +43,15 @@
     color: var(--kf-fg) !important;
   }
 
-  #TabsToolbar,
-  #nav-bar {
-    background-image: var(--kf-bg-image) !important;
-  }
-
   tooltip,
   panel[type="arrow"] {
-    --panel-background: var(--kf-bg-toolbar) !important;
-    --panel-color: var(--kf-fg) !important;
+    --panel-background-color: var(--kf-bg-toolbar) !important;
+    --panel-text-color: var(--kf-fg) !important;
     --panel-border-color: var(--kf-border) !important;
   }
 
   tooltip {
+    appearance: none !important;
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens -- Kyber palette variable, not a Firefox token */
     background-color: var(--kf-bg-toolbar) !important;
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens -- Kyber palette variable, not a Firefox token */

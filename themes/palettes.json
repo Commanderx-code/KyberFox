@@ -96,12 +96,12 @@
     "vars": {
       "--kf-bg": "#1a1b26",
       "--kf-bg-toolbar": "#16161e",
-      "--kf-bg-tab-active": "#24283b",
-      "--kf-bg-urlbar": "#24283b",
+      "--kf-bg-tab-active": "#1e202e",
+      "--kf-bg-urlbar": "#1e202e",
       "--kf-fg": "#c0caf5",
-      "--kf-fg-muted": "#565f89",
+      "--kf-fg-muted": "#787c99",
       "--kf-accent": "#7aa2f7",
-      "--kf-border": "#3b4261",
+      "--kf-border": "#363b54",
       "--kf-radius": "6px",
       "--kf-font": "inherit",
       "--kf-bg-image": "none"

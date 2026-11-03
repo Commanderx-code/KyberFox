@@ -14,10 +14,28 @@ const THEMES_URI = "chrome://kyberfox/content/themes/";
 const ID_PREF = "kyberfox.theme.id";
 const DISABLED_PREF = "kyberfox.theme.disabled";
 const DEFAULT_ID = "ember";
-const SCHEME_PREFS = [
-  "browser.theme.toolbar-theme",
-  "browser.theme.content-theme",
-];
+
+// Used when palettes.json cannot be read, so the engine still works.
+const FALLBACK = {
+  ember: {
+    name: "Ember",
+    kind: "color",
+    scheme: "dark",
+    vars: {
+      "--kf-bg": "#1c1b22",
+      "--kf-bg-toolbar": "#2b2a33",
+      "--kf-bg-tab-active": "#42414d",
+      "--kf-bg-urlbar": "#42414d",
+      "--kf-fg": "#fbfbfe",
+      "--kf-fg-muted": "#cfcfd8",
+      "--kf-accent": "#ff7139",
+      "--kf-border": "#52525e",
+      "--kf-radius": "4px",
+      "--kf-font": "inherit",
+      "--kf-bg-image": "none",
+    },
+  },
+};
 
 const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(
   Ci.nsIStyleSheetService
@@ -35,16 +53,38 @@ function readJSON(name) {
   return JSON.parse(Cu.readUTF8URI(uri));
 }
 
+/** Never throws: a bad palettes.json leaves the built-in Ember. */
 function load() {
-  if (!gPalettes) {
-    gPalettes = readJSON("palettes.json");
-    gStatus = readJSON("status.json");
+  if (gPalettes) {
+    return;
+  }
+  try {
+    let palettes = readJSON("palettes.json");
+    let status = readJSON("status.json");
+    if (!palettes.ember || !Array.isArray(status.disabled)) {
+      throw new Error("palettes.json or status.json has the wrong shape");
+    }
+    gPalettes = palettes;
+    gStatus = status;
+  } catch (e) {
+    console.error("KyberThemes: cannot read the theme files", e);
+    gPalettes = FALLBACK;
+    gStatus = { disabled: [] };
+  }
+}
+
+function stringPref(name, fallback) {
+  try {
+    return Services.prefs.getStringPref(name, fallback);
+  } catch (e) {
+    console.error(`KyberThemes: ${name} is not a string pref`, e);
+    return fallback;
   }
 }
 
 function disabledIds() {
   let ids = new Set(gStatus.disabled ?? []);
-  for (let id of Services.prefs.getStringPref(DISABLED_PREF, "").split(",")) {
+  for (let id of stringPref(DISABLED_PREF, "").split(",")) {
     if (id.trim()) {
       ids.add(id.trim());
     }
@@ -60,11 +100,21 @@ function usable(id) {
   );
 }
 
-function paletteCss(vars) {
-  let body = Object.entries(vars)
+function paletteCss(palette) {
+  let body = Object.entries(palette.vars)
     .map(([k, v]) => `${k}: ${v};`)
     .join(" ");
-  return `@-moz-document url-prefix("chrome://browser/content/browser.xhtml") { :root { ${body} } }`;
+  // color-scheme settles Firefox's light-dark() tokens in the browser window
+  // whatever browser.theme.* says (LightweightThemeConsumer rewrites those),
+  // and leaves the websites' own appearance setting alone.
+  let scheme = palette.scheme == "light" ? "light" : "dark";
+  let css = `:root { color-scheme: ${scheme} !important; ${body} }`;
+  // Only a palette with its own image overrides toolbar images, so
+  // WebExtension themes keep theirs under the other palettes.
+  if (palette.vars["--kf-bg-image"] != "none") {
+    css += ` #TabsToolbar, #nav-bar { background-image: var(--kf-bg-image) !important; background-size: 240px 60px !important; background-repeat: repeat !important; }`;
+  }
+  return `@-moz-document url-prefix("chrome://browser/content/browser.xhtml") { ${css} }`;
 }
 
 function register(uri) {
@@ -116,7 +166,7 @@ export const KyberThemes = {
     }
     let palette = gPalettes[id];
     let next = Services.io.newURI(
-      "data:text/css," + encodeURIComponent(paletteCss(palette.vars))
+      "data:text/css," + encodeURIComponent(paletteCss(palette))
     );
     register(next);
     if (gPaletteUri) {
@@ -124,12 +174,13 @@ export const KyberThemes = {
     }
     gPaletteUri = next;
 
-    // Firefox's own text colors and in-content pages follow the scheme.
-    let scheme = palette.scheme == "light" ? 1 : 0;
-    for (let pref of SCHEME_PREFS) {
-      Services.prefs.setIntPref(pref, scheme);
+    try {
+      Services.prefs.setStringPref(ID_PREF, id);
+    } catch (e) {
+      // A pref of another type: replace it.
+      Services.prefs.clearUserPref(ID_PREF);
+      Services.prefs.setStringPref(ID_PREF, id);
     }
-    Services.prefs.setStringPref(ID_PREF, id);
     gCurrent = id;
   },
 
@@ -139,7 +190,6 @@ export const KyberThemes = {
       return;
     }
     gInitialized = true;
-    load();
-    this.apply(Services.prefs.getStringPref(ID_PREF, DEFAULT_ID));
+    this.apply(stringPref(ID_PREF, DEFAULT_ID));
   },
 };

@@ -8,44 +8,17 @@ const { KyberThemes } = ChromeUtils.importESModule(
   "resource:///modules/KyberThemes.sys.mjs"
 );
 
-const PREFS = [
-  "kyberfox.theme.id",
-  "kyberfox.theme.disabled",
-  "browser.theme.toolbar-theme",
-  "browser.theme.content-theme",
-];
+const ID_PREF = "kyberfox.theme.id";
+const DISABLED_PREF = "kyberfox.theme.disabled";
+const hadId = Services.prefs.prefHasUserValue(ID_PREF);
+const oldId = Services.prefs.getStringPref(ID_PREF, "ember");
 
-// Put every pref back as it was, user value or default.
-const saved = new Map();
-for (let name of PREFS) {
-  saved.set(
-    name,
-    Services.prefs.prefHasUserValue(name)
-      ? { user: true, type: Services.prefs.getPrefType(name) }
-      : null
-  );
-  if (saved.get(name)) {
-    let s = saved.get(name);
-    s.value =
-      s.type == Services.prefs.PREF_INT
-        ? Services.prefs.getIntPref(name)
-        : Services.prefs.getStringPref(name);
-  }
-}
+// Apply the old theme first, so the id pref is rewritten before it is restored.
 registerCleanupFunction(() => {
-  for (let name of PREFS) {
-    let s = saved.get(name);
-    if (!s) {
-      Services.prefs.clearUserPref(name);
-    } else if (s.type == Services.prefs.PREF_INT) {
-      Services.prefs.setIntPref(name, s.value);
-    } else {
-      Services.prefs.setStringPref(name, s.value);
-    }
-  }
-  KyberThemes.apply(Services.prefs.getStringPref("kyberfox.theme.id", "ember"));
-  if (!saved.get("kyberfox.theme.id")) {
-    Services.prefs.clearUserPref("kyberfox.theme.id");
+  Services.prefs.clearUserPref(DISABLED_PREF);
+  KyberThemes.apply(oldId);
+  if (!hadId) {
+    Services.prefs.clearUserPref(ID_PREF);
   }
 });
 
@@ -84,9 +57,15 @@ add_task(async function test_apply_changes_toolbar_color() {
   Assert.equal(paper, "rgb(250, 245, 234)", "paper toolbar color");
   Assert.equal(KyberThemes.current(), "paper", "current()");
   Assert.equal(
-    Services.prefs.getIntPref("browser.theme.toolbar-theme"),
-    1,
-    "light scheme"
+    getComputedStyle(document.documentElement).colorScheme,
+    "light",
+    "light color scheme on the chrome root"
+  );
+  KyberThemes.apply("ember");
+  Assert.equal(
+    getComputedStyle(document.documentElement).colorScheme,
+    "dark",
+    "dark color scheme on the chrome root"
   );
 });
 
@@ -105,12 +84,26 @@ add_task(async function test_apply_persists_after_new_window() {
   }
 });
 
+add_task(async function test_apply_restyles_an_open_window() {
+  KyberThemes.apply("ember");
+  let win = await BrowserTestUtils.openNewBrowserWindow();
+  try {
+    let before = bg(win, "#nav-bar");
+    KyberThemes.apply("paper");
+    let after = bg(win, "#nav-bar");
+    Assert.notEqual(before, after, "the second window changed");
+    Assert.equal(after, "rgb(250, 245, 234)", "paper toolbar color");
+  } finally {
+    await BrowserTestUtils.closeWindow(win);
+  }
+});
+
 add_task(async function test_paper_uses_serif() {
   KyberThemes.apply("paper");
   let font = getComputedStyle(
     document.getElementById("navigator-toolbox")
   ).fontFamily;
-  Assert.ok(font.includes("serif"), `serif font: ${font}`);
+  Assert.ok(font.includes("Georgia"), `serif font: ${font}`);
 });
 
 add_task(async function test_terminal_has_square_corners() {
