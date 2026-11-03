@@ -12,5 +12,6 @@ XPCSHELL_TESTS_MANIFESTS += ["test/xpcshell/xpcshell.toml"]
 BROWSER_CHROME_MANIFESTS += ["test/browser/browser.toml"]
 
 EXTRA_JS_MODULES += [
+    "KyberShield.sys.mjs",
     "KyberWorkspaces.sys.mjs",
 ]

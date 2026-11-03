@@ -7,6 +7,13 @@ prefs = ["dom.security.https_only_mode=false"]
 
 ["browser_identity.js"]
 
+["browser_shield.js"]
+support-files = [
+  "shield_ad.js",
+  "shield_assets.json",
+  "shield_page.html",
+]
+
 ["browser_ublock_bundled.js"]
 
 ["browser_workspaces.js"]
