@@ -49,9 +49,13 @@ def _extract(tarball: Path, tree: Path) -> None:
 
 
 def _apply(tree: Path, name: str, text: str, scratch: Path, result: AssemblyResult,
-           allow_failed: bool, touched: set[str]) -> None:
+           allow_failed: bool, touched: set[str], brand: bool = True) -> None:
+    """Apply one patch. LibreWolf's patches are rebranded first (brand=True);
+    Kyber's own patches are written in Kyber terms and applied as they are, so
+    a credit that names LibreWolf (about:license) keeps the name."""
     patch_file = scratch / "current.patch"
-    text = rebrand(text)
+    if brand:
+        text = rebrand(text)
     patch_file.write_text(text)
     if not apply_patch(tree, patch_file):
         if not allow_failed:
@@ -242,7 +246,7 @@ def assemble(pins, workdir: Path, allow_failed: bool = False) -> AssemblyResult:
     kyber_dir = patch_dir / "kyber"
     for name in read_list(kyber_dir / "series.txt"):
         _apply(tree, f"patches/kyber/{name}", (kyber_dir / name).read_text(),
-               scratch, result, allow_failed, touched)
+               scratch, result, allow_failed, touched, brand=False)
 
     apply_librewolf_l10n(tree, lw)  # before the overlay, so overlay files win
 

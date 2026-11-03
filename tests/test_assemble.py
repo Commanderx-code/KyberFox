@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from tests.conftest import FAKE_XPI, FAKE_XPI_NAME, pins_newer_firefox, pins_with_wrong_hash
@@ -60,6 +62,45 @@ def test_kyber_series_is_applied(tmp_path, fake_sources):
     (kyber / "series.txt").write_text("# comment\none.patch\n")
     result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
     assert (result.tree / "kept.txt").read_text() == "kyber\n"
+
+
+REAL_ROOT = Path(__file__).resolve().parent.parent
+LICENSE_HTML = "browser/base/content/overrides/app-license.html"
+
+
+def test_kyber_patches_are_not_rebranded(tmp_path, fake_sources):
+    from tools import assemble as mod
+
+    kyber = mod.REPO_ROOT / "patches" / "kyber"
+    (kyber / "one.patch").write_text(
+        "--- a/kept.txt\n+++ b/kept.txt\n@@ -1 +1 @@\n-patched\n+patches from LibreWolf\n"
+    )
+    (kyber / "series.txt").write_text("one.patch\n")
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    assert (result.tree / "kept.txt").read_text() == "patches from LibreWolf\n"
+
+
+def test_license_credit_keeps_librewolf(tmp_path, fake_sources):
+    """The real license-notices.patch, applied to the upstream about:license
+    text it was made against, still credits LibreWolf."""
+    from tools import assemble as mod
+
+    real = (REAL_ROOT / "patches" / "kyber" / "license-notices.patch").read_text()
+    hunk = real.split("\n@@ ", 1)[1].split("\n", 1)[1]
+    upstream = [line[1:] for line in hunk.splitlines() if line[:1] in (" ", "-")]
+    # A LibreWolf patch puts the upstream text into the fake tree.
+    (fake_sources / "patches" / "good.patch").write_text(
+        f"--- /dev/null\n+++ b/{LICENSE_HTML}\n@@ -0,0 +1,{len(upstream)} @@\n"
+        + "".join(f"+{line}\n" for line in upstream)
+    )
+    kyber = mod.REPO_ROOT / "patches" / "kyber"
+    (kyber / "license-notices.patch").write_text(real)
+    (kyber / "series.txt").write_text("license-notices.patch\n")
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    assert result.failed == ["patches/stale.patch"]
+    html = (result.tree / LICENSE_HTML).read_text()
+    assert 'patches from <a href="https://librewolf.net/">LibreWolf</a>' in html
+    assert "Kyber Fox is not made or endorsed by Mozilla." in html
 
 
 def test_load_pins(tmp_path):
