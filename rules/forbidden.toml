@@ -1,0 +1,87 @@
+# Code and config that must never ship in Kyber Fox. Read by tools/check_forbidden.py.
+#
+# A rule is either:
+#   pref + value: a pref set by pref(), defaultPref(), lockPref(), sticky_pref() or
+#                 user_pref(), or a StaticPrefList.yaml entry. "*" in pref matches
+#                 any pref name characters. value is a regular expression and
+#                 defaults to true.
+#   pattern:      a regular expression, matched with multiline mode on.
+# allow lists path globs, relative to the scanned tree, that the rule ignores.
+
+[scan]
+roots = ["browser", "toolkit", "modules", "build", "kyberfox", "settings", "mozconfigs"]
+files = [
+  "*.js", "*.jsm", "*.mjs", "*.cfg", "*.json", "*.toml", "*.configure", "*.py",
+  "*.ini", "*.yaml", "moz.build", "*.mozbuild", "*.in", "*.sh", "mozconfigs/*",
+]
+skip_dirs = ["third_party", "testing", "test", "tests", "obj-*", ".git", "node_modules"]
+
+# Telemetry
+[[rule]]
+id = "telemetry-enabled"
+pref = "toolkit.telemetry.enabled"
+
+[[rule]]
+id = "telemetry-health-report"
+pref = "datareporting.healthreport.uploadEnabled"
+
+# Studies
+[[rule]]
+id = "studies-optout"
+pref = "app.shield.optoutstudies.enabled"
+
+[[rule]]
+id = "studies-normandy"
+pref = "app.normandy.enabled"
+
+# Sponsored content
+[[rule]]
+id = "sponsored"
+pref = "browser.newtabpage.activity-stream.showSponsored*"
+
+# Ad attribution
+[[rule]]
+id = "ad-attribution"
+pref = "dom.private-attribution.submission.enabled"
+
+# Crash reporting
+[[rule]]
+id = "crash-report-url"
+pref = "breakpad.reportURL"
+value = '"[^"]+"'
+
+[[rule]]
+id = "crash-reporter-build"
+pattern = '^\s*(?:ac_add_options\s+--enable-crashreporter\b|(?:mk_add_options|export)\s+MOZ_CRASHREPORTER=1\b)'
+
+# AI features. On-device translation stays and is not listed here.
+[[rule]]
+id = "ai-chat"
+pref = "browser.ml.chat.enabled"
+
+[[rule]]
+id = "ai-ml"
+pref = "browser.ml.enable"
+
+[[rule]]
+id = "ai-link-preview"
+pref = "browser.ml.linkPreview.enabled"
+
+[[rule]]
+id = "ai-smart-tab-groups"
+pref = "browser.tabs.groups.smart.enabled"
+
+[[rule]]
+id = "ai-pdf-alt-text"
+pref = "pdfjs.enableAltText"
+
+[[rule]]
+id = "ai-smart-window"
+pref = "browser.smartwindow.enabled"
+
+# LibreWolf's own hosts (updates, docs, source). The about:license page may name
+# them for attribution; about:credits is a remote page with no file in the tree.
+[[rule]]
+id = "librewolf-host"
+pattern = 'librewolf\.net|librewolf\.dev|codeberg\.org/librewolf|gitlab\.com/librewolf'
+allow = ["toolkit/content/license.html"]

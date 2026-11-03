@@ -1,2 +1,7 @@
 # Kyber patches, applied in order after the LibreWolf patches.
 # One file name per line, relative to this directory.
+0001-register-component.patch
+identity.patch
+private-defaults.patch
+updater.patch
+preferences-without-pref-pane.patch

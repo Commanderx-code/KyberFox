@@ -1,0 +1,39 @@
+diff --git a/moz.build b/moz.build
+--- a/moz.build
++++ b/moz.build
+@@ -362,6 +362,9 @@
+ SPHINX_TREES["ai-agent-tools"] = "docs/ai-agent-tools"
+ 
+ include("build/templates.mozbuild")
++
++# Kyber Fox settings: kyberfox.cfg, policies.json and local-settings.js.
++DIRS += ["kyberfox"]
+ 
+ if CONFIG["MOZ_GENERATE_SBOM"]:
+     # The document covers the whole tree rather than any one directory, and it
+diff --git a/browser/components/moz.build b/browser/components/moz.build
+--- a/browser/components/moz.build
++++ b/browser/components/moz.build
+@@ -41,6 +41,7 @@
+     "firefoxview",
+     "genai",
+     "ipprotection",
++    "kyberfox",
+     "messagepreview",
+     "migration",
+     "mozcachedohttp",
+diff --git a/browser/installer/package-manifest.in b/browser/installer/package-manifest.in
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -273,6 +273,11 @@
+ @RESPATH@/browser/defaults/permissions
+ ; Remote Settings JSON dumps
+ @RESPATH@/browser/defaults/settings
++
++; Kyber Fox settings
++@RESPATH@/defaults/pref/local-settings.js
++@RESPATH@/distribution/policies.json
++@RESPATH@/kyberfox.cfg
+ 
+ # channel-prefs.js has been removed on macOS.
+ #ifndef XP_MACOSX

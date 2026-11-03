@@ -1,6 +1,16 @@
 # Kyber Fox Linux x86_64 build. Derived from LibreWolf's assets/mozconfig.
-# Branding is left at the Firefox default until the branding task lands.
 ac_add_options --enable-application=browser
+
+ac_add_options --with-app-name=kyberfox
+ac_add_options --with-branding=browser/branding/kyberfox
+ac_add_options --with-distribution-id=io.github.commanderx_code.kyberfox
+
+# Safe Browsing needs the project's Google API key. The key file lives outside
+# the repo; see KYBERFOX_SAFEBROWSING_KEYFILE in .env.example. Without it the
+# build still works, but Safe Browsing lists cannot be downloaded.
+if [ -n "${KYBERFOX_SAFEBROWSING_KEYFILE:-}" ]; then
+  ac_add_options "--with-google-safebrowsing-api-keyfile=$KYBERFOX_SAFEBROWSING_KEYFILE"
+fi
 
 ac_add_options --disable-crashreporter
 ac_add_options --disable-debug
