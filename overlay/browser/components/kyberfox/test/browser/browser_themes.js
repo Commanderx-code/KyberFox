@@ -61,7 +61,18 @@ add_task(async function test_apply_changes_toolbar_color() {
     "light",
     "light color scheme on the chrome root"
   );
+  let appMenu = document.getElementById("appMenu-popup");
+  Assert.equal(
+    getComputedStyle(appMenu).colorScheme,
+    "light",
+    "light color scheme on an arrow panel"
+  );
   KyberThemes.apply("ember");
+  Assert.equal(
+    getComputedStyle(appMenu).colorScheme,
+    "dark",
+    "dark color scheme on an arrow panel"
+  );
   Assert.equal(
     getComputedStyle(document.documentElement).colorScheme,
     "dark",

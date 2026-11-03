@@ -47,6 +47,7 @@ let gInitialized = false;
 let gBaseUri = null;
 let gPaletteUri = null;
 let gCurrent = DEFAULT_ID;
+let gOnFallback = false;
 
 function readJSON(name) {
   let uri = Services.io.newURI(THEMES_URI + name);
@@ -69,6 +70,7 @@ function load() {
   } catch (e) {
     console.error("KyberThemes: cannot read the theme files", e);
     gPalettes = FALLBACK;
+    gOnFallback = true;
     gStatus = { disabled: [] };
   }
 }
@@ -108,7 +110,8 @@ function paletteCss(palette) {
   // whatever browser.theme.* says (LightweightThemeConsumer rewrites those),
   // and leaves the websites' own appearance setting alone.
   let scheme = palette.scheme == "light" ? "light" : "dark";
-  let css = `:root { color-scheme: ${scheme} !important; ${body} }`;
+  // Menus, panels and tooltips reset color-scheme to "light dark" themselves.
+  let css = `:root { color-scheme: ${scheme} !important; ${body} } menupopup, panel, tooltip { color-scheme: ${scheme} !important; }`;
   // Only a palette with its own image overrides toolbar images, so
   // WebExtension themes keep theirs under the other palettes.
   if (palette.vars["--kf-bg-image"] != "none") {
@@ -157,6 +160,9 @@ export const KyberThemes = {
    */
   apply(id) {
     load();
+    // On the built-in fallback every other id looks unknown. That may be a
+    // temporary read error, so keep the stored choice.
+    let keepPref = gOnFallback && id != DEFAULT_ID;
     if (!usable(id)) {
       id = DEFAULT_ID;
     }
@@ -174,12 +180,14 @@ export const KyberThemes = {
     }
     gPaletteUri = next;
 
-    try {
-      Services.prefs.setStringPref(ID_PREF, id);
-    } catch (e) {
-      // A pref of another type: replace it.
-      Services.prefs.clearUserPref(ID_PREF);
-      Services.prefs.setStringPref(ID_PREF, id);
+    if (!keepPref) {
+      try {
+        Services.prefs.setStringPref(ID_PREF, id);
+      } catch (e) {
+        // A pref of another type: replace it.
+        Services.prefs.clearUserPref(ID_PREF);
+        Services.prefs.setStringPref(ID_PREF, id);
+      }
     }
     gCurrent = id;
   },
