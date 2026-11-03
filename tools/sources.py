@@ -29,6 +29,7 @@ class Pins:
     ublock_sha256: str
     gx_commit: str
     one_commit: str
+    kyber_build: int
 
 
 def load_pins(path: Path) -> Pins:
@@ -42,6 +43,7 @@ def load_pins(path: Path) -> Pins:
         ublock_sha256=data["ublock"]["sha256"],
         gx_commit=data["kyber"]["gx_commit"],
         one_commit=data["kyber"]["one_commit"],
+        kyber_build=int(data["kyber"]["build"]),
     )
 
 

@@ -17,14 +17,34 @@ from tools.sources import Pins  # noqa: E402
 FAKE_VERSION = "999.0"
 
 
+CRATE_LIB = b"pub fn glean() {}\n"
+
+# Files of the fake Firefox tree, relative to its top directory.
+TREE_FILES = {
+    "kept.txt": b"original\n",
+    "browser/config/version_display.txt": FAKE_VERSION.encode() + b"\n",
+    "toolkit/components/ml/content/backends/OpenAIPipeline.mjs": b"export {};\n",
+    "toolkit/components/ml/vendor/openai/dist/openai.mjs": b"export {};\n",
+    "toolkit/components/glean/pings.yaml": (
+        b"usage:\n  follows_collection_enabled: false\n"
+        b"other:\n  follows_collection_enabled: true\n"
+    ),
+    "third_party/rust/glean-core/src/lib.rs": CRATE_LIB,
+    "third_party/rust/glean-core/.cargo-checksum.json": (
+        '{"files":{"src/lib.rs":"%s","Cargo.toml":"00"},"package":"pkg"}'
+        % hashlib.sha256(CRATE_LIB).hexdigest()
+    ).encode(),
+}
+
+
 def _build_tarball() -> bytes:
     raw = io.BytesIO()
     with tarfile.open(fileobj=raw, mode="w:xz") as tar:
-        data = b"original\n"
-        info = tarfile.TarInfo(f"firefox-{FAKE_VERSION}/kept.txt")
-        info.size = len(data)
-        info.mtime = 0
-        tar.addfile(info, io.BytesIO(data))
+        for name, data in TREE_FILES.items():
+            info = tarfile.TarInfo(f"firefox-{FAKE_VERSION}/{name}")
+            info.size = len(data)
+            info.mtime = 0
+            tar.addfile(info, io.BytesIO(data))
     return raw.getvalue()
 
 
@@ -64,6 +84,7 @@ def _pins(sha: str) -> Pins:
         ublock_sha256="0" * 64,
         gx_commit="0" * 40,
         one_commit="0" * 40,
+        kyber_build=1,
     )
 
 
@@ -89,6 +110,8 @@ GOOD_PATCH = """\
 -original
 +patched
 """
+
+SETTINGS_FILES = ("kyberfox.cfg", "policies.json", "local-settings.js")
 
 STALE_PATCH = """\
 --- a/kept.txt
@@ -116,5 +139,8 @@ def fake_sources(tmp_path, tmp_path_factory, fake_tarball, monkeypatch):
     )
     (repo / "patches" / "librewolf-drop.txt").write_text("")
     (repo / "patches" / "kyber" / "series.txt").write_text("")
+    for name in SETTINGS_FILES:
+        (repo / "settings").mkdir(exist_ok=True)
+        (repo / "settings" / name).write_text(f"// {name}\n")
     monkeypatch.setattr(assemble_mod, "REPO_ROOT", repo)
     return lw

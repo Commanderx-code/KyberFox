@@ -68,9 +68,10 @@ def test_load_pins(tmp_path):
         '[firefox]\nversion = "1.0"\nsha256 = "aa"\n'
         '[librewolf]\nref = "r"\ncommit = "c"\n'
         '[ublock]\nversion = "2"\nsha256 = "bb"\n'
-        '[kyber]\ngx_commit = "g"\none_commit = "o"\n'
+        '[kyber]\ngx_commit = "g"\none_commit = "o"\nbuild = 4\n'
     )
     pins = load_pins(p)
+    assert pins.kyber_build == 4
     assert (pins.firefox_version, pins.librewolf_ref, pins.ublock_sha256) == ("1.0", "r", "bb")
     assert pins.librewolf_commit == "c"
     assert (pins.gx_commit, pins.one_commit) == ("g", "o")
@@ -95,3 +96,49 @@ def test_patch_icons_are_copied_into_the_tree(tmp_path, fake_sources):
     (icons / "jit.svg").write_text("<svg/>\n")
     result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
     assert (result.tree / "browser/themes/shared/icons/jit.svg").read_text() == "<svg/>\n"
+
+
+def test_settings_are_copied_into_the_kyberfox_dir(tmp_path, fake_sources):
+    from tests.conftest import SETTINGS_FILES
+
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    for name in SETTINGS_FILES:
+        assert (result.tree / "kyberfox" / name).read_text() == f"// {name}\n"
+
+
+def test_openai_backend_is_removed(tmp_path, fake_sources):
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    ml = result.tree / "toolkit/components/ml"
+    assert not (ml / "content/backends/OpenAIPipeline.mjs").exists()
+    assert not (ml / "vendor/openai").exists()
+
+
+def test_all_pings_follow_the_collection_pref(tmp_path, fake_sources):
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    text = (result.tree / "toolkit/components/glean/pings.yaml").read_text()
+    assert "follows_collection_enabled: false" not in text
+    assert text.count("follows_collection_enabled: true") == 2
+
+
+def test_cargo_checksum_follows_a_patched_vendored_crate(tmp_path, fake_sources):
+    import hashlib
+    import json
+
+    (fake_sources / "patches" / "good.patch").write_text(
+        "--- a/third_party/rust/glean-core/src/lib.rs\n"
+        "+++ b/third_party/rust/glean-core/src/lib.rs\n"
+        "@@ -1 +1 @@\n-pub fn glean() {}\n+pub fn glean() { return; }\n"
+    )
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    crate = result.tree / "third_party/rust/glean-core"
+    sums = json.loads((crate / ".cargo-checksum.json").read_text())
+    want = hashlib.sha256((crate / "src/lib.rs").read_bytes()).hexdigest()
+    assert sums == {"files": {"src/lib.rs": want, "Cargo.toml": "00"}, "package": "pkg"}
+
+
+def test_display_version_carries_the_build_counter(tmp_path, fake_sources):
+    from dataclasses import replace
+
+    result = assemble(replace(pins_newer_firefox(), kyber_build=3), tmp_path,
+                      allow_failed=True)
+    assert (result.tree / "browser/config/version_display.txt").read_text() == "999.0-3\n"

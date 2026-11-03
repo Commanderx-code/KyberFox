@@ -15,6 +15,9 @@ version = "1.75.2"
 sha256 = "b941eac9ac4b156edefa9273bdf5a313204919f751e1a86b8c81e254b9471599"
 
 [kyber]
+# Build counter for this Firefox version. The displayed version is
+# <firefox version>-<build>, for example 159.0-1.
+build = 1
 # Placeholders: heads of the upstream repos when this file was written.
 gx_commit = "c6657edc6f714e72af980f9333caedb4b76fdd25"
 one_commit = "8dae8be19f690317a97a608c408f82751ed040be"
