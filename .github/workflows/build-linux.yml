@@ -123,3 +123,11 @@ jobs:
           name: kyberfox-linux-x86_64
           path: work/tree/obj-*/dist/*.linux-x86_64.tar.*
           if-no-files-found: error
+
+  # Packages and installs the tarball this run just uploaded, in an Arch container.
+  smoke:
+    needs: build
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/smoke-arch.yml
