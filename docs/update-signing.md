@@ -14,7 +14,7 @@ Kyber Fox updates itself on Windows only. The Linux build is built with `--disab
    https://commanderx-code.github.io/KyberFox/update/%CHANNEL%/%BUILD_TARGET%/update.xml
    ```
 
-   `%CHANNEL%` is `release` (`--enable-update-channel=release`). `%CHANNEL%` is always `release`; a `test` Pages path is never read by a shipped browser, and every MAR, dry-run included, carries `kyberfox-release`.
+   `%CHANNEL%` is always `release` (`--enable-update-channel=release`); a `test` Pages path is never read by a shipped browser, and every MAR, dry-run included, carries `kyberfox-release`.
 2. `update.xml` is a static file on GitHub Pages, written by `tools/update_manifest.py`. It names one complete MAR on GitHub Releases, its SHA-512 and its size. When nothing newer exists, the file is the empty manifest (`<updates></updates>`).
 3. The browser downloads the MAR from `https://github.com/Commanderx-code/KyberFox/releases/download/v<version>/kyberfox-<version>.complete.mar` and checks the SHA-512.
 4. The updater (`updater.exe`) checks the MAR signature against the certificates built into it, `release_primary.der` and `release_secondary.der`. MAR signature checking is on by default in this Firefox; only `--enable-unverified-updates` turns it off, and `mozconfigs/windows-cross` does not use it. A MAR signed with any other key is refused.

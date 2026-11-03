@@ -163,7 +163,9 @@ while ((Get-Date) -lt $deadline -and -not $verdict) {
     foreach ($f in $files) {
         $text = Get-Content $f.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $text) { continue }
-        if ($f.Name -eq 'update.status' -and $text -match '^(failed: ?\d+|succeeded|applied|pending)') { $verdict = $Matches[1] }
+        # 'pending' is a brief state before staging starts; waiting through it
+        # lets the staging updater finish ('applied') or fail ('failed: N').
+        if ($f.Name -eq 'update.status' -and $text -match '^(failed: ?\d+|succeeded|applied)') { $verdict = $Matches[1] }
         if ($f.Name -in 'active-update.xml', 'updates.xml' -and $text -match 'state="(failed|succeeded)"') { $verdict = "state $($Matches[1])" }
     }
     Write-Host "$(Get-Date -Format T) verdict '$verdict', $($files.Count) update files, server log $((Get-Item $serverLog).Length) bytes"
@@ -204,10 +206,13 @@ if (-not $sawMar) { throw 'The updater never downloaded the MAR' }
 $allText = (Get-UpdateFiles | ForEach-Object { Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue }) -join "`n"
 
 if ($Mode -eq 'apply') {
+    # A staging failure has its own error code; report it instead of hiding it
+    # behind the build-id check after the restart.
+    if ($verdict -like 'failed*') { throw "The updater failed to stage the signed MAR: $verdict" }
     # Staging is on, so a good MAR is only staged ('applied') and is swapped in
     # at the next browser start; --version exits before that. Start the browser
     # once more with the same profile and wait for the swap.
-    $status = @(Get-UpdateFiles | Where-Object { $_.Name -eq 'update.status' } | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() })
+    $status = @(Get-UpdateFiles | Where-Object { $_.Name -eq 'update.status' } | ForEach-Object { ([string](Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue)).Trim() })
     Write-Host "update.status before the restart: $($status -join ', ')"
     $restartDir = Join-Path $work 'restart'
     New-Item -ItemType Directory -Force -Path $restartDir | Out-Null
@@ -216,8 +221,15 @@ if ($Mode -eq 'apply') {
     $swapDeadline = (Get-Date).AddSeconds(120)
     while ((Get-Date) -lt $swapDeadline) {
         Start-Sleep -Seconds 5
-        $status = @(Get-UpdateFiles | Where-Object { $_.Name -eq 'update.status' } | ForEach-Object { (Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue).Trim() })
-        if ((Read-Ini $ini 'BuildID') -ne $oldBuildId -or $status -contains 'succeeded') { break }
+        # The updater deletes update.status and swaps the install directory
+        # while this polls, so a read can fail mid-swap; try again next round.
+        try {
+            $status = @(Get-UpdateFiles | Where-Object { $_.Name -eq 'update.status' } | ForEach-Object { ([string](Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue)).Trim() })
+            if ((Test-Path $ini) -and (Read-Ini $ini 'BuildID') -ne $oldBuildId) { break }
+            if ($status -contains 'succeeded') { break }
+        } catch {
+            Write-Host "poll: $($_.Exception.Message)"
+        }
     }
     Get-Process -Name kyberfox, updater -ErrorAction SilentlyContinue | Stop-Process -Force
     Start-Sleep -Seconds 3
