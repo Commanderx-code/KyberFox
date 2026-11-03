@@ -295,7 +295,7 @@ def test_verify_branch_accepts_exact_bump(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("edit", [
-    lambda t: t.replace('version = "1.75.2"', 'version = "1.75.3"'),  # [ublock] only
+    lambda t: t.replace('version = "1.75.2"', 'version = "1.75.3"'),  # bump plus a [ublock] change
     lambda t: t + 'extra = "1"\n',
     lambda t: t.replace('version = "159.0.1"', 'version = "150.0"'),  # downgrade
 ])
