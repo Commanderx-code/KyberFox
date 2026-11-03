@@ -60,24 +60,25 @@ function row({ control, title, summary, note, included }) {
   return { label, state };
 }
 
-function buildSearch() {
+function buildSearch(current) {
   let box = document.getElementById("search-choices");
   for (let engine of ENGINES) {
     let radio = el("input");
     radio.type = "radio";
     radio.name = "search";
     radio.value = engine;
-    radio.checked = engine == DEFAULT_ENGINE;
+    radio.checked = engine == current;
     box.append(row({ control: radio, title: engine }).label);
   }
 }
 
-function buildAddons() {
+async function buildAddons() {
   let root = document.getElementById("addon-groups");
   let addons = KyberAddons.recommended();
   for (let group of KyberAddons.groups()) {
     let section = el("section");
     section.dataset.group = group;
+    root.append(section);
     section.append(el("h3", "group-title", group));
     if (group == "Privacy") {
       let included = row({ title: "uBlock Origin", included: true });
@@ -98,8 +99,10 @@ function buildAddons() {
       label.dataset.addonId = addon.id;
       state.className = "state";
       section.append(label);
+      if (await KyberAddons.installed(addon.id)) {
+        markInstalled(addon.id);
+      }
     }
-    root.append(section);
   }
 }
 
@@ -107,17 +110,36 @@ function rowFor(id) {
   return document.querySelector(`.choice[data-addon-id="${CSS.escape(id)}"]`);
 }
 
-function showState(id, text, isError = false) {
+// Filled in before the first row is built.
+let gText = {};
+
+function showState(id, text, { isError = false, title = "" } = {}) {
   let state = rowFor(id)?.querySelector(".state");
   if (state) {
     state.textContent = text;
+    state.title = title;
     state.classList.toggle("error", isError);
   }
 }
 
+/**
+ * An installed add-on shows "Installed" and cannot be ticked again.
+ *
+ * @param {string} id
+ */
+function markInstalled(id) {
+  let box = rowFor(id)?.querySelector("input");
+  if (box) {
+    box.checked = false;
+    box.dataset.installed = "true";
+    box.disabled = true;
+  }
+  showState(id, gText.installed);
+}
+
 function setBusy(busy) {
   for (let node of document.querySelectorAll("button, input")) {
-    node.disabled = busy;
+    node.disabled = busy || node.dataset.installed == "true";
   }
 }
 
@@ -139,25 +161,29 @@ async function installSelected() {
   setBusy(true);
   setStatus("kyberfox-welcome-working");
   try {
-    if (engine != DEFAULT_ENGINE) {
+    if (engine != (await KyberAddons.defaultSearch())) {
       await KyberAddons.setSearchDefault(engine);
     }
-    let [installing, installed] = await document.l10n.formatValues([
-      "kyberfox-welcome-installing",
-      "kyberfox-welcome-installed",
-    ]);
     let failed = 0;
-    await KyberAddons.install(ids, r => {
-      if (r.installing) {
-        showState(r.id, installing);
-      } else if (r.ok) {
-        showState(r.id, installed);
-        rowFor(r.id).querySelector("input").checked = false;
-      } else {
-        failed++;
-        showState(r.id, r.error, true);
-      }
-    });
+    await KyberAddons.install(
+      ids,
+      r => {
+        if (r.installing) {
+          showState(r.id, gText.installing);
+        } else if (r.ok) {
+          markInstalled(r.id);
+        } else if (r.canceled) {
+          showState(r.id, gText.canceled);
+        } else {
+          failed++;
+          showState(r.id, r.kind == "network" ? gText.network : gText.failed, {
+            isError: true,
+            title: r.code,
+          });
+        }
+      },
+      window.browsingContext.embedderElement
+    );
     KyberAddons.markShown();
     setStatus(
       failed ? "kyberfox-welcome-done-errors" : "kyberfox-welcome-done"
@@ -175,7 +201,25 @@ function skip() {
   window.close();
 }
 
-buildSearch();
-buildAddons();
+async function init() {
+  let [installing, installed, canceled, network, failed] =
+    await document.l10n.formatValues([
+      "kyberfox-welcome-installing",
+      "kyberfox-welcome-installed",
+      "kyberfox-welcome-canceled",
+      "kyberfox-welcome-error-network",
+      "kyberfox-welcome-error-failed",
+    ]);
+  gText = { installing, installed, canceled, network, failed };
+  let current = await KyberAddons.defaultSearch();
+  buildSearch(ENGINES.includes(current) ? current : DEFAULT_ENGINE);
+  await buildAddons();
+}
+
+// Closing the tab, or quitting with it open, counts as Skip.
+window.addEventListener("pagehide", () => KyberAddons.markShown(), {
+  once: true,
+});
 document.getElementById("install").addEventListener("click", installSelected);
 document.getElementById("skip").addEventListener("click", skip);
+init().catch(console.error);

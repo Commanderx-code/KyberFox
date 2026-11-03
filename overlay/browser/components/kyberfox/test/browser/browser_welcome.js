@@ -35,8 +35,11 @@ async function withPage(task) {
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, URL);
   let doc = tab.linkedBrowser.contentDocument;
   await TestUtils.waitForCondition(
-    () => doc.querySelectorAll('input[type="checkbox"]').length,
-    "the add-on list is built"
+    () =>
+      doc.querySelectorAll('input[type="checkbox"]').length ==
+        KyberAddons.recommended().length &&
+      doc.querySelector('input[name="search"]:checked'),
+    "the page is built"
   );
   try {
     await task(doc, tab);
@@ -62,6 +65,7 @@ function stateOf(doc, slug) {
 
 add_task(async function test_welcome_opens_once_on_first_run() {
   KyberAddons._resetForTests();
+  KyberAddons._ignoreAutomationForTests = true;
   Services.prefs.setBoolPref(SHOWN_PREF, false);
   let tabs = gBrowser.tabs.length;
   let first = KyberAddons.maybeOpenWelcome(window);
@@ -74,8 +78,17 @@ add_task(async function test_welcome_opens_once_on_first_run() {
   BrowserTestUtils.removeTab(first);
 });
 
+add_task(async function test_welcome_not_opened_in_automation() {
+  KyberAddons._resetForTests();
+  Services.prefs.setBoolPref(SHOWN_PREF, false);
+  let tabs = gBrowser.tabs.length;
+  Assert.equal(KyberAddons.maybeOpenWelcome(window), null, "automation");
+  Assert.equal(gBrowser.tabs.length, tabs, "no tab");
+});
+
 add_task(async function test_welcome_not_opened_when_shown() {
   KyberAddons._resetForTests();
+  KyberAddons._ignoreAutomationForTests = true;
   Services.prefs.setBoolPref(SHOWN_PREF, true);
   let tabs = gBrowser.tabs.length;
   Assert.equal(KyberAddons.maybeOpenWelcome(window), null, "pref is true");
@@ -84,6 +97,7 @@ add_task(async function test_welcome_not_opened_when_shown() {
 
 add_task(async function test_welcome_not_opened_in_private_window() {
   KyberAddons._resetForTests();
+  KyberAddons._ignoreAutomationForTests = true;
   Services.prefs.setBoolPref(SHOWN_PREF, false);
   let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
   try {
@@ -173,12 +187,70 @@ add_task(async function test_install_error_is_shown_and_others_continue() {
       "second add-on installed"
     );
     Assert.equal(urls.length, 2, "both were tried");
-    Assert.equal(stateOf(doc, "clearurls"), "Download failed.");
+    Assert.equal(stateOf(doc, "clearurls"), "Install failed.");
+    let state = box(doc, "clearurls")
+      .closest(".choice")
+      .querySelector(".state");
+    Assert.equal(state.title, "Download failed.", "the code is the tooltip");
+    Assert.ok(state.classList.contains("error"), "error styling");
+    Assert.ok(Services.prefs.getBoolPref(SHOWN_PREF), "pref is set");
+  });
+});
+
+add_task(async function test_network_failure_and_cancel_texts() {
+  await withPage(async doc => {
+    KyberAddons._installForTests = async url => {
+      if (url == urlFor("clearurls")) {
+        let e = new Error("onDownloadFailed");
+        e.addonErrorCode = AddonManager.ERROR_NETWORK_FAILURE;
+        throw e;
+      }
+      let e = new Error("declined");
+      e.canceled = true;
+      throw e;
+    };
+    box(doc, "clearurls").click();
+    box(doc, "darkreader").click();
+    doc.getElementById("install").click();
+    await TestUtils.waitForCondition(
+      () => stateOf(doc, "darkreader") == "Canceled",
+      "a declined prompt reads Canceled"
+    );
+    Assert.equal(
+      stateOf(doc, "clearurls"),
+      "Could not reach addons.mozilla.org. Check your connection and try again."
+    );
     Assert.ok(
-      box(doc, "clearurls").closest(".choice").querySelector(".error"),
-      "error styling"
+      !box(doc, "darkreader").closest(".choice").querySelector(".state.error"),
+      "Canceled is not an error"
     );
     Assert.ok(Services.prefs.getBoolPref(SHOWN_PREF), "pref is set");
+  });
+});
+
+add_task(async function test_installed_addons_are_marked_and_disabled() {
+  let id = KyberAddons.recommended().find(a => a.slug == "darkreader").id;
+  let original = KyberAddons.installed;
+  KyberAddons.installed = async which => which == id;
+  try {
+    await withPage(async doc => {
+      await TestUtils.waitForCondition(
+        () => stateOf(doc, "darkreader") == "Installed",
+        "marked installed"
+      );
+      Assert.ok(box(doc, "darkreader").disabled, "checkbox disabled");
+      Assert.ok(!box(doc, "clearurls").disabled, "others stay enabled");
+    });
+  } finally {
+    KyberAddons.installed = original;
+  }
+});
+
+add_task(async function test_closing_the_tab_counts_as_skip() {
+  await withPage(async (doc, tab) => {
+    Assert.ok(!Services.prefs.getBoolPref(SHOWN_PREF), "not shown yet");
+    BrowserTestUtils.removeTab(tab);
+    Assert.ok(Services.prefs.getBoolPref(SHOWN_PREF), "pref is set on close");
   });
 });
 
@@ -209,26 +281,39 @@ add_task(async function test_search_choice_sets_default() {
   await SearchService.init();
   let before = SearchService.defaultEngine.name;
   let beforePrivate = SearchService.defaultPrivateEngine.name;
-  let brave = SearchService.getEngineByName("Brave Search");
-  if (!brave) {
-    // The harness profile does not load the shipped policies.
-    Assert.ok(
-      !(await KyberAddons.setSearchDefault("Brave Search")),
-      "a missing engine returns false"
-    );
-    todo(false, "Brave Search is not in this profile; engine switch untested");
-    return;
-  }
+  Assert.ok(
+    SearchService.getEngineByName("Brave Search"),
+    "the shipped policy engines are present"
+  );
   try {
     await withPage(async doc => {
       doc.querySelector('input[name="search"][value="Brave Search"]').click();
       doc.getElementById("install").click();
       await TestUtils.waitForCondition(
-        () => Services.prefs.getBoolPref(SHOWN_PREF),
-        "install finished"
+        () =>
+          !doc.getElementById("install").disabled &&
+          SearchService.defaultEngine.name == "Brave Search",
+        "Brave Search is the default"
       );
-      Assert.equal(SearchService.defaultEngine.name, "Brave Search");
       Assert.equal(SearchService.defaultPrivateEngine.name, "Brave Search");
+    });
+
+    // Reopened later: the current default is preselected, and DuckDuckGo
+    // can be chosen again.
+    await withPage(async doc => {
+      Assert.equal(
+        doc.querySelector('input[name="search"]:checked').value,
+        "Brave Search",
+        "the current default is preselected"
+      );
+      doc.querySelector('input[name="search"][value="DuckDuckGo"]').click();
+      doc.getElementById("install").click();
+      await TestUtils.waitForCondition(
+        () =>
+          !doc.getElementById("install").disabled &&
+          SearchService.defaultEngine.name == "DuckDuckGo",
+        "DuckDuckGo is the default again"
+      );
     });
   } finally {
     await SearchService.setDefault(
@@ -266,6 +351,14 @@ add_task(async function test_privacy_pane_link_opens_the_page() {
     link.click();
     let tab = await opened;
     Assert.ok(tab, "the welcome page opened");
+    let tabs = gBrowser.tabs.length;
+    gBrowser.selectedTab = pane;
+    link.click();
+    await TestUtils.waitForCondition(
+      () => gBrowser.selectedTab == tab,
+      "a second click switches to the open page"
+    );
+    Assert.equal(gBrowser.tabs.length, tabs, "no second welcome tab");
     BrowserTestUtils.removeTab(tab);
   } finally {
     BrowserTestUtils.removeTab(pane);

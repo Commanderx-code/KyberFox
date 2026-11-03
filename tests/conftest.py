@@ -148,5 +148,8 @@ def fake_sources(tmp_path, tmp_path_factory, fake_tarball, monkeypatch):
     for name in SETTINGS_FILES:
         (repo / "settings").mkdir(exist_ok=True)
         (repo / "settings" / name).write_text(f"// {name}\n")
+    (repo / "settings" / "recommended-addons.json").write_text(
+        '{"verified": "0", "groups": [], "addons": []}\n'
+    )
     monkeypatch.setattr(assemble_mod, "REPO_ROOT", repo)
     return lw

@@ -36,7 +36,14 @@ Preferences.addSetting({
 Preferences.addSetting({
   id: "kyberfoxRecommendedAddonsLink",
   onUserClick: () => {
-    window.openTrustedLinkIn("chrome://kyberfox/content/welcome.xhtml", "tab");
+    window.browsingContext.topChromeWindow.switchToTabHavingURI(
+      "chrome://kyberfox/content/welcome.xhtml",
+      true,
+      {
+        triggeringPrincipal:
+          Services.scriptSecurityManager.getSystemPrincipal(),
+      }
+    );
   },
 });
 

@@ -191,3 +191,12 @@ def test_ublock_verified_file_is_not_downloaded_again(tmp_path, fake_sources, mo
     (tmp_path / FAKE_XPI_NAME).write_bytes(FAKE_XPI)
     monkeypatch.setattr(sources, "download", lambda *a: pytest.fail("downloaded"))
     fetch_ublock(pins_newer_firefox(), tmp_path)
+
+
+def test_missing_recommended_addons_raises(tmp_path, fake_sources):
+    import pytest
+    from tools import assemble as mod
+
+    (mod.REPO_ROOT / "settings" / "recommended-addons.json").unlink()
+    with pytest.raises(FileNotFoundError):
+        mod.copy_recommended_addons(tmp_path)

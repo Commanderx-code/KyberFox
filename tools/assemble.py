@@ -137,10 +137,11 @@ def copy_themes(tree: Path) -> None:
 def copy_recommended_addons(tree: Path) -> None:
     """Copies settings/recommended-addons.json into the Kyber component, for the welcome page."""
     src = REPO_ROOT / "settings" / "recommended-addons.json"
-    if src.is_file():
-        dest = tree / "browser/components/kyberfox"
-        dest.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(src, dest / "recommended-addons.json")
+    if not src.is_file():
+        raise FileNotFoundError(f"{src} is missing; the welcome page needs it")
+    dest = tree / "browser/components/kyberfox"
+    dest.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(src, dest / "recommended-addons.json")
 
 
 def apply_librewolf_l10n(tree: Path, librewolf: Path) -> list[Path]:

@@ -23,6 +23,8 @@ const SHOWN_PREF = "kyberfox.welcome.shown";
 const AMO_PREFIX = "https://addons.mozilla.org/firefox/downloads/latest/";
 const AMO_SUFFIX = "/latest.xpi";
 
+const SLUG = /^[a-z0-9][a-z0-9_-]*$/;
+
 let gList = null;
 let gOpened = false;
 
@@ -37,15 +39,98 @@ function load() {
   return gList;
 }
 
+/** An install that did not finish: kind is "canceled", "network" or "failed". */
+class InstallError extends Error {
+  constructor(kind, code) {
+    super(`${kind}: ${code}`);
+    this.kind = kind;
+    this.code = String(code);
+  }
+}
+
+/**
+ * Turns anything an install threw into {canceled} or {kind, code}.
+ *
+ * @param {*} e
+ */
+function describeError(e) {
+  if (e instanceof InstallError) {
+    return e.kind == "canceled"
+      ? { canceled: true }
+      : { kind: e.kind, code: e.code };
+  }
+  if (e?.canceled) {
+    return { canceled: true };
+  }
+  if (e?.addonErrorCode === lazy.AddonManager.ERROR_NETWORK_FAILURE) {
+    return { kind: "network", code: String(e.addonErrorCode) };
+  }
+  return { kind: "failed", code: String(e?.addonErrorCode ?? e?.message ?? e) };
+}
+
+/**
+ * Starts the install through the AOM path, which shows the permission prompt,
+ * and resolves when it ends. Declining the prompt rejects as "canceled".
+ *
+ * @param {string} url
+ * @param {XULElement} browser
+ */
+async function installFromAMO(url, browser) {
+  if (!browser) {
+    throw new InstallError("failed", "no-browser");
+  }
+  let install = await lazy.AddonManager.getInstallForURL(url, {
+    telemetryInfo: { source: "kyberfox-welcome" },
+  });
+  await new Promise((resolve, reject) => {
+    let finish = (fn, value) => {
+      install.removeListener(listener);
+      fn(value);
+    };
+    let failed = i => finish(reject, new InstallError("failed", i.error));
+    let canceled = () => finish(reject, new InstallError("canceled", 0));
+    let listener = {
+      onInstallEnded: () => finish(resolve),
+      onDownloadFailed: i =>
+        finish(
+          reject,
+          new InstallError(
+            i.error == lazy.AddonManager.ERROR_NETWORK_FAILURE
+              ? "network"
+              : "failed",
+            i.error
+          )
+        ),
+      onInstallFailed: failed,
+      onDownloadCancelled: canceled,
+      onInstallCancelled: canceled,
+    };
+    install.addListener(listener);
+    try {
+      lazy.AddonManager.installAddonFromAOM(
+        browser,
+        Services.io.newURI(WELCOME_URL),
+        install
+      );
+    } catch (e) {
+      finish(reject, e);
+    }
+  });
+}
+
 export const KyberAddons = {
   WELCOME_URL,
 
   /** Replaces the AMO call in tests: async (url) => void, rejects on failure. */
   _installForTests: null,
 
+  /** Lets a test call maybeOpenWelcome although the browser is in automation. */
+  _ignoreAutomationForTests: false,
+
   /** Lets a test open the page again in the same process. */
   _resetForTests() {
     gOpened = false;
+    this._ignoreAutomationForTests = false;
   },
 
   /** The group names, in display order. */
@@ -59,15 +144,17 @@ export const KyberAddons = {
   },
 
   /**
-   * The install URL for a listed add-on, or null when the id is not listed.
+   * The install URL for a listed add-on, or null when the id is not listed or
+   * its slug is not a plain AMO slug.
    *
    * @param {string} id
    */
   installURL(id) {
     let entry = load().addons.find(a => a.id == id);
-    return entry
-      ? AMO_PREFIX + encodeURIComponent(entry.slug) + AMO_SUFFIX
-      : null;
+    if (!entry || !SLUG.test(entry.slug)) {
+      return null;
+    }
+    return AMO_PREFIX + entry.slug + AMO_SUFFIX;
   },
 
   /**
@@ -81,37 +168,54 @@ export const KyberAddons = {
 
   /**
    * Installs the listed add-ons one after the other. Errors are reported per
-   * add-on and never reject the whole call.
+   * add-on and never reject the whole call. Firefox's own permission prompt
+   * and "added" doorhangers show, because the install goes through
+   * AddonManager.installAddonFromAOM with the page's browser.
+   *
+   * A failed result has `canceled: true` when the user declined the prompt,
+   * otherwise `kind` ("network" or "failed") and a `code` for support.
    *
    * @param {string[]} ids
-   * @param {(result: {id, ok, error?}|{id, installing: true}) => void} [onProgress]
-   * @returns {Promise<{id: string, ok: boolean, error?: string}[]>}
+   * @param {Function} [onProgress] called with {id, installing: true} and
+   *   then with each result
+   * @param {?XULElement} [browser] the welcome tab's browser
+   * @returns {Promise<{id: string, ok: boolean, canceled?: boolean, kind?: string, code?: string}[]>}
    */
-  async install(ids, onProgress = null) {
+  async install(ids, onProgress = null, browser = null) {
     let results = [];
+    let report = r => {
+      try {
+        onProgress?.(r);
+      } catch (e) {
+        console.error("KyberAddons: progress callback failed", e);
+      }
+    };
     for (let id of ids) {
       let result = { id, ok: true };
-      onProgress?.({ id, installing: true });
+      report({ id, installing: true });
       try {
         let url = this.installURL(id);
         if (!url) {
-          throw new Error("Not a recommended add-on.");
+          throw new InstallError("failed", "not-listed");
         }
         if (this._installForTests) {
           await this._installForTests(url);
         } else {
-          let install = await lazy.AddonManager.getInstallForURL(url, {
-            telemetryInfo: { source: "kyberfox-welcome" },
-          });
-          await install.install();
+          await installFromAMO(url, browser);
         }
       } catch (e) {
-        result = { id, ok: false, error: e?.message || String(e) };
+        result = { id, ok: false, ...describeError(e) };
       }
       results.push(result);
-      onProgress?.(result);
+      report(result);
     }
     return results;
+  },
+
+  /** The name of the current default search engine. */
+  async defaultSearch() {
+    await lazy.SearchService.init();
+    return lazy.SearchService.defaultEngine.name;
   },
 
   /**
@@ -149,12 +253,16 @@ export const KyberAddons = {
 
   /**
    * Opens the welcome page in a tab, once per process, in the first normal
-   * window, and only while kyberfox.welcome.shown is false.
+   * window, only while kyberfox.welcome.shown is false, and never in automation.
    *
    * @param {Window} window
    * @returns {?XULElement} the tab, or null when nothing was opened.
    */
   maybeOpenWelcome(window) {
+    // Test runs and Marionette sessions never get a welcome tab.
+    if (Cu.isInAutomation && !this._ignoreAutomationForTests) {
+      return null;
+    }
     if (
       gOpened ||
       Services.prefs.getBoolPref(SHOWN_PREF, false) ||

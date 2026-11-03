@@ -125,6 +125,12 @@ build.
   harness-relevant prefs (`browser.dom.window.dump.enabled`,
   `devtools.console.stdout.chrome`, `dom.security.https_only_mode`) are
   `defaultPref`s, so the harness profile can override them.
+- The first-run welcome page never opens while `Cu.isInAutomation` is true
+  (mochitest, upstream test runs). `browser_welcome.js` turns that off through
+  `KyberAddons._ignoreAutomationForTests`, and the kyberfox `browser.toml` also
+  sets `kyberfox.welcome.shown=true`. To see the page in the artifact build,
+  start it without the test harness (a plain Marionette session has no
+  automation flag, so the page opens there).
 - Command:
   `./mach mochitest --headless --app obj-artifact/dist/bin/firefox --exclude-extension=uBlock0@raymondhill.net.xpi browser/components/kyberfox/test/browser/`.
 
