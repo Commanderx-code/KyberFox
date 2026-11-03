@@ -106,12 +106,13 @@ jobs:
           test -f /usr/share/licenses/kyberfox/LICENSE
           desktop-file-validate /usr/share/applications/kyberfox.desktop
           pacman -Qi kyberfox
-          # Libraries the binary needs that no package provides.
+          # Bundled libraries sit next to the binary; anything else must be installed.
+          export LD_LIBRARY_PATH=/opt/kyberfox
           if ldd /opt/kyberfox/kyberfox-bin /opt/kyberfox/libxul.so | grep 'not found'; then
             echo "Missing shared libraries"
             exit 1
           fi
-          ldd /opt/kyberfox/kyberfox-bin | awk '{print $1}' | sort
+          ldd /opt/kyberfox/kyberfox-bin | grep -v "$LD_LIBRARY_PATH" | awk '{print $1, $3}' | sort
 
       - name: Check the version
         run: |
