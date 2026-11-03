@@ -5605,7 +5605,7 @@ panel :is(menulist, button, toolbarbutton:not(#firefox-view-button,[.subviewbutt
   #show-other-bookmarks_PersonalToolbar,            /* 'Show other bookmarks' */
   #spell-check-enabled                              /* 'Check spelling' - searchbox */
   ):not([checked]) .menu-icon {
-    content: var(--menuitem-icon, url("chrome://kyberfox/content/themes/skins/one/icons/black.svg")) !important;/**/
+    content: var(--menuitem-icon, none) !important;/**/
     visibility: visible !important;
   }
   
@@ -7212,7 +7212,7 @@ panel :is(menulist, button, toolbarbutton:not(#firefox-view-button,[.subviewbutt
   }
 
   #tm-detachTabContext {
-    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/one/icons/convert-range.svg") !important;
+    --menuitem-icon: none !important;
   }
 
   #tm-mergeWindows {

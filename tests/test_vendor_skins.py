@@ -175,8 +175,20 @@ def test_committed_skins_have_no_remote_urls_and_scoped_sheets():
             assert not re.search(r"url\(\s*['\"]?(https?:|//)", code), (i, sheet)
             assert code.lstrip().startswith('@-moz-document url-prefix("chrome://")'), (i, sheet)
             base = f"chrome://kyberfox/content/themes/skins/{i}/"
-            for rel in re.findall(r'url\("' + re.escape(base) + r'([^"#?)]+)', code):
-                assert (SKINS / i / rel).is_file() or rel.startswith(("icons/black", "icons/logo_chat", "icons/convert-range", "icons/tab-bottom-corner-right-australis-clipped")), (i, rel)
+
+
+
+def test_committed_skins_have_no_dangling_urls():
+    for i in ("gx", "one"):
+        base = f"chrome://kyberfox/content/themes/skins/{i}/"
+        code = re.sub(r"/\*.*?\*/", "", (SKINS / i / "userChrome.css").read_text(), flags=re.S)
+        urls = re.findall(r'url\("' + re.escape(base) + r'([^"#?)]+)', code)
+        assert urls
+        for rel in urls:
+            cur = SKINS / i
+            for part in Path(rel).parts:
+                assert part in [c.name for c in cur.iterdir()], (i, rel)
+                cur = cur / part
 
 
 def test_pins_are_real_commits():
@@ -238,3 +250,34 @@ def test_committed_skins_ship_no_opera_bytes_and_no_fonts():
         data = p.read_bytes().lower()
         for enc in ("ascii", "utf-16-le", "utf-16-be"):
             assert "opera".encode(enc) not in data, (p, enc)
+
+
+def test_vendor_replaces_urls_to_missing_files_with_none(tmp_path):
+    vendor_with(tmp_path, **{
+        "chrome/components/root.css": ".a { background: url('../icons/nope.svg'); }\n"
+                                       ".b { background: url('../icons/a.svg'); }\n"})
+    css = (tmp_path / "out" / "gx" / "userChrome.css").read_text()
+    assert ".a { background: none; }" in css
+    assert "nope" not in css
+
+
+def _repo_with_symlink(tmp_path, target):
+    import os
+    import subprocess
+    repo = tmp_path / "up"
+    git_init(repo, FILES)
+    os.symlink(target, repo / "chrome" / "icons" / "link.svg")
+    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.invalid",
+           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.invalid"}
+    for cmd in (["add", "-A"], ["commit", "-q", "-m", "link"]):
+        subprocess.run(["git", *cmd], cwd=repo, env=env, check=True)
+    out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True,
+                         capture_output=True, text=True)
+    return str(repo), out.stdout.strip()
+
+
+@pytest.mark.parametrize("target", ["a.svg", "/etc/hostname"])
+def test_vendor_rejects_symlinks_in_the_checkout(tmp_path, target):
+    repo, commit = _repo_with_symlink(tmp_path, target)
+    with pytest.raises(V.VendorError, match="symlink"):
+        V.vendor(repo, commit, tmp_path / "out" / "gx")

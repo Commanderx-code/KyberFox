@@ -148,7 +148,7 @@ def _resolve_ci(base: Path, raw: str):
         if match is None:
             return exact, True
         cur = match
-    return cur, False
+    return cur.resolve(), False
 
 
 _FONT_FACE = re.compile(r"@font-face\s*\{[^{}]*\}", re.S)
@@ -191,9 +191,10 @@ def _rewrite_urls(text: str, file: Path, st: _State) -> str:
             st.edits.append(f"url({rel.as_posix()}) replaced by none")
             return "none"
         if not target.is_file():
-            # Dangling upstream too (the browser just shows nothing there).
-            st.edits.append(f"url({rel.as_posix()}) in {file.name} is missing upstream; left as is")
-            return f'url("{st.base}{rel.as_posix()}{sep}{frag}")'
+            # A missing chrome:// file crashes the browser under automation.
+            st.edits.append(f"url({rel.as_posix()}) in {file.name} replaced by none "
+                            "(the file is missing upstream)")
+            return "none"
         if rel.suffix.lower() in FONT_SUFFIXES:
             raise VendorError(f"{file}: url({raw}) loads a font file")
         if not exact:
@@ -205,6 +206,7 @@ def _rewrite_urls(text: str, file: Path, st: _State) -> str:
 
 
 def _inline(file: Path, st: _State, seen: tuple = ()) -> str:
+    file = file.resolve()
     if file in seen:
         raise VendorError(f"{file}: @import cycle")
     text = _drop_fonts(file.read_text(encoding="utf-8"), st)
@@ -255,6 +257,27 @@ def _check_clean(css: str) -> None:
         raise VendorError("a font file is still referenced")
 
 
+def _check_no_symlinks(src: Path) -> None:
+    """A link in the checkout could lead the copy outside chrome/."""
+    for p in src.rglob("*"):
+        if ".git" in p.relative_to(src).parts:
+            continue
+        if p.is_symlink():
+            raise VendorError(f"{p.relative_to(src)}: symlinks are not allowed")
+
+
+def _check_no_dangling(css: str, dest: Path, base: str) -> None:
+    """Every url() into the skin must name a file that exists (exact case)."""
+    code = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    for m in re.finditer(r"url\(\s*[\"']?" + re.escape(base) + r"([^\"')#?]+)", code):
+        rel = Path(m.group(1))
+        cur = dest
+        for part in rel.parts:
+            if part not in (c.name for c in cur.iterdir()):
+                raise VendorError(f"url({base}{rel}) names a missing file")
+            cur = cur / part
+
+
 def _check_braces(css: str) -> None:
     """The wrapper only holds if the sheet's braces balance."""
     bare = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
@@ -290,6 +313,7 @@ def _vendor(repo: str, commit: str, dest: Path) -> list:
         src = Path(tmp) / "src"
         src.mkdir()
         _clone(repo, commit, src)
+        _check_no_symlinks(src)
         chrome = src / "chrome"
         if not (chrome / "userChrome.css").is_file():
             raise VendorError(f"{repo}: no chrome/userChrome.css")
@@ -317,6 +341,7 @@ def _vendor(repo: str, commit: str, dest: Path) -> list:
             out = dest / rel
             out.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(chrome / rel, out)
+    _check_no_dangling(css, dest, f"{CHROME_BASE}{dest.name}/")
     sheets = ["userChrome.css"]
     colors = EXTRAS_DIR / dest.name / "colors.css"
     if colors.is_file():

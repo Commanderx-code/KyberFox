@@ -6333,7 +6333,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   #show-other-bookmarks_PersonalToolbar,            /* 'Show other bookmarks' */
   #spell-check-enabled                              /* 'Check spelling' - searchbox */
   ):not([checked]) .menu-icon {
-    content: var(--menuitem-icon, url("chrome://kyberfox/content/themes/skins/gx/icons/black.svg")) !important;/**/
+    content: var(--menuitem-icon, none) !important;/**/
     visibility: visible !important;
   }
   
@@ -7940,7 +7940,7 @@ panel :is(menulist, button, toolbarbutton:not([.subviewbutton])):not([open]),   
   }
 
   #tm-detachTabContext {
-    --menuitem-icon: url("chrome://kyberfox/content/themes/skins/gx/icons/convert-range.svg") !important;
+    --menuitem-icon: none !important;
   }
 
   #tm-mergeWindows {
@@ -10901,7 +10901,7 @@ https://github.com/Godiesc/firefox-gx */
           --uc-tab-corner-right-side-svg: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-australis1.svg");
           --uc-tab-corner-right-side-clipPath: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-australis1.svg#svgClipPath");
           --uc-tab-corner-left-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-left-australis-clipped.svg");
-          --uc-tab-corner-right-side-svg-clipped: url("chrome://kyberfox/content/themes/skins/gx/icons/tab-bottom-corner-right-australis-clipped.svg");
+          --uc-tab-corner-right-side-svg-clipped: none;
         }
 
         #TabsToolbar {

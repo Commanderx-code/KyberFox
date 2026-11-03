@@ -45,8 +45,8 @@ Author of both projects: Godiesc. License: MPL-2.0.
 
 Modifications, all made by the vendor tool:
 
-- Only `chrome/userChrome.css`, its `@import` tree and the icons and font it
-  refers to are kept. `userContent.css` (web and `about:` page styling),
+- Only `chrome/userChrome.css`, its `@import` tree and the icon and image
+  files it refers to are kept (no font files; see below). `userContent.css` (web and `about:` page styling),
   `chrome/newtab/` wallpapers, `Extras/`, `Tricks/`, READMEs, previews and
   the companion browser extensions are not shipped.
 - The `@import` tree is flattened into one `userChrome.css` and wrapped in
@@ -55,10 +55,14 @@ Modifications, all made by the vendor tool:
   rewritten to be relative to that file.
 - Branding removal: the custom properties `--opera4`, `--opera7` and
   `--opera9` (One-style) are renamed `--vivid4`, `--vivid7`, `--vivid9`; the
-  word is removed from comments. The upstream projects ship no logo files.
+  word is removed from comments. Neither project ships an Opera logo file; the third-party brand logos
+  they do ship are listed below.
 - Every `url()` into `chrome/newtab/` (wallpapers, about-page images) is
-  replaced by `none`, since that directory is not shipped. Four icon files
-  that upstream itself references but does not contain are left as is.
+  replaced by `none`, since that directory is not shipped. Every
+  `url()` to a file that upstream references but does not ship is replaced by
+  `none` as well, because a missing chrome:// file crashes the browser under
+  automation: `icons/black.svg` and `icons/convert-range.svg` (both skins) and
+  `icons/tab-bottom-corner-right-australis-clipped.svg` (GX-style).
 - Fonts: upstream ships `Underwave-Bold.ttf`, whose name table reads
   "Copyright (c) 2021 Opera Norway AS. All rights reserved." It is not MPL
   and is not copied; no font file is ever vendored. The `@font-face` rule for

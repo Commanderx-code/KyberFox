@@ -300,7 +300,9 @@ add_task(async function test_crash_after_backup_still_sets_the_prefs() {
   // The state a crash leaves: backup written, skin values not yet.
   let backup = {};
   for (let n of Object.keys(gx)) {
-    backup[n] = { had: false };
+    backup[n] = Services.prefs.prefHasUserValue(n)
+      ? { had: true, value: readPref(n) }
+      : { had: false };
   }
   Services.prefs.setStringPref(BACKUP_PREF, JSON.stringify(backup));
   Services.prefs.setStringPref(ID_PREF, "gx");
@@ -318,7 +320,11 @@ add_task(async function test_crash_after_backup_still_sets_the_prefs() {
     "the backup was kept"
   );
   KyberThemes.apply("ember");
-  Assert.ok(!Services.prefs.prefHasUserValue(MINE), "restored to default");
+  Assert.equal(
+    Services.prefs.prefHasUserValue(MINE),
+    backup[MINE].had,
+    "restored to what it was"
+  );
 });
 
 function readPref(name) {
