@@ -1,0 +1,18 @@
+# Pinned inputs. Every download is verified against these values.
+
+[firefox]
+version = "159.0"
+sha256 = "3d98df785894057fce60603e845828e758a5411ad79aaaaff2b8230597f500d9"
+
+[librewolf]
+# Tag in https://codeberg.org/librewolf/source (the commit is 5f66bd1a952b)
+ref = "159.0-1"
+
+[ublock]
+version = "1.75.2"
+sha256 = "b941eac9ac4b156edefa9273bdf5a313204919f751e1a86b8c81e254b9471599"
+
+[kyber]
+# Placeholders: heads of the upstream repos when this file was written.
+gx_commit = "c6657edc6f714e72af980f9333caedb4b76fdd25"
+one_commit = "8dae8be19f690317a97a608c408f82751ed040be"
