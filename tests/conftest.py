@@ -61,6 +61,11 @@ FAKE_XPI_NAME = "uBlock0_0.firefox.signed.xpi"
 STATE = {"commit": "0" * 40}
 
 
+# Fixed commit dates, so the same files and message always give the same SHA
+# (wall-clock dates made two "identical" repos differ across a second boundary).
+GIT_EPOCH = 1700000000
+
+
 def git_init(path, files: dict[str, str], message: str = "seed") -> str:
     """Make path a real git repo with one commit holding files; return its SHA."""
     env = {
@@ -72,8 +77,15 @@ def git_init(path, files: dict[str, str], message: str = "seed") -> str:
     for name, text in files.items():
         (path / name).parent.mkdir(parents=True, exist_ok=True)
         (path / name).write_text(text)
-    for cmd in (["init", "-q"], ["add", "-A"], ["commit", "-q", "-m", message]):
+    for cmd in (["init", "-q"], ["add", "-A"]):
         subprocess.run(["git", *cmd], cwd=path, env=env, check=True)
+    # The n-th commit of a repo gets the n-th fixed date, one minute apart.
+    count = subprocess.run(["git", "rev-list", "--count", "HEAD"], cwd=path, env=env,
+                           capture_output=True, text=True)
+    n = int(count.stdout) if count.returncode == 0 else 0
+    date = f"@{GIT_EPOCH + 60 * n} +0000"
+    subprocess.run(["git", "commit", "-q", "-m", message], cwd=path, check=True,
+                   env={**env, "GIT_AUTHOR_DATE": date, "GIT_COMMITTER_DATE": date})
     out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=path, env=env,
                          check=True, capture_output=True, text=True)
     return out.stdout.strip()
