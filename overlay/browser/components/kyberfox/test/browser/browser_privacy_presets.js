@@ -20,7 +20,7 @@ PromiseTestUtils.allowMatchingRejectionsGlobally(
   /No Setting with id "kyberfoxWebGLPrompt(Hide)?"/
 );
 PromiseTestUtils.allowMatchingRejectionsGlobally(
-  /can't assign to property "value" on/
+  /can't assign to property "value" on (true|false)/
 );
 
 const { PRESETS } = KyberPrivacyPresets;
@@ -57,7 +57,13 @@ function readUser(name) {
   }
 }
 
+const openTabs = [];
+
 registerCleanupFunction(() => {
+  // A failed assertion must not leave a tab behind.
+  for (let tab of openTabs.splice(0)) {
+    BrowserTestUtils.removeTab(tab);
+  }
   for (let [name, state] of saved) {
     if (!state.hasUser) {
       Services.prefs.clearUserPref(name);
@@ -87,14 +93,18 @@ function readDefault(name) {
 // put those back to the shipped values so the profile reads as fresh. The
 // content blocking category is a user value kyberfox.cfg seeds once, so it
 // stays.
-async function freshProfile() {
-  let reset = [];
+// The prefs are cleared directly: pushPrefEnv would snapshot the current
+// values and write them back after the cleanup function ran.
+function freshProfile() {
   for (let name of ALL_PREFS) {
-    if (name != CATEGORY && Services.prefs.prefHasUserValue(name)) {
-      reset.push(name);
+    if (name != CATEGORY) {
+      Services.prefs.clearUserPref(name);
     }
   }
-  await SpecialPowers.pushPrefEnv({ clear: reset.map(name => [name]) });
+}
+
+function closePane() {
+  BrowserTestUtils.removeTab(openTabs.pop());
 }
 
 async function openPane() {
@@ -102,6 +112,7 @@ async function openPane() {
     gBrowser,
     "about:preferences#privacy"
   );
+  openTabs.push(tab);
   let doc = tab.linkedBrowser.contentDocument;
   await TestUtils.waitForCondition(
     () => doc.getElementById("kyberfoxPrivacyPreset"),
@@ -126,7 +137,7 @@ function warning(doc) {
 }
 
 add_task(async function test_standard_matches_defaults() {
-  await freshProfile();
+  freshProfile();
   Assert.equal(KyberPrivacyPresets.current(), "standard", "fresh is Standard");
   for (let [name, value] of Object.entries(PRESETS.standard)) {
     Assert.strictEqual(
@@ -147,7 +158,7 @@ add_task(async function test_standard_matches_defaults() {
     "applying Standard changes no value"
   );
   Assert.equal(KyberPrivacyPresets.current(), "standard", "still Standard");
-  BrowserTestUtils.removeTab(gBrowser.selectedTab);
+  closePane();
 });
 
 function readUserOrDefault(name) {
@@ -157,13 +168,13 @@ function readUserOrDefault(name) {
 }
 
 add_task(async function test_strict_sets_resist_fingerprinting() {
-  await freshProfile();
+  freshProfile();
   let doc = await openPane();
   Assert.ok(warning(doc).hidden, "no warning under Standard");
 
   let radioEl = radio(doc, "strict");
   await radioEl.updateComplete;
-  let input = radioEl.shadowRoot.querySelector("input");
+  let input = radioEl.inputEl;
   input.click();
   await TestUtils.waitForCondition(
     () => Services.prefs.getBoolPref("privacy.resistFingerprinting"),
@@ -185,16 +196,16 @@ add_task(async function test_strict_sets_resist_fingerprinting() {
     "the preset is recorded"
   );
   Assert.equal(selected(doc), "strict", "the pane selects Strict");
-  BrowserTestUtils.removeTab(gBrowser.selectedTab);
+  closePane();
 });
 
 add_task(async function test_manual_change_reports_custom() {
-  await freshProfile();
+  freshProfile();
   KyberPrivacyPresets.apply("strict");
   let doc = await openPane();
   Assert.equal(selected(doc), "strict", "the pane starts on Strict");
 
-  await SpecialPowers.pushPrefEnv({ set: [["webgl.disabled", false]] });
+  Services.prefs.setBoolPref("webgl.disabled", false);
   Assert.equal(KyberPrivacyPresets.current(), "custom", "current is Custom");
   await TestUtils.waitForCondition(
     () => selected(doc) == "custom",
@@ -202,12 +213,11 @@ add_task(async function test_manual_change_reports_custom() {
   );
   Assert.ok(radio(doc, "custom").disabled, "Custom cannot be picked");
   Assert.ok(warning(doc).hidden, "no Strict warning under Custom");
-  BrowserTestUtils.removeTab(gBrowser.selectedTab);
-  await SpecialPowers.popPrefEnv();
+  closePane();
 });
 
 add_task(async function test_strict_warns_about_timezone() {
-  await freshProfile();
+  freshProfile();
   KyberPrivacyPresets.apply("strict");
   let doc = await openPane();
   let bar = warning(doc);
@@ -223,5 +233,5 @@ add_task(async function test_strict_warns_about_timezone() {
     /UTC/.test(bar.message),
     `the warning says the clock reads as UTC: ${bar.message}`
   );
-  BrowserTestUtils.removeTab(gBrowser.selectedTab);
+  closePane();
 });

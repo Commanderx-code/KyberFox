@@ -35,6 +35,7 @@ Preferences.addSetting({
 SettingGroupManager.registerGroups({
   kyberfoxPrivacyPresets: {
     l10nId: "kyberfox-privacy-preset-group",
+    iconSrc: "chrome://browser/skin/controlcenter/tracking-protection.svg",
     headingLevel: 2,
     items: [
       {

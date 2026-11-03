@@ -3,9 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // The Standard and Strict privacy presets of the Privacy pane. Each preset
-// is a table of pref names and values, applied as explicit user values.
-// Firefox's own Standard radio only clears user values, which would leave
-// Kyber Fox's strict defaults in force, so it cannot express these presets.
+// is a table of pref names and values, applied as user values. Firefox's own
+// Standard radio only clears user values, which would leave Kyber Fox's
+// strict defaults in force, so it cannot express these presets. libpref
+// drops a user value equal to the default, so Standard effectively means
+// "matches the shipped defaults".
 
 const RECORD_PREF = "kyberfox.privacy.preset";
 
@@ -53,13 +55,31 @@ function setPref(name, value) {
 }
 
 function matches(name, value) {
+  // A pref turned into another type in about:config never matches.
+  let types = {
+    boolean: Services.prefs.PREF_BOOL,
+    number: Services.prefs.PREF_INT,
+    string: Services.prefs.PREF_STRING,
+  };
+  if (Services.prefs.getPrefType(name) != types[typeof value]) {
+    return false;
+  }
   switch (typeof value) {
     case "boolean":
-      return Services.prefs.getBoolPref(name, null) === value;
+      return Services.prefs.getBoolPref(name) === value;
     case "number":
-      return Services.prefs.getIntPref(name, null) === value;
+      return Services.prefs.getIntPref(name) === value;
     default:
-      return Services.prefs.getStringPref(name, null) === value;
+      return Services.prefs.getStringPref(name) === value;
+  }
+}
+
+// While apply() runs, pref changes are collected into one notification.
+let applying = false;
+const listeners = new Set();
+function notifyAll() {
+  for (let callback of listeners) {
+    callback();
   }
 }
 
@@ -75,10 +95,16 @@ export const KyberPrivacyPresets = {
     if (!Object.hasOwn(PRESETS, name)) {
       throw new Error(`Unknown privacy preset "${name}"`);
     }
-    for (let [pref, value] of Object.entries(PRESETS[name])) {
-      setPref(pref, value);
+    applying = true;
+    try {
+      for (let [pref, value] of Object.entries(PRESETS[name])) {
+        setPref(pref, value);
+      }
+      Services.prefs.setStringPref(RECORD_PREF, name);
+    } finally {
+      applying = false;
     }
-    Services.prefs.setStringPref(RECORD_PREF, name);
+    notifyAll();
   },
 
   /**
@@ -108,11 +134,19 @@ export const KyberPrivacyPresets = {
    */
   observe(callback) {
     let names = new Set([...Object.keys(STANDARD), ...Object.keys(STRICT)]);
-    let observer = { observe: () => callback() };
+    listeners.add(callback);
+    let observer = {
+      observe() {
+        if (!applying) {
+          callback();
+        }
+      },
+    };
     for (let name of names) {
       Services.prefs.addObserver(name, observer);
     }
     return () => {
+      listeners.delete(callback);
       for (let name of names) {
         Services.prefs.removeObserver(name, observer);
       }

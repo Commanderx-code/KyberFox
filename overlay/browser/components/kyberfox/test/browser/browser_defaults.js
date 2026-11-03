@@ -91,3 +91,20 @@ add_task(function test_security_lists_stay_reachable() {
     Assert.ok(allowed.includes(collection), `${collection} is allowed`);
   }
 });
+
+// webgl.disabled is a preset pref, so it must be a default: a user value
+// such as the Strict preset's has to survive a restart.
+add_task(function test_webgl_disabled_is_a_default() {
+  Assert.strictEqual(readDefault("webgl.disabled"), false, "default is off");
+  Assert.ok(
+    !Services.prefs.prefHasUserValue("webgl.disabled"),
+    "kyberfox.cfg writes no user value"
+  );
+  Services.prefs.setBoolPref("webgl.disabled", true);
+  Assert.strictEqual(
+    Services.prefs.getBoolPref("webgl.disabled"),
+    true,
+    "a user value is not overridden"
+  );
+  Services.prefs.clearUserPref("webgl.disabled");
+});
