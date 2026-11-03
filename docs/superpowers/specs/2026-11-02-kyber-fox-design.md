@@ -142,7 +142,7 @@ The toolbar button shows the blocked count for the current site. Its panel holds
 | DRM (Widevine) | Off until a site asks, then one click to enable |
 | Malware protection | On with local lists, `browser.safebrowsing.downloads.remote.enabled=false` |
 | Extensions | addons.mozilla.org stays, with a few requests to Mozilla when browsing or updating add-ons |
-| Recommended add-ons | A first-run page lists Bitwarden, Proton Pass, KeePassXC-Browser, Privacy Badger, Decentraleyes, Consent-O-Matic, Multi-Account Containers, SponsorBlock, Return YouTube Dislike and Dark Reader with checkboxes, nothing pre-ticked; chosen ones install from addons.mozilla.org on click, nothing is bundled (added 2026-11-03) |
+| Recommended add-ons | A first-run page lists Bitwarden, Proton Pass, KeePassXC-Browser, Privacy Badger, LocalCDN, ClearURLs, NoScript, Consent-O-Matic, Multi-Account Containers, Facebook Container, ProtonMail Launcher, ProtonMail Notifier, Gmail Notifier, SponsorBlock, Return YouTube Dislike, Dark Reader, Tabliss and nightTab with checkboxes, nothing pre-ticked; chosen ones install from addons.mozilla.org on click, nothing is bundled (added 2026-11-03) |
 | New tab | Firefox Home with top sites on; sponsored content, weather, stories and highlights off |
 | Search engines shipped | DuckDuckGo, Startpage, Brave Search, Wikipedia; Google and Bing addable by the user |
 | Startup | Restore the previous session |
