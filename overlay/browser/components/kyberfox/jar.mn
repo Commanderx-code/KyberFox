@@ -4,6 +4,10 @@
 
 browser.jar:
 % content kyberfox %content/kyberfox/
+  content/kyberfox/recommended-addons.json (recommended-addons.json)
+  content/kyberfox/welcome.xhtml (content/welcome.xhtml)
+  content/kyberfox/welcome.mjs (content/welcome.mjs)
+  content/kyberfox/welcome.css (content/welcome.css)
   content/kyberfox/themes-init.mjs (content/themes-init.mjs)
   content/kyberfox/theme-pane.mjs (content/theme-pane.mjs)
   content/kyberfox/privacy-presets.mjs (content/privacy-presets.mjs)

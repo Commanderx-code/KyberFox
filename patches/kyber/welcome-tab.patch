@@ -1,0 +1,21 @@
+diff --git a/browser/base/content/browser-init.js b/browser/base/content/browser-init.js
+--- a/browser/base/content/browser-init.js
++++ b/browser/base/content/browser-init.js
+@@ -484,6 +484,17 @@
+       })
+       .catch(console.error);
+ 
++    // Kyber Fox first-run page: recommended add-ons and default search.
++    SessionStore.promiseInitialized
++      .then(() => {
++        if (!window.closed) {
++          ChromeUtils.importESModule(
++            "resource:///modules/KyberAddons.sys.mjs"
++          ).KyberAddons.maybeOpenWelcome(window);
++        }
++      })
++      .catch(console.error);
++
+     Services.obs.addObserver(gIdentityHandler, "perm-changed");
+     Services.obs.addObserver(gRemoteControl, "devtools-socket");
+     Services.obs.addObserver(gRemoteControl, "marionette-listening");

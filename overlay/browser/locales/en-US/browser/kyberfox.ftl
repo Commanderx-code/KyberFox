@@ -103,3 +103,27 @@ kyberfox-theme-error-write-failed =
 kyberfox-theme-reset =
     .label = Reset to Ember
     .description = Removes imported CSS and switches to Ember. Press Ctrl+Shift+Alt+T in any window to do the same.
+
+## Welcome page. Add-on names, summaries, and notes come from
+## settings/recommended-addons.json and are not translated.
+
+kyberfox-welcome-title = Welcome to Kyber Fox
+kyberfox-welcome-heading = Welcome to Kyber Fox
+kyberfox-welcome-intro = Pick a search engine and any add-ons you want. Nothing is selected for you, and nothing is downloaded until you choose Install selected.
+kyberfox-welcome-search-heading = Default search
+kyberfox-welcome-search-group =
+    .aria-label = Default search engine
+kyberfox-welcome-addons-heading = Recommended add-ons
+kyberfox-welcome-addons-hint = These come from addons.mozilla.org, are signed by Mozilla, and update on their own. You can remove any of them later.
+kyberfox-welcome-included = Included
+kyberfox-welcome-install = Install selected
+kyberfox-welcome-skip = Skip
+kyberfox-welcome-working = Working…
+kyberfox-welcome-installing = Installing…
+kyberfox-welcome-installed = Installed
+kyberfox-welcome-done = Done. You can find this page again under Privacy & Security in Settings.
+kyberfox-welcome-done-errors = Finished, but some add-ons did not install. You can try again.
+kyberfox-welcome-failed = Something went wrong. Nothing else was changed.
+kyberfox-privacy-recommended-addons-link =
+    .label = Recommended add-ons
+    .description = Choose add-ons and a default search engine from Kyber Fox's short list.

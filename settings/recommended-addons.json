@@ -1,0 +1,136 @@
+{
+  "verified": "2026-11-03",
+  "groups": ["Passwords", "Privacy", "Mail", "Video", "Appearance"],
+  "addons": [
+    {
+      "id": "{446900e4-71c2-419f-a6a7-df9c091e268b}",
+      "slug": "bitwarden-password-manager",
+      "name": "Bitwarden",
+      "summary": "Password manager that syncs your logins across devices.",
+      "group": "Passwords"
+    },
+    {
+      "id": "78272b6fa58f4a1abaac99321d503a20@proton.me",
+      "slug": "proton-pass",
+      "name": "Proton Pass",
+      "summary": "Password manager from Proton with built-in email aliases.",
+      "group": "Passwords"
+    },
+    {
+      "id": "keepassxc-browser@keepassxc.org",
+      "slug": "keepassxc-browser",
+      "name": "KeePassXC-Browser",
+      "summary": "Fills logins from the KeePassXC app on your computer (the app is required).",
+      "group": "Passwords"
+    },
+    {
+      "id": "jid1-MnnxcxisBPnSXQ@jetpack",
+      "slug": "privacy-badger17",
+      "name": "Privacy Badger",
+      "summary": "Learns which trackers follow you around and blocks them.",
+      "group": "Privacy"
+    },
+    {
+      "id": "{b86e4813-687a-43e6-ab65-0bde4ab75758}",
+      "slug": "localcdn-fork-of-decentraleyes",
+      "name": "LocalCDN",
+      "summary": "Serves common web libraries from your computer instead of from big CDNs.",
+      "group": "Privacy"
+    },
+    {
+      "id": "{74145f27-f039-47ce-a470-a662b129930a}",
+      "slug": "clearurls",
+      "name": "ClearURLs",
+      "summary": "Removes tracking parts from links.",
+      "group": "Privacy"
+    },
+    {
+      "id": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
+      "slug": "noscript",
+      "name": "NoScript",
+      "summary": "Blocks JavaScript and other active content unless you allow a site.",
+      "group": "Privacy",
+      "note": "Blocks scripts until you allow them; expect sites to need a click."
+    },
+    {
+      "id": "gdpr@cavi.au.dk",
+      "slug": "consent-o-matic",
+      "name": "Consent-O-Matic",
+      "summary": "Answers cookie consent pop-ups for you, choosing the minimum.",
+      "group": "Privacy"
+    },
+    {
+      "id": "@testpilot-containers",
+      "slug": "multi-account-containers",
+      "name": "Firefox Multi-Account Containers",
+      "summary": "Keeps sites in separate colored containers so they cannot see each other.",
+      "group": "Privacy"
+    },
+    {
+      "id": "@contain-facebook",
+      "slug": "facebook-container",
+      "name": "Facebook Container",
+      "summary": "Keeps Facebook and Instagram in their own container, away from the rest of your browsing.",
+      "group": "Privacy"
+    },
+    {
+      "id": "{b9e14cae-1155-449c-9ab1-dcb3728bcc9e}",
+      "slug": "protonmail-simple-launcher",
+      "name": "ProtonMail Launcher",
+      "summary": "Adds a toolbar button that opens Proton Mail.",
+      "group": "Mail"
+    },
+    {
+      "id": "{66e827a1-4fe4-42e9-933b-66b817926587}",
+      "slug": "protonmail-notifier",
+      "name": "ProtonMail Notifier",
+      "summary": "Shows your unread Proton Mail count on a toolbar button.",
+      "group": "Mail",
+      "note": "Third-party add-on that reads your mailbox session."
+    },
+    {
+      "id": "jid0-GjwrPchS3Ugt7xydvqVK4DQk8Ls@jetpack",
+      "slug": "gmail-notifier-restartless",
+      "name": "Gmail Notifier",
+      "summary": "Shows your unread Gmail count on a toolbar button.",
+      "group": "Mail",
+      "note": "Third-party add-on that reads your mailbox session."
+    },
+    {
+      "id": "sponsorBlocker@ajay.app",
+      "slug": "sponsorblock",
+      "name": "SponsorBlock",
+      "summary": "Skips sponsor segments and other filler in YouTube videos.",
+      "group": "Video"
+    },
+    {
+      "id": "{762f9885-5a13-4abd-9c77-433dcd38b8fd}",
+      "slug": "return-youtube-dislikes",
+      "name": "Return YouTube Dislike",
+      "summary": "Shows the dislike count on YouTube videos again.",
+      "group": "Video"
+    },
+    {
+      "id": "addon@darkreader.org",
+      "slug": "darkreader",
+      "name": "Dark Reader",
+      "summary": "Turns bright websites dark.",
+      "group": "Appearance"
+    },
+    {
+      "id": "extension@tabliss.io",
+      "slug": "tabliss",
+      "name": "Tabliss",
+      "summary": "A calm, customizable new tab page.",
+      "group": "Appearance"
+    },
+    {
+      "id": "{47bf427e-c83d-457d-9b3d-3db4118574bd}",
+      "slug": "nighttab",
+      "name": "nightTab",
+      "summary": "A new tab page with your own bookmarks, themes and layout.",
+      "group": "Appearance",
+      "note": "Last updated 2021."
+    }
+  ]
+}

@@ -32,6 +32,14 @@ Preferences.addSetting({
   visible: deps => deps.kyberfoxPrivacyPreset.value == "strict",
 });
 
+// Opens the first-run page (recommended add-ons, default search) again.
+Preferences.addSetting({
+  id: "kyberfoxRecommendedAddonsLink",
+  onUserClick: () => {
+    window.openTrustedLinkIn("chrome://kyberfox/content/welcome.xhtml", "tab");
+  },
+});
+
 SettingGroupManager.registerGroups({
   kyberfoxPrivacyPresets: {
     l10nId: "kyberfox-privacy-preset-group",
@@ -68,6 +76,11 @@ SettingGroupManager.registerGroups({
         controlAttrs: {
           type: "warning",
         },
+      },
+      {
+        id: "kyberfoxRecommendedAddonsLink",
+        l10nId: "kyberfox-privacy-recommended-addons-link",
+        control: "moz-box-button",
       },
     ],
   },

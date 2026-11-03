@@ -95,11 +95,18 @@
                     "Method": "GET",
                     "Alias": "@brave",
                     "Description": "Brave Search"
+                },
+                {
+                    "Name": "Ecosia",
+                    "URLTemplate": "https://www.ecosia.org/search?q={searchTerms}",
+                    "Method": "GET",
+                    "Alias": "@ecosia",
+                    "Description": "Ecosia"
                 }
             ],
             "Default": "DuckDuckGo",
             "DefaultPrivate": "DuckDuckGo",
-            "Remove": ["Google", "Bing", "eBay", "Perplexity", "Reddit", "YouTube"]
+            "Remove": ["Bing", "eBay", "Perplexity", "Reddit", "YouTube"]
         },
         "SkipTermsOfUse": true,
         "SupportMenu": {

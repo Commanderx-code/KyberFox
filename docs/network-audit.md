@@ -123,3 +123,7 @@ user_pref("kyberfox.cfg.categorySeeded", true);
 The other audited prefs are unchanged: `toolkit.telemetry.enabled`, `datareporting.healthreport.uploadEnabled`, `app.normandy.enabled` and `kyberfox.cfg.version` are locked in the cfg and absent from `prefs.js`; `dom.security.https_only_mode` and `browser.startup.page` are still absent (policy and default). No `crashes/` or `saved-telemetry-pings/` directory appeared.
 
 Open point for the Privacy page task. The strict feature prefs are defaults, not user values. Choosing Standard in Firefox's page only clears user values, so it would leave the strict defaults in force. The Kyber presets in that task must set Standard values explicitly.
+
+## Welcome page (recommended add-ons)
+
+`addons.mozilla.org` is contacted only after the user clicks "Install selected" on the first-run welcome page (`chrome://kyberfox/content/welcome.xhtml`), once per chosen add-on, at `https://addons.mozilla.org/firefox/downloads/latest/<slug>/latest.xpi`. The page itself makes no request: it shows no AMO icons, ratings, or counts, and the add-on list is read from a file shipped in the browser. "Skip" makes no request. Chosen add-ons then update through the normal add-on updater. The search engines the page offers (DuckDuckGo, Google, Brave Search, Startpage, Ecosia) are shipped by `settings/policies.json`; picking one contacts nothing until the user searches.

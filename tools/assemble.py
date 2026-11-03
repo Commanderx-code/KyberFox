@@ -134,6 +134,15 @@ def copy_themes(tree: Path) -> None:
         shutil.copytree(themes, tree / "browser/components/kyberfox/themes", dirs_exist_ok=True)
 
 
+def copy_recommended_addons(tree: Path) -> None:
+    """Copies settings/recommended-addons.json into the Kyber component, for the welcome page."""
+    src = REPO_ROOT / "settings" / "recommended-addons.json"
+    if src.is_file():
+        dest = tree / "browser/components/kyberfox"
+        dest.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dest / "recommended-addons.json")
+
+
 def apply_librewolf_l10n(tree: Path, librewolf: Path) -> list[Path]:
     """Apply LibreWolf's en-US strings, as scripts/librewolf-patches.py does.
 
@@ -232,6 +241,7 @@ def assemble(pins, workdir: Path, allow_failed: bool = False) -> AssemblyResult:
     if overlay.is_dir():
         shutil.copytree(overlay, tree, dirs_exist_ok=True)
     copy_themes(tree)
+    copy_recommended_addons(tree)
     _finish_tree(tree, pins, touched, ublock)
     shutil.rmtree(scratch, ignore_errors=True)
     return result

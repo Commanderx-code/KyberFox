@@ -1,0 +1,84 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: calc(var(--size-item-xlarge) * 14);
+  margin: 0 auto;
+  padding: var(--space-xxlarge) var(--space-xlarge) calc(var(--space-xxlarge) * 3);
+}
+
+h2 {
+  margin-block: var(--space-xlarge) var(--space-small);
+}
+
+.hint,
+.intro {
+  color: var(--text-color-deemphasized);
+}
+
+.group-title {
+  margin-block: var(--space-large) var(--space-xsmall);
+  font-weight: var(--font-weight-semibold);
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  column-gap: var(--space-medium);
+  padding-block: var(--space-small);
+  border-block-end: var(--border-width) solid var(--border-color);
+}
+
+.choice input {
+  margin-block-start: var(--space-xsmall);
+}
+
+.choice .name {
+  font-weight: var(--font-weight-semibold);
+}
+
+.choice .summary,
+.choice .note {
+  display: block;
+  margin-block-start: var(--space-xxsmall);
+}
+
+.choice .note {
+  color: var(--text-color-deemphasized);
+}
+
+.choice .state {
+  text-align: end;
+  white-space: nowrap;
+}
+
+.choice .state.error {
+  color: var(--text-color-error);
+}
+
+.choice.included .state {
+  color: var(--text-color-deemphasized);
+}
+
+footer {
+  position: fixed;
+  inset: auto 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-small);
+  padding: var(--space-medium) var(--space-xlarge);
+  background-color: var(--background-color-canvas);
+  border-block-start: var(--border-width) solid var(--border-color);
+}
+
+#status {
+  margin: 0;
+  margin-inline-end: auto;
+}
