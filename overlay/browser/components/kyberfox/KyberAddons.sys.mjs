@@ -259,7 +259,8 @@ export const KyberAddons = {
    * @returns {?XULElement} the tab, or null when nothing was opened.
    */
   maybeOpenWelcome(window) {
-    // Test runs and Marionette sessions never get a welcome tab.
+    // Test runs never get a welcome tab. Plain Marionette sessions do
+    // (Cu.isInAutomation is false there); scripts set kyberfox.welcome.shown.
     if (Cu.isInAutomation && !this._ignoreAutomationForTests) {
       return null;
     }
