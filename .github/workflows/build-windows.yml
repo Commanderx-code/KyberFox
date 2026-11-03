@@ -83,15 +83,8 @@ jobs:
           sudo apt-get -o Acquire::Retries=3 install -y libc6-i386 lib32gcc-s1 msitools
           rustup target add x86_64-pc-windows-msvc
 
-      - name: Restore win-cross cache
-        id: win-cross-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/win-cross
-          key: win-cross-${{ hashFiles('work/tree/build/vs/vs2026.yaml') }}
-
+      # Fetched on every run: about 8 GB unpacked, too large for the shared Actions cache.
       - name: Fetch Wine and Visual Studio
-        if: steps.win-cross-cache.outputs.cache-hit != 'true'
         working-directory: work/tree
         run: |
           mkdir -p ~/win-cross
@@ -157,3 +150,11 @@ jobs:
           name: kyberfox-windows-x86_64
           path: ${{ runner.temp }}/upload/
           if-no-files-found: error
+
+  # Installs and launches the installer this run just uploaded.
+  smoke:
+    needs: build
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/smoke-windows.yml
