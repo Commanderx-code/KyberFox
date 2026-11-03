@@ -35,7 +35,6 @@ add_task(function test_cfg_is_read() {
 
 add_task(function test_cfg_defaults() {
   checkPrefs({
-    "browser.contentblocking.category": "strict",
     "toolkit.telemetry.enabled": false,
     "dom.security.https_only_mode": true,
   });
@@ -66,12 +65,13 @@ add_task(function test_private_defaults() {
   });
 });
 
-add_task(function test_strict_is_a_default_not_a_lock() {
+add_task(function test_strict_is_seeded_not_a_lock() {
   const category = "browser.contentblocking.category";
-  Assert.equal(
-    Services.prefs.getDefaultBranch(null).getStringPref(category, ""),
-    "strict",
-    "strict is the default content blocking category"
+  // kyberfox.cfg seeds "strict" once as a user value, so the default branch
+  // keeps Firefox's "standard".
+  Assert.ok(
+    Services.prefs.getBoolPref("kyberfox.cfg.categorySeeded", false),
+    "kyberfox.cfg ran its one-time category seed"
   );
   Assert.ok(
     !Services.prefs.prefIsLocked(category),

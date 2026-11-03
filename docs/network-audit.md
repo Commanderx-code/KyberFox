@@ -48,10 +48,10 @@ The Run column shows which runs reached the host (1, 2, 3).
 | `versioncheck-bg.addons.mozilla.org` | 1, 3 | Update check for uBlock Origin 1.75.2 (sends app version, OS, locale) | allowed (add-ons) |
 | `ublockorigin.github.io` | 1, 2, 3 | uBlock filter lists and patches (`uAssetsCDN`) | allowed (filter lists) |
 | `ublockorigin.pages.dev` | 1, 2, 3 | Mirror of the same filter lists | allowed (filter lists) |
-| `cdn.jsdelivr.net` | 1, 3 | uBlock `assets.json` and list mirrors (`gh/uBlockOrigin/uAssetsCDN`, `gh/gorhill/uBlock`) | allowed (filter lists), but a third-party CDN; see conclusion |
+| `cdn.jsdelivr.net` | 1, 3 | uBlock `assets.json` and list mirrors (`gh/uBlockOrigin/uAssetsCDN`, `gh/gorhill/uBlock`) | allowed (uBlock Origin asset fetch) |
 | `pgl.yoyo.org` | 1, 3 | Peter Lowe's ad server list | allowed (filter lists) |
 | `malware-filter.pages.dev` | 1, 3 | URLhaus malware filter | allowed (filter lists) |
-| `publicsuffix.org` | 1, 3 | uBlock fetches `public_suffix_list.dat` | allowed (filter lists); not in the spec's example list |
+| `publicsuffix.org` | 1, 3 | uBlock fetches `public_suffix_list.dat` | allowed (uBlock Origin asset fetch) |
 | `aus5.mozilla.org` | 1, 3 | `/update/3/SystemAddons/159.0/<buildid>/Linux_x86_64-gcc3/en-US/release/<OS string>/...`: Mozilla's system add-on update service | unexpected |
 | `example.com` | 2 | The page the test opened | allowed (test page) |
 
@@ -98,3 +98,28 @@ Items to change:
 4. uBlock Origin fetches lists from `cdn.jsdelivr.net` (a third-party CDN) and `publicsuffix.org` as well as the GitHub and Cloudflare Pages mirrors. These are allowed by the filter-list rule, but the spec's "Background connections" section does not name them; update it, or pin uBlock's list sources.
 5. `safebrowsing/` in the profile holds empty tracking-protection list stores, and no `shavar` host was contacted in the observed time. The first list download probably comes later than five minutes. A longer run (30 minutes) is needed to confirm that those lists, when fetched, come from `shavar.services.mozilla.com` or `tracking-protection.cdn.mozilla.net` only.
 6. This audit used a headless, 60 to 180 second window. Timers that fire later (add-on update every 24 hours, Remote Settings every 24 hours) were not observed beyond their first run.
+
+## Follow-up
+
+Checked on the same extracted build with the edited `settings/kyberfox.cfg` and `settings/policies.json` copied over the shipped files, using fresh profiles, headless, `about:blank`.
+
+### System add-on update check
+
+`aus5.mozilla.org` was the system add-on updater (`extensions.systemAddon.update.url`, enabled by default in `firefox.js`). The cfg now sets `lockPref("extensions.systemAddon.update.enabled", false)` and `lockPref("extensions.systemAddon.update.url", "")`. A new 90 second run resolved only the hosts that stayed allowed in the table above, and `aus5.mozilla.org` is gone. The cfg has no other `aus5` or `aus.mozilla.org` reference. `app.update.url.manual` and `app.update.url.details` point at the project's GitHub releases page, and `app.update.url` is not set in the cfg. The only remaining `aus5.mozilla.org` string in the repo is in `patches/kyber/updater.patch`, where it is the `MOZ_APPUPDATE_HOST` value that patch removes.
+
+### Content blocking category
+
+Cause. Firefox's `ContentBlockingPrefs.sys.mjs` (`browser/components/protections`) runs `matchCBCategory()` at startup. It tests the `standard` category before `strict`, and a category matches when none of its listed prefs has a user value. Both categories pass on a new profile, because the cfg sets the strict values as defaults. `standard` is tested first, so Firefox wrote `"standard"` as a user value. That value differs from the cfg default `"strict"`, so it was stored. No cfg pref was pinning a value to standard, and the `hasMigratedCategoryPrefs` lock was not involved.
+
+Fix. The cfg no longer sets a default for the category, so the default stays at Firefox's `"standard"`. It seeds `"strict"` once with `pref()`, guarded by `kyberfox.cfg.categorySeeded`. A user value equal to the default is never stored, so this only works when the default differs. The guard keeps the seed from overriding a later choice on the Privacy page. `browser_defaults.js` now checks the seed flag instead of the default branch.
+
+Result. Two starts with one fresh profile, then a third fresh profile with the final cfg, each gave in `prefs.js`:
+
+```
+user_pref("browser.contentblocking.category", "strict");
+user_pref("kyberfox.cfg.categorySeeded", true);
+```
+
+The other audited prefs are unchanged: `toolkit.telemetry.enabled`, `datareporting.healthreport.uploadEnabled`, `app.normandy.enabled` and `kyberfox.cfg.version` are locked in the cfg and absent from `prefs.js`; `dom.security.https_only_mode` and `browser.startup.page` are still absent (policy and default). No `crashes/` or `saved-telemetry-pings/` directory appeared.
+
+Open point for the Privacy page task. The strict feature prefs are defaults, not user values. Choosing Standard in Firefox's page only clears user values, so it would leave the strict defaults in force. The Kyber presets in that task must set Standard values explicitly.
