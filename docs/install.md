@@ -39,11 +39,18 @@ Kyber Fox updates through pacman only; the browser's own updater is turned off.
    ```
    sudo pacman-key --add kyberfox-signing.pub
    gpg --show-keys kyberfox-signing.pub
-   sudo pacman-key --lsign-key <fingerprint>
+   sudo pacman-key --lsign-key 83A5C867BD3096DE6A8B5D615502539280228E76
    ```
 
-   Use the fingerprint that `gpg --show-keys` prints for the key you just
-   downloaded.
+   `gpg --show-keys` must print this fingerprint; if it prints anything
+   else, stop and do not sign the key:
+
+   ```
+   83A5 C867 BD30 96DE 6A8B 5D61 5502 5392 8022 8E76
+   ```
+
+   The `--lsign-key` command takes it without spaces:
+   `sudo pacman-key --lsign-key 83A5C867BD3096DE6A8B5D615502539280228E76`.
 
 3. Install it:
 
