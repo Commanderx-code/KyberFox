@@ -103,3 +103,15 @@ add_task(function test_settings_redesign_is_locked_on() {
   Assert.ok(Services.prefs.getBoolPref(pref), `${pref} is true`);
   Assert.ok(Services.prefs.prefIsLocked(pref), `${pref} is locked`);
 });
+
+// Split view and tab groups are release features; Firefox's defaults turn
+// them on and neither LibreWolf nor kyberfox.cfg may turn them off.
+add_task(function test_split_view_and_tab_groups_on() {
+  for (let pref of [
+    "browser.tabs.splitView.enabled",
+    "browser.tabs.groups.enabled",
+  ]) {
+    Assert.strictEqual(Services.prefs.getBoolPref(pref), true, `${pref} is true`);
+    Assert.strictEqual(readDefault(pref), true, `${pref} defaults to true`);
+  }
+});
