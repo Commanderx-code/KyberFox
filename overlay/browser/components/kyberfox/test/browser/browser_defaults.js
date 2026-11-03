@@ -97,3 +97,9 @@ add_task(function test_accounts_are_locked_off() {
   Assert.ok(!Services.prefs.getBoolPref(pref), `${pref} is false`);
   Assert.ok(Services.prefs.prefIsLocked(pref), `${pref} is locked`);
 });
+
+add_task(function test_settings_redesign_is_locked_on() {
+  const pref = "browser.settings-redesign.enabled";
+  Assert.ok(Services.prefs.getBoolPref(pref), `${pref} is true`);
+  Assert.ok(Services.prefs.prefIsLocked(pref), `${pref} is locked`);
+});

@@ -15,6 +15,11 @@ add_task(async function test_no_sync_pane() {
         "the panes exist"
       );
       Assert.ok(!doc.getElementById("category-sync")?.offsetParent, "no sync nav button");
+      let swap = doc.getElementById("toggleButton");
+      Assert.ok(
+        !swap || (swap.hidden && !swap.offsetParent),
+        "no Swap settings design button in the nav"
+      );
       Assert.ok(
         !doc.querySelector('setting-pane[data-category="paneSync"]'),
         "no sync pane"

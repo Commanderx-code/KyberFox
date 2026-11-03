@@ -98,3 +98,18 @@ diff --git a/browser/components/migration/MigrationUtils.sys.mjs b/browser/compo
      if (aOpener?.openPreferences) {
        if (aOptions.entrypoint == this.MIGRATION_ENTRYPOINTS.NEWTAB) {
          if (aboutWelcomeBehavior == "autoclose") {
+diff --git a/browser/components/preferences/preferences.xhtml b/browser/components/preferences/preferences.xhtml
+--- a/browser/components/preferences/preferences.xhtml
++++ b/browser/components/preferences/preferences.xhtml
+@@ -222,7 +222,11 @@
+         iconsrc="chrome://global/skin/icons/help.svg"
+         data-l10n-id="help-button-label2">
+       </html:moz-page-nav-button>
++      <!-- Kyber Fox: the legacy Settings design has no privacy presets and no
++           theme picker, so the swap button is hidden and kyberfox.cfg locks
++           browser.settings-redesign.enabled on. -->
+       <html:moz-page-nav-button id="toggleButton"
++        hidden="true"
+         slot="secondary-nav"
+         iconsrc="chrome://global/skin/icons/swap-horizontal-20.svg"
+         data-l10n-id="kyberfox-swap-settings">
