@@ -52,8 +52,10 @@ def test_release_is_manual_only():
     assert inputs["channel"]["options"] == ["release", "test"]
     assert inputs["set-disabled-skin"]["default"] == ""
     assert inputs["dry-run"]["default"] is False
+    # Dry runs and test-channel runs both publish the -test tag, so they share one group.
     assert WORKFLOW["concurrency"] == {
-        "group": "release-${{ inputs.channel }}", "cancel-in-progress": False}
+        "group": "release-${{ inputs.dry-run || inputs.channel == 'test' }}",
+        "cancel-in-progress": False}
 
 
 def test_publish_job_requires_environment():
@@ -155,6 +157,24 @@ def test_arch_image_is_pinned_by_digest():
     image = JOBS["publish"]["env"]["ARCH_IMAGE"]
     assert re.fullmatch(r"archlinux:base-devel@sha256:[0-9a-f]{64}", image)
     assert "archlinux:base-devel" not in re.sub(r"ARCH_IMAGE: \S+", "", TEXT.replace("# archlinux:base-devel as of", ""))
+
+
+def test_every_commit_is_guarded_against_an_empty_commit():
+    commits = [line.strip() for line in TEXT.splitlines() if "git commit" in line and "run:" not in line]
+    assert len(commits) == 3
+    for line in commits:
+        if line.startswith("git diff --cached --quiet ||"):
+            continue
+        # The tag commit sits inside an explicit "files differ" check.
+        assert "Ship release" in line
+    gh_pages = [line for line in commits if "Ship release" not in line]
+    assert len(gh_pages) == 2 and all(l.startswith("git diff --cached --quiet || git commit") for l in gh_pages)
+
+
+def test_existing_tag_must_hold_the_same_tree():
+    tag = step_named("publish", "Tag the release")["run"]
+    assert "^{tree}" in tag and "HEAD^{tree}" in tag and "exit 1" in tag
+    assert step_named("publish", "Upload the signed MAR")["with"]["overwrite"] is True
 
 
 def test_publish_steps_can_be_rerun():

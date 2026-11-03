@@ -8,13 +8,14 @@ name: Smoke test Windows updates
 #   the version to stay the same and the browser to keep starting.
 # apply (only when signed-mar-run-id is set): installs the build, offers a MAR
 #   signed with the real release key and expects the install to change to that
-#   MAR's version. Task 16's publish flow calls it once the real key exists:
-#     smoke-update:
-#       needs: publish-signed-mar
+#   MAR's version. The apply-update job of release.yml calls it after publishing:
+#     apply-update:
+#       needs: publish
 #       uses: ./.github/workflows/smoke-update.yml
 #       with:
-#         run-id: <Build Windows run of the version to update from>
-#         signed-mar-run-id: <run that uploaded artifact kyberfox-windows-signed-mar>
+#         run-id: <run that uploaded kyberfox-windows-x86_64 for the version to update from>
+#         signed-mar-run-id: ${{ github.run_id }}
+#         skip-refuse: true   # Build Windows already ran refuse
 #   The artifact holds one kyberfox-*.complete.mar. apply has not run yet: it
 #   needs the owner's key (docs/update-signing.md).
 #

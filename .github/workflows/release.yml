@@ -38,10 +38,11 @@ on:
         type: string
         default: ""
 
-# Two releases on the same channel never run at once. One more may queue; a newer
-# dispatch replaces a queued one.
+# Runs that publish the same tag never overlap: a dry run and a test-channel run both
+# make v<version>-<build>-test, so they share the group release-true; real releases use
+# release-false. One more run may queue; a newer dispatch replaces a queued one.
 concurrency:
-  group: release-${{ inputs.channel }}
+  group: release-${{ inputs.dry-run || inputs.channel == 'test' }}
   cancel-in-progress: false
 
 permissions:
@@ -321,6 +322,7 @@ jobs:
         with:
           name: kyberfox-windows-signed-mar
           path: ${{ runner.temp }}/signed/
+          overwrite: true
           if-no-files-found: error
 
       - name: Build the Arch package
@@ -354,9 +356,15 @@ jobs:
             git add themes/status.json
             git commit -m "Ship release $TAG with the skins in status.json disabled"
           fi
-          # A re-run after a partial failure reuses the tag a first attempt pushed.
+          # A re-run after a partial failure reuses the tag a first attempt pushed, but only
+          # when it holds the same source tree as this run.
           if git ls-remote --exit-code --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG" >/dev/null; then
-            echo "Tag $TAG already exists on the remote; keeping it"
+            git fetch --no-tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG:refs/tags/existing-$TAG"
+            if [ "$(git rev-parse "existing-$TAG^{tree}")" != "$(git rev-parse 'HEAD^{tree}')" ]; then
+              echo "::error::tag $TAG exists and holds a different tree than this run; see docs/release.md (Recovering from a failed publish)"
+              exit 1
+            fi
+            echo "Tag $TAG already exists with the same tree; keeping it"
           else
             git tag "$TAG"
             git push "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG"
@@ -424,7 +432,8 @@ jobs:
           done
           cd "$RUNNER_TEMP/site"
           git add -A
-          git commit -m "Update manifest for $TAG on the $MANIFEST_CHANNEL channel"
+          # A re-run writes byte-identical files; commit and push only a change.
+          git diff --cached --quiet || git commit -m "Update manifest for $TAG on the $MANIFEST_CHANNEL channel"
           if git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
             git pull --rebase origin gh-pages
           fi
@@ -464,7 +473,7 @@ jobs:
             /work/packaging/arch/sign-and-publish.sh "/in/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" /repo
           cd "$RUNNER_TEMP/site"
           git add -A
-          git commit -m "Pacman repo: kyberfox $DISPLAY_VERSION"
+          git diff --cached --quiet || git commit -m "Pacman repo: kyberfox $DISPLAY_VERSION"
           if git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
             git pull --rebase origin gh-pages
           fi
