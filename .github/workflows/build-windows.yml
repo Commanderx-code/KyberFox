@@ -141,7 +141,7 @@ jobs:
           version=$(cat work/tree/browser/config/version_display.txt)
           python3 -m venv "$RUNNER_TEMP/mar-venv"
           "$RUNNER_TEMP/mar-venv/bin/pip" install --quiet --require-hashes -r requirements-release.txt
-          mapfile -t packages < <(find work/tree/obj-*/dist -maxdepth 1 -name '*.zip')
+          mapfile -t packages < <(find work/tree/obj-*/dist -maxdepth 1 -name '*.win64.zip')
           if [ "${#packages[@]}" -ne 1 ]; then
             echo "Expected one package zip, found ${#packages[@]}: ${packages[*]}"
             exit 1
