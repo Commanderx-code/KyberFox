@@ -59,6 +59,11 @@ def assemble(pins, workdir: Path, allow_failed: bool = False) -> AssemblyResult:
     for name in wanted:
         _apply(tree, name, (lw / name).read_text(), scratch, result, allow_failed)
 
+    # LibreWolf's build copies these icons into the tree; patched jar.inc.mn files list them.
+    icons = lw / "assets" / "icons"
+    if icons.is_dir():
+        shutil.copytree(icons, tree / "browser/themes/shared/icons", dirs_exist_ok=True)
+
     kyber_dir = patch_dir / "kyber"
     for name in read_list(kyber_dir / "series.txt"):
         _apply(tree, f"patches/kyber/{name}", (kyber_dir / name).read_text(),

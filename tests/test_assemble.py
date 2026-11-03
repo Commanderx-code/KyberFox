@@ -86,3 +86,12 @@ def test_already_applied_patch_is_reported_failed(tmp_path, fake_sources):
     result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
     assert result.failed == ["patches/stale.patch"]
     assert (result.tree / "kept.txt").read_text() == "patched\n"
+
+
+def test_patch_icons_are_copied_into_the_tree(tmp_path, fake_sources):
+    # LibreWolf patches reference icons its build copies from assets/icons.
+    icons = fake_sources / "assets" / "icons"
+    icons.mkdir(parents=True)
+    (icons / "jit.svg").write_text("<svg/>\n")
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    assert (result.tree / "browser/themes/shared/icons/jit.svg").read_text() == "<svg/>\n"
