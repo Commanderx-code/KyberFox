@@ -15,7 +15,7 @@ param(
     [Parameter(Mandatory)][ValidateSet('refuse', 'apply')][string]$Mode,
     [Parameter(Mandatory)][string]$InstallerDir,
     [string]$SignedMar = '',
-    [int]$TimeoutSeconds = 600,
+    [int]$TimeoutSeconds = 240,
     [int]$Port = 8123
 )
 $ErrorActionPreference = 'Stop'
@@ -152,7 +152,7 @@ function Get-UpdateFiles {
 # --- Run the browser until the updater reaches a verdict ---------------------
 $stdout = Join-Path $work 'browser.out'
 $stderr = Join-Path $work 'browser.err'
-$arguments = "--headless --no-remote --profile `"$kyberProfile`" about:blank"
+$arguments = "--headless --no-remote -attach-console --profile `"$kyberProfile`" about:blank"
 $browser = Start-Process -FilePath $exe -ArgumentList $arguments -RedirectStandardOutput $stdout `
     -RedirectStandardError $stderr -PassThru -NoNewWindow
 $verdict = ''
@@ -174,12 +174,13 @@ Start-Sleep -Seconds 5
 # --- Evidence ------------------------------------------------------------------
 Write-Host '=== server log'
 Get-Content $serverLog
-Write-Host '=== files changed in the last 30 minutes (outside Temp and Microsoft)'
-$since = (Get-Date).AddMinutes(-30)
-foreach ($root in $dir, $env:LOCALAPPDATA, $env:ProgramData, $env:APPDATA) {
-    Get-ChildItem $root -File -Recurse -Force -ErrorAction SilentlyContinue |
-        Where-Object { $_.LastWriteTime -gt $since -and $_.FullName -notmatch '\\(Temp|Microsoft|Packages|pip|GitHub)\\' } |
-        Select-Object -First 150 | ForEach-Object { "$($_.FullName) $($_.Length)" }
+Write-Host '=== update-looking files anywhere under the user profile, ProgramData and Temp'
+foreach ($root in $env:USERPROFILE, $env:ProgramData, $env:RUNNER_TEMP) {
+    foreach ($filter in '*.mar', 'update.*', 'updates', '*update*.xml', '*update*.log') {
+        Get-ChildItem $root -Recurse -Force -Filter $filter -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -notmatch 'update-refuse\\serve' } |
+            Select-Object -First 40 | ForEach-Object { "$($_.FullName) $($_.Length)" }
+    }
 }
 Write-Host '=== update files'
 foreach ($f in @(Get-UpdateFiles | Sort-Object FullName -Unique)) {
