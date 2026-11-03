@@ -23,7 +23,7 @@ on:
         options: [release, test]
         default: release
       set-disabled-skin:
-        description: Comma-separated skin or theme ids to ship disabled (themes/status.json), for example gx,one
+        description: Comma-separated skin ids to ship disabled (themes/status.json), for example gx,one
         required: false
         type: string
         default: ""
@@ -33,12 +33,13 @@ on:
         type: boolean
         default: false
       update-from-run-id:
-        description: Build Windows run id of the previous release; when set, the signed update is applied to that install after publishing
+        description: Run id of the previous Release run (its artifacts must not have expired); when set, the signed update is applied to that install after publishing
         required: false
         type: string
         default: ""
 
-# Two releases on the same channel never run at once; a queued one waits.
+# Two releases on the same channel never run at once. One more may queue; a newer
+# dispatch replaces a queued one.
 concurrency:
   group: release-${{ inputs.channel }}
   cancel-in-progress: false
@@ -68,7 +69,6 @@ jobs:
           INPUT_VERSION: ${{ inputs.version }}
           DRY_RUN: ${{ inputs.dry-run }}
           CHANNEL: ${{ inputs.channel }}
-          GH_TOKEN: ${{ github.token }}
         run: |
           eval "$(python3 -I - <<'PY'
           import tomllib
@@ -85,10 +85,20 @@ jobs:
           if [ "$DRY_RUN" = "true" ] || [ "$CHANNEL" != "release" ]; then
             tag="$tag-test"
           fi
-          if git ls-remote --exit-code --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$tag" >/dev/null; then
-            echo "::error::tag $tag already exists; raise [kyber] build in pins.toml or delete the tag"
-            exit 1
-          fi
+          # ls-remote --exit-code: 0 found, 2 not found, anything else is a failure.
+          status=0
+          git ls-remote --exit-code --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$tag" >/dev/null || status=$?
+          case "$status" in
+            0)
+              echo "::error::tag $tag already exists; raise [kyber] build in pins.toml, or see docs/release.md (Recovering from a failed publish)"
+              exit 1
+              ;;
+            2) ;;
+            *)
+              echo "::error::could not list the remote tags (git ls-remote exited $status)"
+              exit 1
+              ;;
+          esac
           {
             echo "version=$pinned"
             echo "build=$build"
@@ -187,7 +197,7 @@ jobs:
         run: |
           python -m venv "$RUNNER_TEMP/venv"
           "$RUNNER_TEMP/venv/bin/pip" install --quiet --require-hashes -r requirements-release.txt
-          "$RUNNER_TEMP/venv/bin/pip" install --quiet pytest pyyaml
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet --require-hashes -r requirements-dev.txt
           "$RUNNER_TEMP/venv/bin/python" -m pytest tests -q
 
   # The only job with secrets. It waits for the owner's approval of the `release` environment.
@@ -205,6 +215,9 @@ jobs:
       TAG: ${{ needs.prepare.outputs.tag }}
       GH_TOKEN: ${{ github.token }}
       SITE_URL: https://commanderx-code.github.io/KyberFox
+      # archlinux:base-devel as of 2026-11-03. The signing steps give this image the pacman
+      # key, so it is pinned by digest; docs/release.md says how to update it.
+      ARCH_IMAGE: archlinux:base-devel@sha256:767de6eaa40dcfeda5263a48737ea03a782caabdf3a403b6e6a203c7fd333681
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -295,12 +308,12 @@ jobs:
             exit 1
           fi
           key="$RUNNER_TEMP/mar-signing.pem"
+          trap 'shred -u "$key" 2>/dev/null || rm -f "$key"' EXIT
           (umask 077 && printf '%s\n' "$MAR_SIGNING_KEY" > "$key")
           signed="$RUNNER_TEMP/signed/kyberfox-$DISPLAY_VERSION.complete.mar"
           "$RUNNER_TEMP/venv/bin/python" -m tools.sign_mar sign --key "$key" \
             --cert overlay/toolkit/mozapps/update/updater/release_primary.der \
             --in "$UNSIGNED_MAR" --out "$signed"
-          shred -u "$key"
           cp "$signed" "$RUNNER_TEMP/assets/"
 
       - name: Upload the signed MAR
@@ -317,7 +330,7 @@ jobs:
             -v "$GITHUB_WORKSPACE:/work:ro" \
             -v "$RUNNER_TEMP/assets:/in:ro" \
             -v "$RUNNER_TEMP/pkg:/out" \
-            archlinux:base-devel \
+            "$ARCH_IMAGE" \
             /work/packaging/arch/release-package.sh \
             "/in/kyberfox-$DISPLAY_VERSION.linux-x86_64.tar.xz" "$VERSION" "$BUILD" /out
           cp "$RUNNER_TEMP/pkg/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" "$RUNNER_TEMP/assets/"
@@ -341,8 +354,13 @@ jobs:
             git add themes/status.json
             git commit -m "Ship release $TAG with the skins in status.json disabled"
           fi
-          git tag "$TAG"
-          git push "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG"
+          # A re-run after a partial failure reuses the tag a first attempt pushed.
+          if git ls-remote --exit-code --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists on the remote; keeping it"
+          else
+            git tag "$TAG"
+            git push "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG"
+          fi
 
       - name: Create the GitHub Release
         env:
@@ -367,9 +385,14 @@ jobs:
             echo
             echo "SHA256SUMS lists the checksum of every file."
           } > "$RUNNER_TEMP/notes.md"
-          gh release create "$TAG" "${flags[@]}" --verify-tag \
-            --title "Kyber Fox $DISPLAY_VERSION" --notes-file "$RUNNER_TEMP/notes.md" \
-            "$RUNNER_TEMP"/assets/*
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists; uploading the assets again"
+            gh release upload "$TAG" --clobber "$RUNNER_TEMP"/assets/*
+          else
+            gh release create "$TAG" "${flags[@]}" --verify-tag \
+              --title "Kyber Fox $DISPLAY_VERSION" --notes-file "$RUNNER_TEMP/notes.md" \
+              "$RUNNER_TEMP"/assets/*
+          fi
 
       - name: Check out gh-pages
         run: |
@@ -421,7 +444,7 @@ jobs:
             -v "$GITHUB_WORKSPACE:/work:ro" \
             -v "$RUNNER_TEMP/pkg:/in:ro" \
             -v "$RUNNER_TEMP/arch-scratch:/repo" \
-            archlinux:base-devel \
+            "$ARCH_IMAGE" \
             /work/packaging/arch/sign-and-publish.sh "/in/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" /repo
 
       - name: Publish the pacman repo
@@ -437,7 +460,7 @@ jobs:
             -v "$GITHUB_WORKSPACE:/work:ro" \
             -v "$RUNNER_TEMP/pkg:/in:ro" \
             -v "$RUNNER_TEMP/site/arch/x86_64:/repo" \
-            archlinux:base-devel \
+            "$ARCH_IMAGE" \
             /work/packaging/arch/sign-and-publish.sh "/in/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" /repo
           cd "$RUNNER_TEMP/site"
           git add -A
@@ -447,8 +470,7 @@ jobs:
           fi
           git push origin HEAD:gh-pages
 
-  # Applies the signed update to an older install. Needs the previous release's
-  # Build Windows run id; the first release has none, so it is skipped.
+  # Applies the signed update to an older install. Needs the previous Release run's id; the first release has none, so it is skipped.
   apply-update:
     needs: publish
     if: ${{ inputs.update-from-run-id != '' }}
@@ -459,3 +481,4 @@ jobs:
     with:
       run-id: ${{ inputs.update-from-run-id }}
       signed-mar-run-id: ${{ github.run_id }}
+      skip-refuse: true

@@ -102,6 +102,11 @@ def test_apply_update_runs_after_publish_with_the_signed_mar():
     assert job["uses"] == "./.github/workflows/smoke-update.yml"
     assert job["with"]["signed-mar-run-id"] == "${{ github.run_id }}"
     assert job["with"]["run-id"] == "${{ inputs.update-from-run-id }}"
+    assert job["with"]["skip-refuse"] is True
+    smoke = yaml.safe_load((WORKFLOWS / "smoke-update.yml").read_text(encoding="utf-8"))
+    call = (smoke.get("on") or smoke.get(True))["workflow_call"]["inputs"]["skip-refuse"]
+    assert call["type"] == "boolean" and call["default"] is False
+    assert smoke["jobs"]["refuse"]["if"] == "${{ !inputs.skip-refuse }}"
     upload = step_named("publish", "Upload the signed MAR")
     assert upload["with"]["name"] == "kyberfox-windows-signed-mar"
 
@@ -138,6 +143,37 @@ def test_publish_orders_release_then_manifest_then_pacman():
              "Publish the update manifests", "Publish the pacman repo"]
     positions = [names.index(n) for n in order]
     assert positions == sorted(positions)
+
+
+def test_signing_key_file_is_removed_on_any_exit():
+    run = step_named("publish", "Sign the MAR")["run"]
+    assert "trap 'shred -u \"$key\"" in run
+    assert run.index("trap ") < run.index("printf '%s\\n' \"$MAR_SIGNING_KEY\"")
+
+
+def test_arch_image_is_pinned_by_digest():
+    image = JOBS["publish"]["env"]["ARCH_IMAGE"]
+    assert re.fullmatch(r"archlinux:base-devel@sha256:[0-9a-f]{64}", image)
+    assert "archlinux:base-devel" not in re.sub(r"ARCH_IMAGE: \S+", "", TEXT.replace("# archlinux:base-devel as of", ""))
+
+
+def test_publish_steps_can_be_rerun():
+    tag = step_named("publish", "Tag the release")["run"]
+    assert "ls-remote --exit-code --tags" in tag
+    release = step_named("publish", "Create the GitHub Release")["run"]
+    assert 'gh release view "$TAG"' in release and "--clobber" in release
+    prepare = step_named("prepare", "Check the version")
+    assert "GH_TOKEN" not in prepare.get("env", {})
+    assert "2) ;;" in prepare["run"]
+
+
+def test_dev_requirements_are_hash_pinned():
+    text = (ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
+    names = re.findall(r"^([\w.-]+)==", text, re.M)
+    assert {"pytest", "pyyaml"} <= set(names)
+    assert text.count("--hash=sha256:") >= len(names)
+    verify = "\n".join(s.get("run", "") for s in steps("verify"))
+    assert "--require-hashes -r requirements-dev.txt" in verify
 
 
 def test_placeholder_certificates_are_refused_before_signing():
@@ -205,7 +241,14 @@ def test_pins_version_check_matches_pins_toml():
 def test_parse_ids_accepts_known_ids_and_drops_blanks():
     assert S.parse_ids("") == []
     assert S.parse_ids(" gx , one,gx,") == ["gx", "one"]
-    assert S.parse_ids("ember") == ["ember"]
+
+
+def test_parse_ids_rejects_the_fallback_theme_and_non_skins():
+    with pytest.raises(ValueError, match="fallback"):
+        S.parse_ids("gx,ember")
+    # A palette that is not a skin is not a valid id either.
+    with pytest.raises(ValueError, match="frost"):
+        S.parse_ids("frost")
 
 
 def test_parse_ids_rejects_unknown_ids():
@@ -225,5 +268,5 @@ def test_cli_writes_status_json(tmp_path):
 
 def test_cli_default_target_is_the_committed_status_file():
     committed = json.loads((ROOT / "themes/status.json").read_text())
-    assert set(committed["disabled"]) <= S.known_ids()
+    assert set(committed["disabled"]) <= S.skin_ids()
     assert S.THEMES == ROOT / "themes"

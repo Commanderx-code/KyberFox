@@ -10,8 +10,9 @@ disabled in the build). The repo is a static directory, `arch/x86_64/`, on the
    `gpg --batch --passphrase '' --quick-generate-key "Kyber Fox Arch repo" ed25519 sign never`
    (or `rsa4096`). The publish job signs unattended through `gpg --use-agent`
    with no loopback pinentry, so a key with a passphrase makes signing fail.
-   The key is safe because it lives only in the `release` environment secret,
-   which needs the owner's approval to read.
+   Keep the key in `~/github/projects/kyber-fox-private/keys/` (step 3); a copy
+   lives in the `release` environment secret, which needs the owner's approval
+   to read.
 2. Export the public key to `packaging/arch/kyberfox-signing.pub`:
    `gpg --export --armor <fingerprint> > packaging/arch/kyberfox-signing.pub`.
 3. Store the private key in `~/github/projects/kyber-fox-private/keys/`:

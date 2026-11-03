@@ -19,21 +19,21 @@ A release is one workflow run, `.github/workflows/release.yml`, plus one approva
 |---|---|
 | `version` | Firefox version, must match `pins.toml`. |
 | `channel` | `release` (default) or `test`. It only selects the Pages path of the manifest (below). |
-| `set-disabled-skin` | Comma-separated skin or theme ids to ship disabled. Empty ships the committed `themes/status.json`; otherwise the input replaces its list. |
+| `set-disabled-skin` | Comma-separated skin ids to ship disabled. Empty ships the committed `themes/status.json`; otherwise the input replaces its list. |
 | `dry-run` | Publish a `test` manifest and a pre-release; leave the release manifest and the pacman repo alone. |
-| `update-from-run-id` | Build Windows run id of the previous release. When set, the signed update is applied to that install after publishing. The first release has none; leave it empty. |
+| `update-from-run-id` | Run id of the previous Release run (or any run that uploaded `kyberfox-windows-x86_64` for the older version). When set, the signed update is applied to that install after publishing. Artifacts expire after the repository's retention period (90 days by default), so an older run cannot be used. The first release has none; leave it empty. |
 
 ## What each job does
 
 - **prepare**: checks the version against `pins.toml`, checks the tag is free, and validates the skin ids (`tools/set_disabled_skins.py`). It uploads the `themes/status.json` the release ships.
 - **build-linux**, **build-windows**: the existing Build Linux and Build Windows workflows, called with `disabled-skins`. Each writes `themes/status.json` into its checkout before assembling (nothing is committed). Build Linux ends with the Arch smoke; Build Windows ends with the Windows smoke and the update smoke `refuse` job, and compares the update certificates in the assembled tree with the committed ones.
 - **front-end-tests**, **smoke-windows**, **smoke-arch**: the front-end test build and the two smokes, called again against the artifacts of this run.
-- **verify**: assembles the release tree (with the shipped `status.json`), runs `check-forbidden`, and runs the `tests/` suite. `release.yml` does not call the update smoke `refuse` job a second time; the one inside Build Windows is the gate.
+- **verify**: assembles the release tree (with the shipped `status.json`), runs `check-forbidden`, and runs the `tests/` suite. `release.yml` does not call the update smoke `refuse` job a second time; the one inside Build Windows is the gate. `apply-update` calls `smoke-update.yml` with `skip-refuse: true` for the same reason.
 - **publish**: needs `verify` and the owner's approval, and is the only job that reads secrets. In order:
   1. refuses a placeholder update certificate (`docs/update-signing.md`);
   2. reads the build id from the MAR, signs the MAR with `MAR_SIGNING_KEY` (`tools/sign_mar.py`, verified against the committed primary certificate), and uploads it as the artifact `kyberfox-windows-signed-mar`;
   3. builds the Arch package in an `archlinux` container from the Linux tarball (renamed to the PKGBUILD's source name, checksum filled by `updpkgsums`);
-  4. tags the release (a commit with the shipped `themes/status.json`, only when it differs from `main`) and creates the GitHub Release with the installer, tarball, signed MAR, package and `SHA256SUMS`;
+  4. tags the release (a commit with the shipped `themes/status.json`, only when it differs from the dispatched commit) and creates the GitHub Release with the installer, tarball, signed MAR, package and `SHA256SUMS`;
   5. writes the manifest to `gh-pages` under `update/<channel>/WINNT_x86_64-msvc-x64/` and `.../WINNT_x86_64-msvc-aarch64/` (the updater reports the CPU it runs on, so x64 builds under Arm emulation need the second path);
   6. signs the package and updates the pacman repo in `arch/x86_64/` on `gh-pages` (release channel, not a dry run).
 
@@ -61,6 +61,18 @@ gh workflow run release.yml -f version=159.0 -f channel=release -f set-disabled-
 ```
 
 The builds ship `themes/status.json` with `{"disabled": ["gx"]}`, so the browser falls back to Ember for that skin (`docs/themes.md`). The release tag points at a commit carrying that file. The list replaces the committed one, so name every skin that must stay off. Fix `main` afterwards.
+
+## Recovering from a failed publish
+
+Publish can fail partway (a bad secret, a push race). Re-running the failed job from the Actions page is safe: the tag step keeps a tag that is already on the remote, and the Release step uploads the assets again with `--clobber` when the Release exists. A new dispatch fails in `prepare` while the tag exists. To start over:
+
+1. Delete the Release and its tag: `gh release delete <tag> --cleanup-tag --yes` (for example `v159.0-1-test`).
+2. If the manifest or pacman commit reached `gh-pages`, revert it: clone `gh-pages`, `git revert <commit>` (the commits are named "Update manifest for ..." and "Pacman repo: ..."), push.
+3. Dispatch the workflow again.
+
+## Updating the Arch image
+
+`release.yml` runs `makepkg` and the signing steps in `archlinux:base-devel`, pinned by digest in `ARCH_IMAGE` because the signing steps hand that image the pacman key. To update it, look up the digest of the tag (`docker pull archlinux:base-devel`, then `docker inspect --format '{{index .RepoDigests 0}}' archlinux:base-devel`), put it in `ARCH_IMAGE` and update the date in the comment above it.
 
 ## Roll back
 

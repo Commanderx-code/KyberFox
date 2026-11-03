@@ -2,7 +2,7 @@ name: Smoke test Windows updates
 
 # Proves the Windows updater only trusts Kyber Fox's own signing keys.
 #
-# refuse (always runs): installs the build, signs the build's own complete MAR
+# refuse (runs unless skip-refuse is true): installs the build, signs the build's own complete MAR
 #   with a throwaway key generated inside the job, offers it from a loopback
 #   server, and expects the updater to reject it (error 19, signature check),
 #   the version to stay the same and the browser to keep starting.
@@ -48,6 +48,11 @@ on:
         required: false
         type: string
         default: ""
+      skip-refuse:
+        description: Skip the refuse job; the release workflow sets it because Build Windows already ran it
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -56,6 +61,7 @@ permissions:
 jobs:
   refuse:
     name: Refuse a wrongly signed update
+    if: ${{ !inputs.skip-refuse }}
     runs-on: windows-latest
     timeout-minutes: 30
     defaults:

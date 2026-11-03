@@ -8,7 +8,7 @@ on:
   workflow_call:
     inputs:
       disabled-skins:
-        description: Comma-separated skin or theme ids to ship disabled (themes/status.json); empty keeps the committed file
+        description: Comma-separated skin ids to ship disabled (themes/status.json); empty keeps the committed file
         required: false
         type: string
         default: ""

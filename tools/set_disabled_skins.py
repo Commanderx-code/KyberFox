@@ -3,7 +3,7 @@
     python -m tools.set_disabled_skins "gx,one"            # rewrite themes/status.json
     python -m tools.set_disabled_skins "" --out out.json   # empty list
 
-The ids must be known palettes or skins. An empty argument writes an empty list.
+The ids must be skins listed in themes/skins/index.json; ember, the fallback theme, is refused. An empty argument writes an empty list.
 """
 import argparse
 import json
@@ -13,10 +13,12 @@ from pathlib import Path
 THEMES = Path(__file__).resolve().parent.parent / "themes"
 
 
-def known_ids() -> set[str]:
-    palettes = json.loads((THEMES / "palettes.json").read_text(encoding="utf-8"))
+FALLBACK = "ember"
+
+
+def skin_ids() -> set[str]:
     skins = json.loads((THEMES / "skins" / "index.json").read_text(encoding="utf-8"))["skins"]
-    return set(palettes) | set(skins)
+    return set(skins)
 
 
 def parse_ids(text: str) -> list[str]:
@@ -25,9 +27,13 @@ def parse_ids(text: str) -> list[str]:
         part = part.strip()
         if part and part not in ids:
             ids.append(part)
-    unknown = sorted(set(ids) - known_ids())
+    if FALLBACK in ids:
+        raise ValueError(f"{FALLBACK} is the fallback theme and cannot be disabled")
+    unknown = sorted(set(ids) - skin_ids())
     if unknown:
-        raise ValueError(f"unknown theme or skin id: {', '.join(unknown)}")
+        raise ValueError(
+            f"not a skin in themes/skins/index.json: {', '.join(unknown)} "
+            f"(known: {', '.join(sorted(skin_ids()))})")
     return ids
 
 
