@@ -22,6 +22,8 @@ name: Smoke test Windows updates
 #   gh workflow run smoke-update.yml -f run-id=<Build Windows run id>
 # Before the merge, Build Windows calls the refuse job after its Windows smoke.
 on:
+  push: # DEV-TRIGGER
+    branches: [build-gate]
   workflow_dispatch:
     inputs:
       run-id:
@@ -69,8 +71,8 @@ jobs:
         with:
           name: kyberfox-windows-x86_64
           path: ${{ runner.temp }}/kyberfox
-          run-id: ${{ inputs.run-id || github.run_id }}
-          github-token: ${{ inputs.run-id && github.token || '' }}
+          run-id: ${{ inputs.run-id || (github.event_name == 'push' && '41613681013') || github.run_id }}
+          github-token: ${{ (inputs.run-id || github.event_name == 'push') && github.token || '' }} # DEV-TRIGGER
 
       - name: Offer a wrongly signed update
         run: ./tools/smoke_update.ps1 -Mode refuse -InstallerDir "$env:RUNNER_TEMP\kyberfox"
@@ -94,8 +96,8 @@ jobs:
         with:
           name: kyberfox-windows-x86_64
           path: ${{ runner.temp }}/kyberfox
-          run-id: ${{ inputs.run-id || github.run_id }}
-          github-token: ${{ inputs.run-id && github.token || '' }}
+          run-id: ${{ inputs.run-id || (github.event_name == 'push' && '41613681013') || github.run_id }}
+          github-token: ${{ (inputs.run-id || github.event_name == 'push') && github.token || '' }} # DEV-TRIGGER
 
       - name: Download signed MAR
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2

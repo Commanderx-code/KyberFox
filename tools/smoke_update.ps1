@@ -141,7 +141,7 @@ user_pref("app.update.interval", 3600);
 function Get-UpdateFiles {
     $names = 'update.status', 'last-update.log', 'backup-update.log', 'update.log',
         'active-update.xml', 'updates.xml', 'app-update.log'
-    $roots = @($dir, $env:LOCALAPPDATA, $kyberProfile)
+    $roots = @($dir, $env:LOCALAPPDATA, $env:ProgramData, $env:APPDATA, $kyberProfile)
     foreach ($root in $roots) {
         Get-ChildItem $root -Directory -Recurse -Depth 4 -Force -Filter 'updates' -ErrorAction SilentlyContinue |
             ForEach-Object { Get-ChildItem $_.FullName -File -Recurse -Force -ErrorAction SilentlyContinue }
@@ -174,6 +174,13 @@ Start-Sleep -Seconds 5
 # --- Evidence ------------------------------------------------------------------
 Write-Host '=== server log'
 Get-Content $serverLog
+Write-Host '=== files changed in the last 30 minutes (outside Temp and Microsoft)'
+$since = (Get-Date).AddMinutes(-30)
+foreach ($root in $dir, $env:LOCALAPPDATA, $env:ProgramData, $env:APPDATA) {
+    Get-ChildItem $root -File -Recurse -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.LastWriteTime -gt $since -and $_.FullName -notmatch '\\(Temp|Microsoft|Packages|pip|GitHub)\\' } |
+        Select-Object -First 150 | ForEach-Object { "$($_.FullName) $($_.Length)" }
+}
 Write-Host '=== update files'
 foreach ($f in @(Get-UpdateFiles | Sort-Object FullName -Unique)) {
     Write-Host "--- $($f.FullName) ($($f.Length) bytes)"
