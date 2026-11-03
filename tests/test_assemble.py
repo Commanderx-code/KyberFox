@@ -66,10 +66,23 @@ def test_load_pins(tmp_path):
     p = tmp_path / "pins.toml"
     p.write_text(
         '[firefox]\nversion = "1.0"\nsha256 = "aa"\n'
-        '[librewolf]\nref = "r"\n'
+        '[librewolf]\nref = "r"\ncommit = "c"\n'
         '[ublock]\nversion = "2"\nsha256 = "bb"\n'
         '[kyber]\ngx_commit = "g"\none_commit = "o"\n'
     )
     pins = load_pins(p)
     assert (pins.firefox_version, pins.librewolf_ref, pins.ublock_sha256) == ("1.0", "r", "bb")
+    assert pins.librewolf_commit == "c"
     assert (pins.gx_commit, pins.one_commit) == ("g", "o")
+
+
+
+def test_already_applied_patch_is_reported_failed(tmp_path, fake_sources):
+    # The second patch repeats the first, so its change is already in the tree.
+    # It must fail instead of being silently reversed.
+    from tests.conftest import GOOD_PATCH
+
+    (fake_sources / "patches" / "stale.patch").write_text(GOOD_PATCH)
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    assert result.failed == ["patches/stale.patch"]
+    assert (result.tree / "kept.txt").read_text() == "patched\n"

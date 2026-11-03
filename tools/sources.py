@@ -15,11 +15,16 @@ class HashMismatch(Exception):
     pass
 
 
+class LibreWolfMismatch(Exception):
+    pass
+
+
 @dataclass(frozen=True)
 class Pins:
     firefox_version: str
     firefox_sha256: str
     librewolf_ref: str
+    librewolf_commit: str
     ublock_version: str
     ublock_sha256: str
     gx_commit: str
@@ -32,6 +37,7 @@ def load_pins(path: Path) -> Pins:
         firefox_version=data["firefox"]["version"],
         firefox_sha256=data["firefox"]["sha256"],
         librewolf_ref=data["librewolf"]["ref"],
+        librewolf_commit=data["librewolf"]["commit"],
         ublock_version=data["ublock"]["version"],
         ublock_sha256=data["ublock"]["sha256"],
         gx_commit=data["kyber"]["gx_commit"],
@@ -69,20 +75,58 @@ def fetch_firefox(pins: Pins, workdir: Path) -> Path:
     return tarball
 
 
-def fetch_librewolf(pins: Pins, workdir: Path) -> Path:
-    """Return the LibreWolf checkout at the pinned ref, cloning only if absent."""
-    dest = workdir / "librewolf"
-    if dest.exists():
-        return dest
-    tmp = workdir / "librewolf.part"
-    shutil.rmtree(tmp, ignore_errors=True)
-    tmp.mkdir()
+def _head(checkout: Path) -> str:
+    out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=checkout, check=True,
+                         capture_output=True, text=True)
+    return out.stdout.strip()
+
+
+def _clone_librewolf(pins: Pins, dest: Path) -> None:
+    """Fetch the pinned ref into the empty directory dest."""
     for cmd in (
         ["git", "init", "-q"],
         ["git", "remote", "add", "origin", LIBREWOLF_URL],
         ["git", "fetch", "-q", "--depth", "1", "origin", pins.librewolf_ref],
-        ["git", "-c", "advice.detachedHead=false", "checkout", "-q", "FETCH_HEAD"],
     ):
-        subprocess.run(cmd, cwd=tmp, check=True)
+        subprocess.run(cmd, cwd=dest, check=True)
+    # Check the fetched commit before it is checked out, so a moved tag
+    # never reaches the work tree.
+    out = subprocess.run(["git", "rev-parse", "FETCH_HEAD^{commit}"], cwd=dest,
+                         check=True, capture_output=True, text=True)
+    fetched = out.stdout.strip()
+    if fetched != pins.librewolf_commit:
+        raise LibreWolfMismatch(
+            f"LibreWolf {pins.librewolf_ref}: expected commit "
+            f"{pins.librewolf_commit}, got {fetched}"
+        )
+    subprocess.run(["git", "-c", "advice.detachedHead=false", "checkout", "-q",
+                    "FETCH_HEAD"], cwd=dest, check=True)
+
+
+def fetch_librewolf(pins: Pins, workdir: Path) -> Path:
+    """Return the LibreWolf checkout at the pinned commit.
+
+    An existing checkout at another commit is replaced. A fresh fetch that
+    does not land on the pinned commit raises LibreWolfMismatch.
+    """
+    dest = workdir / "librewolf"
+    if dest.exists():
+        if _head(dest) == pins.librewolf_commit:
+            return dest
+        shutil.rmtree(dest)
+    tmp = workdir / "librewolf.part"
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir()
+    try:
+        _clone_librewolf(pins, tmp)
+        actual = _head(tmp)
+        if actual != pins.librewolf_commit:
+            raise LibreWolfMismatch(
+                f"LibreWolf {pins.librewolf_ref}: expected commit "
+                f"{pins.librewolf_commit}, got {actual}"
+            )
+    except BaseException:
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise
     tmp.rename(dest)
     return dest

@@ -53,7 +53,7 @@ def rebrand(text: str) -> str:
 
 def apply_patch(tree: Path, patch_file: Path) -> bool:
     """Apply a patch file to tree. A failed patch leaves the tree unchanged."""
-    base = ["patch", "-p1", "--no-backup-if-mismatch", "--batch", "-s", "-r", "-", "-i", str(patch_file)]
+    base = ["patch", "-p1", "--no-backup-if-mismatch", "--batch", "--forward", "-s", "-r", "-", "-i", str(patch_file)]
     dry = subprocess.run(base + ["--dry-run"], cwd=tree, capture_output=True, text=True)
     if dry.returncode != 0:
         return False
