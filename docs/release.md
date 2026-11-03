@@ -26,10 +26,10 @@ A release is one workflow run, `.github/workflows/release.yml`, plus one approva
 ## What each job does
 
 - **prepare**: checks the version against `pins.toml`, checks the tag is free, and validates the skin ids (`tools/set_disabled_skins.py`). It uploads the `themes/status.json` the release ships.
-- **build-linux**, **build-windows**: the existing Build Linux and Build Windows workflows, called with `disabled-skins`. Each writes `themes/status.json` into its checkout before assembling (nothing is committed). Build Linux ends with the Arch smoke; Build Windows ends with the Windows smoke and the update smoke `refuse` job, and compares the update certificates in the assembled tree with the committed ones.
+- **build-linux**, **build-windows**: the existing Build Linux and Build Windows workflows, called with `disabled-skins` and the `KYBERFOX_SAFEBROWSING_KEY` secret. Each writes `themes/status.json` into its checkout before assembling (nothing is committed). Build Linux ends with the Arch smoke; Build Windows ends with the Windows smoke and the update smoke `refuse` job, and compares the update certificates in the assembled tree with the committed ones.
 - **front-end-tests**, **smoke-windows**, **smoke-arch**: the front-end test build and the two smokes, called again against the artifacts of this run.
 - **verify**: assembles the release tree (with the shipped `status.json`), runs `check-forbidden`, and runs the `tests/` suite. `release.yml` does not call the update smoke `refuse` job a second time; the one inside Build Windows is the gate. `apply-update` calls `smoke-update.yml` with `skip-refuse: true` for the same reason.
-- **publish**: needs `verify` and the owner's approval, and is the only job that reads secrets. In order:
+- **publish**: needs `verify` and the owner's approval, and is the only job that reads the signing secrets. In order:
   1. refuses a placeholder update certificate (`docs/update-signing.md`);
   2. reads the build id from the MAR, signs the MAR with `MAR_SIGNING_KEY` (`tools/sign_mar.py`, verified against the committed primary certificate), and uploads it as the artifact `kyberfox-windows-signed-mar`;
   3. builds the Arch package in an `archlinux` container from the Linux tarball (renamed to the PKGBUILD's source name, checksum filled by `updpkgsums`);
@@ -90,7 +90,8 @@ Done once, in the GitHub repository settings. Nothing here is in the repository.
      - `MAR_SIGNING_KEY`: the primary update-signing private key, PEM. From the private keys folder: `gh secret set MAR_SIGNING_KEY --env release < release_primary.key` (`docs/update-signing.md`, Owner steps).
      - `PACMAN_GPG_KEY`: the armored private repo key, with no passphrase.
      - `PACMAN_GPG_KEY_ID`: its fingerprint. Steps in `docs/arch-repo.md`.
-2. **Real update certificates**: replace the two placeholder `.der` files and rebuild, as in `docs/update-signing.md`. Publish refuses placeholders.
-3. **Pacman public key**: commit `packaging/arch/kyberfox-signing.pub` (`docs/arch-repo.md`).
-4. **Pages**: enable GitHub Pages from the `gh-pages` branch, root folder. The first publish creates the branch.
-5. **Dry run**: `gh workflow run release.yml -f version=159.0 -f channel=test -f dry-run=true`. Expect the run to stop at the approval; after you approve, check the pre-release `v159.0-1-test` and `update/test/WINNT_x86_64-msvc-x64/update.xml` on Pages. `workflow_dispatch` works only once `release.yml` is on `main`.
+2. **Safe Browsing key**: obtain a Google Safe Browsing API key (Google Cloud console, a project with the Safe Browsing API enabled, an API key restricted to that API), then save it as a repository secret, not an environment secret, so the push-triggered build-gate runs get it too: `gh secret set KYBERFOX_SAFEBROWSING_KEY`. Both build workflows write it to a file in `$RUNNER_TEMP` and pass it to the build through `KYBERFOX_SAFEBROWSING_KEYFILE`; without it they print a warning and the build ships without Safe Browsing lists.
+3. **Real update certificates**: replace the two placeholder `.der` files and rebuild, as in `docs/update-signing.md`. Publish refuses placeholders.
+4. **Pacman public key**: commit `packaging/arch/kyberfox-signing.pub` (`docs/arch-repo.md`).
+5. **Pages**: enable GitHub Pages from the `gh-pages` branch, root folder. The first publish creates the branch.
+6. **Dry run**: `gh workflow run release.yml -f version=159.0 -f channel=test -f dry-run=true`. Expect the run to stop at the approval; after you approve, check the pre-release `v159.0-1-test` and `update/test/WINNT_x86_64-msvc-x64/update.xml` on Pages. `workflow_dispatch` works only once `release.yml` is on `main`.

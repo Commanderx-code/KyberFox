@@ -79,6 +79,8 @@ Sync page in Settings, so that is the only import path.
   turns the preset into Custom. Strict resists fingerprinting and turns off
   WebGL, which can break some sites. It also clears cookies, site data and the
   cache every time you quit, so you are signed out of sites each time.
+  Malware and phishing protection checks Google's Safe Browsing lists on your
+  computer when the build carries a Safe Browsing key.
 - **Themes:** Settings, Appearance. Click a theme to apply it. You can also
   import your own CSS file there.
 - **Shield:** the shield button in the toolbar sets the protections for the

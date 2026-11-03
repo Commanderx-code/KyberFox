@@ -16,6 +16,10 @@ on:
         required: false
         type: string
         default: ""
+    secrets:
+      KYBERFOX_SAFEBROWSING_KEY:
+        description: Google Safe Browsing API key; empty builds without Safe Browsing lists
+        required: false
   push:
     branches: [build-gate]
 
@@ -128,6 +132,20 @@ jobs:
           ./mach python --virtualenv build taskcluster/scripts/misc/get_vs.py \
             build/vs/vs2026.yaml ~/win-cross/vs2026
           du -sh ~/win-cross/*
+
+      # The key is embedded in the binary, so the build job may see it. It is
+      # written outside the checkout and never echoed or uploaded.
+      - name: Safe Browsing key
+        env:
+          SAFEBROWSING_KEY: ${{ secrets.KYBERFOX_SAFEBROWSING_KEY }}
+        run: |
+          if [ -z "$SAFEBROWSING_KEY" ]; then
+            echo "::warning::KYBERFOX_SAFEBROWSING_KEY is not set: this build ships without Safe Browsing lists."
+            exit 0
+          fi
+          keyfile="$RUNNER_TEMP/safebrowsing.key"
+          (umask 077 && printf '%s' "$SAFEBROWSING_KEY" > "$keyfile")
+          echo "KYBERFOX_SAFEBROWSING_KEYFILE=$keyfile" >> "$GITHUB_ENV"
 
       - name: Write CI mozconfig
         run: |

@@ -63,12 +63,49 @@ def test_publish_job_requires_environment():
     assert publish["environment"] == "release"
     assert "verify" in as_list(publish["needs"])
     for name, job in JOBS.items():
+        if name in ("build-linux", "build-windows"):
+            # The builds get only the Safe Browsing key, which the binary embeds.
+            assert job["secrets"] == {"KYBERFOX_SAFEBROWSING_KEY": SB_SECRET}, name
+            job = {k: v for k, v in job.items() if k != "secrets"}
         text = yaml.safe_dump(job)
         assert ("MAR_SIGNING_KEY" in text) == (name == "publish"), name
         for secret in ("PACMAN_GPG_KEY", "PACMAN_GPG_KEY_ID"):
             assert (secret in text) == (name == "publish"), (name, secret)
         assert ("secrets." in text) == (name == "publish"), name
     assert "secrets.MAR_SIGNING_KEY" in yaml.safe_dump(publish)
+
+
+SB_SECRET = "${{ secrets.KYBERFOX_SAFEBROWSING_KEY }}"
+
+
+@pytest.mark.parametrize("wf", ["build-linux", "build-windows"])
+def test_build_workflows_take_the_safe_browsing_key(wf):
+    text = (WORKFLOWS / f"{wf}.yml").read_text(encoding="utf-8")
+    flow = yaml.safe_load(text)
+    call = (flow.get("on") or flow.get(True))["workflow_call"]
+    assert call["secrets"]["KYBERFOX_SAFEBROWSING_KEY"]["required"] is False
+    build = flow["jobs"]["build"]["steps"]
+    [step] = [s for s in build if s.get("name") == "Safe Browsing key"]
+    assert step["env"] == {"SAFEBROWSING_KEY": SB_SECRET}
+    run = step["run"]
+    assert '"$RUNNER_TEMP/safebrowsing.key"' in run
+    assert "KYBERFOX_SAFEBROWSING_KEYFILE=$keyfile" in run and "$GITHUB_ENV" in run
+    assert "::warning::" in run and "without Safe Browsing lists" in run
+    # The key itself only ever goes to the file, never to the log.
+    assert run.count("$SAFEBROWSING_KEY") == 2
+    assert 'printf \'%s\' "$SAFEBROWSING_KEY" > "$keyfile"' in run
+    names = [s.get("name") for s in build]
+    assert names.index("Safe Browsing key") < names.index("Write CI mozconfig")
+    assert "safebrowsing.key" not in yaml.safe_dump(
+        [s for s in build if "upload-artifact" in s.get("uses", "")])
+    mozconfig = "linux" if wf == "build-linux" else "windows-cross"
+    assert "--with-google-safebrowsing-api-keyfile=$KYBERFOX_SAFEBROWSING_KEYFILE" in (
+        ROOT / "mozconfigs" / mozconfig).read_text(encoding="utf-8")
+
+
+def test_release_passes_the_safe_browsing_key():
+    for name in ("build-linux", "build-windows"):
+        assert JOBS[name]["secrets"]["KYBERFOX_SAFEBROWSING_KEY"] == SB_SECRET
 
 
 def test_only_publish_writes_and_nothing_else_has_environment():
