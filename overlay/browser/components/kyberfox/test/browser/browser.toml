@@ -4,3 +4,5 @@ prefs = ["extensions.installDistroAddons=false"]
 ["browser_identity.js"]
 
 ["browser_ublock_bundled.js"]
+
+["browser_workspaces.js"]

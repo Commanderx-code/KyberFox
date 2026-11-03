@@ -8,3 +8,4 @@ preferences-without-pref-pane.patch
 ublock-bundled.patch
 per-user-install.patch
 installer-title.patch
+workspaces-init.patch
