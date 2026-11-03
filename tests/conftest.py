@@ -51,6 +51,11 @@ def _build_tarball() -> bytes:
 _TARBALL = _build_tarball()
 FAKE_SHA = hashlib.sha256(_TARBALL).hexdigest()
 
+# Stands in for the signed uBlock Origin XPI; assembly copies it without opening it.
+FAKE_XPI = b"PK\x03\x04 not a real add-on\n"
+FAKE_XPI_SHA = hashlib.sha256(FAKE_XPI).hexdigest()
+FAKE_XPI_NAME = "uBlock0_0.firefox.signed.xpi"
+
 
 # Commit of the fake LibreWolf checkout; set by the fake_sources fixture.
 STATE = {"commit": "0" * 40}
@@ -81,7 +86,7 @@ def _pins(sha: str) -> Pins:
         librewolf_ref="test-ref",
         librewolf_commit=STATE["commit"],
         ublock_version="0",
-        ublock_sha256="0" * 64,
+        ublock_sha256=FAKE_XPI_SHA,
         gx_commit="0" * 40,
         one_commit="0" * 40,
         kyber_build=1,
@@ -126,6 +131,7 @@ STALE_PATCH = """\
 def fake_sources(tmp_path, tmp_path_factory, fake_tarball, monkeypatch):
     """Seed tmp_path (the workdir) with a fake LibreWolf checkout and point
     the tools at a fake repo holding the keep list."""
+    (tmp_path / FAKE_XPI_NAME).write_bytes(FAKE_XPI)
     lw = tmp_path / "librewolf"
     STATE["commit"] = git_init(lw, {
         "patches/good.patch": GOOD_PATCH,

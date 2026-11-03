@@ -1,3 +1,5 @@
 [DEFAULT]
 
 ["browser_identity.js"]
+
+["browser_ublock_bundled.js"]

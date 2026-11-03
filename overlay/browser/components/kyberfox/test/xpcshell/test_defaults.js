@@ -171,3 +171,13 @@ add_task(async function test_shipped_policies() {
     "browser.newtabpage.activity-stream.feeds.section.highlights": false,
   });
 });
+
+add_task(function test_distribution_addons_are_enabled() {
+  // The bundled uBlock Origin is installed into the profile scope (1) from
+  // distribution/extensions, so that scope must stay enabled. kyberfox.cfg
+  // must not narrow it, and the add-on is not a detected sideload, so
+  // extensions.autoDisableScopes does not disable it.
+  let scopes = Services.prefs.getIntPref("extensions.enabledScopes");
+  Assert.ok(scopes & 1, "the profile scope is enabled");
+  Assert.ok(scopes & 4, "the application scope is enabled");
+});

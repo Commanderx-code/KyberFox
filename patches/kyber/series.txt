@@ -5,3 +5,4 @@ identity.patch
 private-defaults.patch
 updater.patch
 preferences-without-pref-pane.patch
+ublock-bundled.patch

@@ -1,8 +1,8 @@
 import pytest
 
-from tests.conftest import pins_newer_firefox, pins_with_wrong_hash
+from tests.conftest import FAKE_XPI, FAKE_XPI_NAME, pins_newer_firefox, pins_with_wrong_hash
 from tools.assemble import assemble
-from tools.sources import HashMismatch, load_pins
+from tools.sources import HashMismatch, fetch_ublock, load_pins
 
 
 def test_hash_mismatch_stops_before_extract(tmp_path, fake_tarball):
@@ -154,3 +154,40 @@ def test_static_pref_sections_are_put_in_order(tmp_path, fake_sources):
     result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
     out = (result.tree / "modules/libpref/init/StaticPrefList.yaml").read_text()
     assert out == HEAD + section("kyberfox") + section("layout")
+
+
+def test_ublock_xpi_is_staged_in_the_kyberfox_dir(tmp_path, fake_sources):
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    staged = result.tree / "kyberfox" / "uBlock0@raymondhill.net.xpi"
+    assert staged.read_bytes() == FAKE_XPI
+
+
+def test_ublock_hash_mismatch_fails(tmp_path, fake_sources):
+    (tmp_path / FAKE_XPI_NAME).write_bytes(b"tampered")
+    with pytest.raises(HashMismatch):
+        assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    assert not (tmp_path / "tree").exists()
+
+
+def test_ublock_bad_download_is_deleted_so_a_rerun_refetches(tmp_path, fake_sources, monkeypatch):
+    from tools import sources
+
+    (tmp_path / FAKE_XPI_NAME).write_bytes(b"tampered")
+    with pytest.raises(HashMismatch):
+        fetch_ublock(pins_newer_firefox(), tmp_path)
+    assert not (tmp_path / FAKE_XPI_NAME).exists()
+
+    urls = []
+    monkeypatch.setattr(sources, "download",
+                        lambda url, dest: (urls.append(url), dest.write_bytes(FAKE_XPI)))
+    assert fetch_ublock(pins_newer_firefox(), tmp_path).read_bytes() == FAKE_XPI
+    assert urls == ["https://github.com/gorhill/uBlock/releases/download/0/"
+                    "uBlock0_0.firefox.signed.xpi"]
+
+
+def test_ublock_verified_file_is_not_downloaded_again(tmp_path, fake_sources, monkeypatch):
+    from tools import sources
+
+    (tmp_path / FAKE_XPI_NAME).write_bytes(FAKE_XPI)
+    monkeypatch.setattr(sources, "download", lambda *a: pytest.fail("downloaded"))
+    fetch_ublock(pins_newer_firefox(), tmp_path)

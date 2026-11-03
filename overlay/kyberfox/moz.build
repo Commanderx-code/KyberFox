@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# The settings files are copied here from settings/ by tools/assemble.py.
+# The settings files and the uBlock Origin XPI are copied here by tools/assemble.py.
 FINAL_TARGET_FILES += [
     "kyberfox.cfg",
 ]
@@ -14,3 +14,19 @@ FINAL_TARGET_FILES.distribution += [
 FINAL_TARGET_FILES.defaults.pref += [
     "local-settings.js",
 ]
+
+# Installed into the profile on first run, so uBlock Origin is present with no network.
+FINAL_TARGET_FILES.distribution.extensions += [
+    "uBlock0@raymondhill.net.xpi",
+]
+
+LICENSES += ["ublock-origin"]
+LICENSES["ublock-origin"].title = "uBlock Origin (GPL-3.0)"
+LICENSES["ublock-origin"].text = "ublock-origin-license.txt"
+LICENSES["ublock-origin"].spdx = "GPL-3.0-or-later"
+LICENSES["ublock-origin"].url = "https://www.gnu.org/licenses/gpl-3.0.html"
+LICENSES["ublock-origin"].notice = """
+<p>This product bundles uBlock Origin, copyright Raymond Hill, as the signed
+add-on <code>distribution/extensions/uBlock0@raymondhill.net.xpi</code>.
+Source code: <a href="https://github.com/gorhill/uBlock">https://github.com/gorhill/uBlock</a></p>
+"""

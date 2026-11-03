@@ -9,6 +9,8 @@ from pathlib import Path
 
 LIBREWOLF_URL = "https://codeberg.org/librewolf/source"
 FIREFOX_URL = "https://archive.mozilla.org/pub/firefox/releases/{v}/source/firefox-{v}.source.tar.xz"
+UBLOCK_URL = ("https://github.com/gorhill/uBlock/releases/download/{v}/"
+              "uBlock0_{v}.firefox.signed.xpi")
 
 
 class HashMismatch(Exception):
@@ -75,6 +77,22 @@ def fetch_firefox(pins: Pins, workdir: Path) -> Path:
             f"{tarball.name}: expected {pins.firefox_sha256}, got {actual}"
         )
     return tarball
+
+
+def fetch_ublock(pins: Pins, workdir: Path) -> Path:
+    """Return the verified signed uBlock Origin XPI, downloading only if absent.
+
+    A file that fails the hash is deleted, so a rerun fetches it again.
+    """
+    v = pins.ublock_version
+    xpi = workdir / f"uBlock0_{v}.firefox.signed.xpi"
+    if not xpi.exists():
+        download(UBLOCK_URL.format(v=v), xpi)
+    actual = sha256_file(xpi)
+    if actual != pins.ublock_sha256:
+        xpi.unlink()
+        raise HashMismatch(f"{xpi.name}: expected {pins.ublock_sha256}, got {actual}")
+    return xpi
 
 
 def _head(checkout: Path) -> str:

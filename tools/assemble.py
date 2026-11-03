@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from tools.patchset import apply_patch, classify, read_list, rebrand
-from tools.sources import fetch_firefox, fetch_librewolf, load_pins
+from tools.sources import fetch_firefox, fetch_librewolf, fetch_ublock, load_pins
 from tools.staticprefs import move_section_into_order
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -18,6 +18,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # Copied from settings/ into <tree>/kyberfox/, which patches/kyber/0001-register-component.patch
 # adds to the build. LibreWolf's build uses lw/ for the same files.
 SETTINGS_FILES = ("kyberfox.cfg", "policies.json", "local-settings.js")
+
+# Firefox installs add-ons from distribution/extensions/<id>.xpi on first run.
+# The file is staged in <tree>/kyberfox/ next to the settings and packaged from there.
+UBLOCK_ID = "uBlock0@raymondhill.net"
 
 # Removed from the tree, as LibreWolf's build does: the OpenAI backend of the ML component.
 REMOVED_PATHS = (
@@ -85,11 +89,12 @@ def _follow_collection_pref(tree: Path) -> None:
                                          "follows_collection_enabled: true"))
 
 
-def _finish_tree(tree: Path, pins, touched: set[str]) -> None:
+def _finish_tree(tree: Path, pins, touched: set[str], ublock: Path) -> None:
     settings = tree / "kyberfox"
     settings.mkdir(exist_ok=True)
     for name in SETTINGS_FILES:
         shutil.copy2(REPO_ROOT / "settings" / name, settings / name)
+    shutil.copy2(ublock, settings / f"{UBLOCK_ID}.xpi")
     for rel in REMOVED_PATHS:
         path = tree / rel
         if path.is_dir():
@@ -111,6 +116,7 @@ def assemble(pins, workdir: Path, allow_failed: bool = False) -> AssemblyResult:
     workdir = Path(workdir)
     workdir.mkdir(parents=True, exist_ok=True)
     tarball = fetch_firefox(pins, workdir)  # verifies the hash before anything else
+    ublock = fetch_ublock(pins, workdir)
     lw = fetch_librewolf(pins, workdir)
 
     patch_dir = REPO_ROOT / "patches"
@@ -143,7 +149,7 @@ def assemble(pins, workdir: Path, allow_failed: bool = False) -> AssemblyResult:
     overlay = REPO_ROOT / "overlay"
     if overlay.is_dir():
         shutil.copytree(overlay, tree, dirs_exist_ok=True)
-    _finish_tree(tree, pins, touched)
+    _finish_tree(tree, pins, touched, ublock)
     shutil.rmtree(scratch, ignore_errors=True)
     return result
 
