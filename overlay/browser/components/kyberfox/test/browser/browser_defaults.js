@@ -91,3 +91,9 @@ add_task(function test_security_lists_stay_reachable() {
     Assert.ok(allowed.includes(collection), `${collection} is allowed`);
   }
 });
+
+add_task(function test_accounts_are_locked_off() {
+  const pref = "identity.fxaccounts.enabled";
+  Assert.ok(!Services.prefs.getBoolPref(pref), `${pref} is false`);
+  Assert.ok(Services.prefs.prefIsLocked(pref), `${pref} is locked`);
+});

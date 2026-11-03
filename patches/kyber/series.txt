@@ -18,3 +18,4 @@ lint-skins.patch
 welcome-tab.patch
 license-notices.patch
 ui-names.patch
+hide-sync-pane.patch

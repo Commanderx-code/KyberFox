@@ -17,7 +17,7 @@ come later.
   left of the tab bar. Firefox's own tab groups and split view work inside them.
 - Shield: a per-site switch for ad and tracker blocking, fingerprinting
   protection and cookie blocking.
-- Privacy presets, Standard and Strict, at the top of the Privacy & Security
+- Privacy presets, Standard and Strict, at the top of the Privacy and security
   pane in Settings.
 - Themes and skins: Ember, Paper, Frost, Terminal, Catppuccin Mocha, Tokyo
   Night, Starry, and two full skins (GX-style and One-style), picked in

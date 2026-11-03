@@ -64,3 +64,27 @@ diff --git a/dom/locales/en-US/chrome/appstrings.properties b/dom/locales/en-US/
  invalidHeaderValue=%S sent back a header with empty characters not allowed by web security standards.
 -networkProtocolError=Firefox has experienced a network protocol violation that cannot be repaired.
 +networkProtocolError=Kyber Fox has experienced a network protocol violation that cannot be repaired.
+diff --git a/toolkit/locales/en-US/toolkit/about/aboutAddons.ftl b/toolkit/locales/en-US/toolkit/about/aboutAddons.ftl
+--- a/toolkit/locales/en-US/toolkit/about/aboutAddons.ftl
++++ b/toolkit/locales/en-US/toolkit/about/aboutAddons.ftl
+@@ -487,7 +487,7 @@
+ # recommendation. As such, we hard code "Firefox" and avoid personalising
+ # language like the words "our" or "we".
+ addon-badge-recommended4 =
+-  .title = Firefox only recommends extensions that meet standards for security and performance
++  .title = Only extensions that meet standards for security and performance are recommended
+ # We hard code "Mozilla" in the string below because the extensions are built
+ # by Mozilla and we don't want forks to display "by Fork".
+ addon-badge-line4 =
+diff --git a/browser/locales/en-US/browser/appExtensionFields.ftl b/browser/locales/en-US/browser/appExtensionFields.ftl
+--- a/browser/locales/en-US/browser/appExtensionFields.ftl
++++ b/browser/locales/en-US/browser/appExtensionFields.ftl
+@@ -14,7 +14,7 @@
+ extension-firefox-compact-dark-name=Dark
+ extension-firefox-compact-dark-description=A theme with a dark color scheme.
+ 
+-extension-firefox-alpenglow-name=Firefox Alpenglow
++extension-firefox-alpenglow-name=Alpenglow
+ extension-firefox-alpenglow-description=Use a colorful appearance for buttons, menus, and windows.
+ 
+ ## Theme names shown in the Firefox Themes picker in about:addons and theme add-on card,

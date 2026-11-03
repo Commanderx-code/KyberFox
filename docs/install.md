@@ -1,6 +1,6 @@
 # Install Kyber Fox
 
-Release 1 runs on Windows (x86_64) and on Linux. Garuda and other Arch-based
+Release 1 runs on Windows (x86_64) and on Linux (x86_64). Garuda and other Arch-based
 systems install it from a pacman repository. Sync is not in this release.
 
 Downloads are on the project's
@@ -56,7 +56,7 @@ the repository is built are described in [arch-repo.md](arch-repo.md).
 
 ## Other Linux
 
-Each release also has a tarball. Unpack it anywhere and run `kyberfox`. There
+Each release also has a tarball. Unpack it anywhere and run `kyberfox/kyberfox`. There
 is no automatic update for the tarball.
 
 ## First run
@@ -65,14 +65,15 @@ The first window is a welcome page. Pick a default search engine and tick any
 add-ons you want from the recommended list; nothing is selected for you, and
 nothing is downloaded until you choose **Install selected**. Add-ons come from
 addons.mozilla.org. You can skip the page and find it again later under Privacy
-& Security in Settings. uBlock Origin is already included.
+and security in Settings. uBlock Origin is already included.
 
 ## Settings
 
-- **Privacy:** Settings, Privacy & Security. The Kyber Fox privacy preset at
+- **Privacy:** Settings, Privacy and security. The Kyber Fox privacy preset at
   the top switches between Standard and Strict. Changing any option under it
   turns the preset into Custom. Strict resists fingerprinting and turns off
-  WebGL, which can break some sites.
+  WebGL, which can break some sites. It also clears cookies, site data and the
+  cache every time you quit, so you are signed out of sites each time.
 - **Themes:** Settings, Appearance. Click a theme to apply it. You can also
   import your own CSS file there.
 - **Shield:** the shield button in the toolbar sets the protections for the

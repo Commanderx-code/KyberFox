@@ -20,8 +20,9 @@ Then import the project key (`kyberfox-signing.pub`, added at release time):
 
 ```
 sudo pacman-key --add kyberfox-signing.pub
+gpg --show-keys kyberfox-signing.pub
 sudo pacman-key --lsign-key <fingerprint>
-sudo pacman -Sy kyberfox
+sudo pacman -Syu kyberfox
 ```
 
 ## Local build
