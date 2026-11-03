@@ -25,3 +25,23 @@ def test_mar_channel_id_is_the_same_in_mozconfig_and_workflow():
     assert len(ids) == 1
     (channel,) = ids
     assert f'"$RUNNER_TEMP/mar/kyberfox-$version.complete.mar" {channel}' in workflow
+
+
+def test_committed_update_certificates_are_not_placeholders():
+    for n in ("primary", "secondary"):
+        cert = x509.load_der_x509_certificate((UPDATER_DIR / f"release_{n}.der").read_bytes())
+        assert "PLACEHOLDER" not in cert.subject.rfc4514_string(), n
+
+
+def test_committed_pacman_key_matches_the_documented_fingerprint():
+    import subprocess
+
+    root = UPDATER_DIR.parents[4]
+    out = subprocess.run(
+        ["gpg", "--with-colons", "--show-keys", str(root / "packaging/arch/kyberfox-signing.pub")],
+        capture_output=True, text=True, check=True,
+    ).stdout
+    fprs = [line.split(":")[9] for line in out.splitlines() if line.startswith("fpr:")]
+    assert fprs, "no key in kyberfox-signing.pub"
+    for doc in ("docs/install.md", "packaging/arch/README.md"):
+        assert f"--lsign-key {fprs[0]}" in (root / doc).read_text(), doc
