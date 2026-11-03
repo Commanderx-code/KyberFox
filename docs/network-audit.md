@@ -53,6 +53,7 @@ The Run column shows which runs reached the host (1, 2, 3).
 | `malware-filter.pages.dev` | 1, 3 | URLhaus malware filter | allowed (filter lists) |
 | `publicsuffix.org` | 1, 3 | uBlock fetches `public_suffix_list.dat` | allowed (uBlock Origin asset fetch) |
 | `aus5.mozilla.org` | 1, 3 | `/update/3/SystemAddons/159.0/<buildid>/Linux_x86_64-gcc3/en-US/release/<OS string>/...`: Mozilla's system add-on update service | unexpected |
+| `commanderx-code.github.io` | not yet observed | Update manifest `/KyberFox/update/<channel>/<build target>/update.xml`, Windows builds only (the Linux build has no updater). Contacted every `app.update.interval` (14400 s); sends the request path only, no version or build id. See `docs/update-signing.md` | allowed (Kyber Fox updates) |
 | `example.com` | 2 | The page the test opened | allowed (test page) |
 
 Run 3 (new tab and the Privacy page) made exactly the same connections as run 1 and no more. In particular the new tab page contacted no Contile, sponsored-content, weather, stories or other Mozilla host. In run 2 the only additions were `example.com` and the uBlock patch downloads; Remote Settings made one further attachment request (`startup.json.mozlz4`).

@@ -39,6 +39,10 @@ ac_add_options --disable-tests
 # on by default in this Firefox; only --enable-unverified-updates turns them
 # off, and the old --enable-verify-mar option no longer exists.
 ac_add_options --enable-updater
+# The updater accepts only MARs whose product info names this channel, and
+# tools/make_complete_mar.sh stamps the same id on the MAR it builds.
+export MAR_CHANNEL_ID=kyberfox-release
+export ACCEPTED_MAR_CHANNEL_IDS=kyberfox-release
 # Installs are per user, so updates need no elevation and no service.
 ac_add_options --disable-maintenance-service
 ac_add_options --disable-cargo-incremental

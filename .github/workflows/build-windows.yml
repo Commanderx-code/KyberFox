@@ -134,6 +134,21 @@ jobs:
       - name: Package
         run: make package
 
+      # The complete MAR is unsigned here. The release publish job signs it
+      # (tools/sign_mar.py), and smoke-update signs a copy with a throwaway key.
+      - name: Make complete MAR
+        run: |
+          version=$(cat work/tree/browser/config/version_display.txt)
+          python3 -m venv "$RUNNER_TEMP/mar-venv"
+          "$RUNNER_TEMP/mar-venv/bin/pip" install --quiet --require-hashes -r requirements-release.txt
+          mapfile -t packages < <(find work/tree/obj-*/dist -maxdepth 1 -name '*.zip')
+          if [ "${#packages[@]}" -ne 1 ]; then
+            echo "Expected one package zip, found ${#packages[@]}: ${packages[*]}"
+            exit 1
+          fi
+          PATH="$RUNNER_TEMP/mar-venv/bin:$PATH" tools/make_complete_mar.sh work/tree "${packages[0]}" \
+            "$RUNNER_TEMP/mar/kyberfox-$version.complete.mar" kyberfox-release
+
       - name: Collect installer
         run: |
           version=$(cat work/tree/browser/config/version_display.txt)
@@ -144,8 +159,7 @@ jobs:
           fi
           mkdir -p "$RUNNER_TEMP/upload"
           cp "${installers[0]}" "$RUNNER_TEMP/upload/kyberfox-$version.installer.exe"
-          # Complete MAR files are uploaded when a packaging step creates them.
-          find work/tree/obj-*/dist -maxdepth 2 -name '*.complete.mar' -exec cp {} "$RUNNER_TEMP/upload/" \;
+          cp "$RUNNER_TEMP/mar/kyberfox-$version.complete.mar" "$RUNNER_TEMP/upload/"
           ls -l "$RUNNER_TEMP/upload"
 
       - name: Report peak disk use
@@ -170,3 +184,11 @@ jobs:
       contents: read
       actions: read
     uses: ./.github/workflows/smoke-windows.yml
+
+  # Installs the build, offers a wrongly signed update and expects it refused.
+  smoke-update:
+    needs: smoke
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/smoke-update.yml

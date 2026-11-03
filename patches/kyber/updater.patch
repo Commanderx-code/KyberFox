@@ -1,6 +1,8 @@
-Kyber Fox version of LibreWolf's updater.patch (MPL-2.0): the same short update URL,
-with a placeholder host instead of LibreWolf's update server. The signed-update
-work replaces the host.
+Kyber Fox version of LibreWolf's updater.patch (MPL-2.0): a short, static update
+URL, with the host and path of Kyber Fox's own GitHub Pages site instead of
+LibreWolf's update server. The updater requests
+https://commanderx-code.github.io/KyberFox/update/<channel>/<build target>/update.xml,
+a file written by tools/update_manifest.py (see docs/update-signing.md).
 
 diff --git a/build/application.ini.in b/build/application.ini.in
 index 6df1323..b85d07b 100644
@@ -11,7 +13,7 @@ index 6df1323..b85d07b 100644
  #if MOZ_UPDATER
  [AppUpdate]
 -URL=https://@MOZ_APPUPDATE_HOST@/update/6/%PRODUCT%/%VERSION%/%BUILD_ID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%SYSTEM_CAPABILITIES%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/update.xml
-+URL=https://@MOZ_APPUPDATE_HOST@/%BUILD_TARGET%/%CHANNEL%/update.xml
++URL=https://@MOZ_APPUPDATE_HOST@/KyberFox/update/%CHANNEL%/%BUILD_TARGET%/update.xml
  #endif
 diff --git a/build/moz.build b/build/moz.build
 index 0182121..47aac55 100644
@@ -22,7 +24,7 @@ index 0182121..47aac55 100644
              appini_defines[var] = True
  
 -    appini_defines["MOZ_APPUPDATE_HOST"] = "aus5.mozilla.org"
-+    appini_defines["MOZ_APPUPDATE_HOST"] = "localhost"
++    appini_defines["MOZ_APPUPDATE_HOST"] = "commanderx-code.github.io"
      if CONFIG["MOZ_APPUPDATE_HOST"]:
          appini_defines["MOZ_APPUPDATE_HOST"] = CONFIG["MOZ_APPUPDATE_HOST"]
  
