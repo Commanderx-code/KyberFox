@@ -51,8 +51,8 @@ Modifications, all made by the vendor tool:
   the companion browser extensions are not shipped.
 - The `@import` tree is flattened into one `userChrome.css` and wrapped in
   `@-moz-document url-prefix("chrome://")`, so the skin only restyles
-  browser windows and dialogs, never web pages. Relative `url()` paths are
-  rewritten to be relative to that file.
+  browser windows and dialogs, never web pages. Every `url()` becomes an
+  absolute `chrome://` URL (see below).
 - Branding removal: the custom properties `--opera4`, `--opera7` and
   `--opera9` (One-style) are renamed `--vivid4`, `--vivid7`, `--vivid9`; the
   word is removed from comments. Neither project ships an Opera logo file; the third-party brand logos
