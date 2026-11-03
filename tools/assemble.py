@@ -11,6 +11,7 @@ from pathlib import Path
 
 from tools.patchset import apply_patch, classify, read_list, rebrand
 from tools.sources import fetch_firefox, fetch_librewolf, load_pins
+from tools.staticprefs import move_section_into_order
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -97,6 +98,9 @@ def _finish_tree(tree: Path, pins, touched: set[str]) -> None:
             path.unlink()
     _follow_collection_pref(tree)
     _update_cargo_checksums(tree, touched)
+    prefs = tree / "modules/libpref/init/StaticPrefList.yaml"
+    if prefs.is_file():
+        move_section_into_order(prefs)
     # Read by display-version.patch through MOZ_APP_VERSION_DISPLAY.
     (tree / "browser/config/version_display.txt").write_text(
         f"{pins.firefox_version}-{pins.kyber_build}\n"

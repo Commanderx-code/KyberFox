@@ -142,3 +142,15 @@ def test_display_version_carries_the_build_counter(tmp_path, fake_sources):
     result = assemble(replace(pins_newer_firefox(), kyber_build=3), tmp_path,
                       allow_failed=True)
     assert (result.tree / "browser/config/version_display.txt").read_text() == "999.0-3\n"
+
+
+def test_static_pref_sections_are_put_in_order(tmp_path, fake_sources):
+    from tests.test_staticprefs import HEAD, section
+    from tools import assemble as mod
+
+    prefs = mod.REPO_ROOT / "overlay" / "modules/libpref/init/StaticPrefList.yaml"
+    prefs.parent.mkdir(parents=True)
+    prefs.write_text(HEAD + section("layout") + section("kyberfox"))
+    result = assemble(pins_newer_firefox(), tmp_path, allow_failed=True)
+    out = (result.tree / "modules/libpref/init/StaticPrefList.yaml").read_text()
+    assert out == HEAD + section("kyberfox") + section("layout")
