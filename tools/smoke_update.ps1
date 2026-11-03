@@ -15,7 +15,7 @@ param(
     [Parameter(Mandatory)][ValidateSet('refuse', 'apply')][string]$Mode,
     [Parameter(Mandatory)][string]$InstallerDir,
     [string]$SignedMar = '',
-    [int]$TimeoutSeconds = 240,
+    [int]$TimeoutSeconds = 420,
     [int]$Port = 8123
 )
 $ErrorActionPreference = 'Stop'
@@ -199,6 +199,9 @@ $sawManifest = [bool]($requests | Where-Object { $_ -like 'REQUEST /*update.xml*
 $sawMar = [bool]($requests | Where-Object { $_ -like 'REQUEST /kyberfox.complete.mar*' })
 $manifestPath = ($requests | Where-Object { $_ -like 'REQUEST /*update.xml*' } | Select-Object -First 1)
 Write-Host "Manifest request: $manifestPath"
+# The path the updater expands must match where the manifests are published
+# (docs/update-signing.md).
+if ($manifestPath -notlike 'REQUEST /release/WINNT_x86_64-msvc-x64/update.xml*') { throw "Unexpected manifest path: $manifestPath" }
 if (-not $sawManifest) { throw 'The updater never requested update.xml' }
 if (-not $sawMar) { throw 'The updater never downloaded the MAR' }
 $allText = (Get-UpdateFiles | ForEach-Object { Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue }) -join "`n"

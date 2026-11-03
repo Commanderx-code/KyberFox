@@ -26,13 +26,13 @@ Installs are per user and the maintenance service is off (`--disable-maintenance
 
 ## The `%BUILD_TARGET%` value
 
-The updater expands `%BUILD_TARGET%` as `Services.appinfo.OS + "_" + ABI` (`toolkit/modules/UpdateUtils.sys.mjs`). For the Windows x86_64 build that is `WINNT_x86_64-msvc`. The manifest path must match it, so the file for the current release lives at:
+The updater expands `%BUILD_TARGET%` as `Services.appinfo.OS + "_" + ABI` (`toolkit/modules/UpdateUtils.sys.mjs`). For the Windows x86_64 build that is `WINNT_x86_64-msvc-x64` (the ABI string carries an `-x64` suffix). The manifest path must match it, so the file for the current release lives at:
 
 ```
-update/release/WINNT_x86_64-msvc/update.xml
+update/release/WINNT_x86_64-msvc-x64/update.xml
 ```
 
-Confirmed value from a Windows build: see the update smoke run recorded in the Task 15 report (the loopback server logs the expanded path of the request).
+This is the path the update smoke saw in a real request from the built browser (`GET /release/WINNT_x86_64-msvc-x64/update.xml`), and the smoke fails if it ever differs.
 
 ## Tools
 
@@ -51,7 +51,7 @@ python -m tools.sign_mar sign --key release_primary.key --cert overlay/toolkit/m
 python -m tools.update_manifest --version 159.0 --display-version 159.0-1 --build-id 20261110000000 \
     --mar signed/kyberfox-159.0-1.complete.mar \
     --url https://github.com/Commanderx-code/KyberFox/releases/download/v159.0-1/kyberfox-159.0-1.complete.mar \
-    --out update/release/WINNT_x86_64-msvc/update.xml
+    --out update/release/WINNT_x86_64-msvc-x64/update.xml
 ```
 
 `--version` is the Firefox version in `application.ini` (what the updater compares), `--display-version` the Kyber version shown to the user, and `--build-id` the `BuildID` of the new build. `sign` accepts a PEM private key; `--cert` makes it verify the result against the committed certificate before writing.
@@ -84,7 +84,7 @@ Firefox accepts a MAR that verifies against either certificate. To replace the p
 
 ## Smoke test
 
-`.github/workflows/smoke-update.yml` runs `tools/smoke_update.ps1` on `windows-latest`. It installs the build and points it at a loopback server with the `AppUpdateURL` enterprise policy (there is no pref for the URL; it lives in `application.ini`).
+`.github/workflows/smoke-update.yml` runs `tools/smoke_update.ps1` on `windows-latest`. It installs the build and points it at a loopback server with the `AppUpdateURL` enterprise policy (there is no pref for the URL; it lives in `application.ini`). The updater keeps its state in `C:\ProgramData\Mozilla-<uuid>\updates\<hash>\`, where it writes `updates.xml` and `updates\last-update.log`.
 
-- `refuse` always runs. It signs the build's own complete MAR with a throwaway key generated in the job, offers it as version 999.0, and passes only if the updater downloads the MAR, fails with the signature error (`CERT_VERIFY_ERROR`, code 19), the installed build id and `--version` output do not change, and the browser still starts. Build Windows runs it after the Windows smoke.
+- `refuse` always runs. It signs the build's own complete MAR with a throwaway key generated in the job, offers it as version 999.0, and passes only if the updater downloads the MAR, fails with the signature error (`failed: 19`, `CERT_VERIFY_ERROR`), the installed build id and `--version` output do not change, and the browser still starts. Build Windows runs it after the Windows smoke.
 - `apply` runs only when `signed-mar-run-id` is set. It offers a MAR signed with the real key and passes if the install changes to the MAR's build id. The release publish job calls it with the Build Windows run id of the older version (`run-id`) and the run that uploaded the artifact `kyberfox-windows-signed-mar` holding one `kyberfox-*.complete.mar`. It cannot run until the real key exists.
