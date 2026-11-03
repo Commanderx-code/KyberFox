@@ -10,3 +10,5 @@ prefs = ["dom.security.https_only_mode=false"]
 ["browser_ublock_bundled.js"]
 
 ["browser_workspaces.js"]
+
+["browser_workspaces_ui.js"]

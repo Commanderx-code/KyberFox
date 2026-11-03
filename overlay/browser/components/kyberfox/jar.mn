@@ -4,3 +4,5 @@
 
 browser.jar:
 % content kyberfox %content/kyberfox/
+  content/kyberfox/workspaces-ui.mjs (content/workspaces-ui.mjs)
+  content/kyberfox/workspaces.css (content/workspaces.css)
