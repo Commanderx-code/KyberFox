@@ -1,0 +1,123 @@
+name: Smoke test Arch
+
+# Packages the Linux build with the PKGBUILD, installs it from a local pacman
+# repo in an Arch container, and checks that it starts.
+# workflow_dispatch takes the id of a Build Linux run to test; workflow_call
+# without a run id tests the artifact uploaded earlier in the calling run.
+on:
+  workflow_dispatch:
+    inputs:
+      run-id:
+        description: Id of the Build Linux run that uploaded kyberfox-linux-x86_64
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      run-id:
+        description: Id of the run that uploaded kyberfox-linux-x86_64; empty means the calling run
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  smoke:
+    name: Package and install on Arch
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: archlinux:base-devel
+    steps:
+      - name: Update and install tools
+        run: |
+          pacman -Syu --noconfirm --needed git python desktop-file-utils
+          # The Docker sandbox lacks the filesystem restrictions pacman asks for.
+          sed -i 's/^\[options\]$/[options]\nDisableSandbox/' /etc/pacman.conf
+          useradd --create-home builder
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download package tarball
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kyberfox-linux-x86_64
+          path: ${{ runner.temp }}/kyberfox
+          run-id: ${{ inputs.run-id || github.run_id }}
+          github-token: ${{ inputs.run-id && github.token || '' }}
+
+      - name: Build the package
+        run: |
+          eval "$(python -I - <<'PY'
+          import tomllib
+          with open('pins.toml', 'rb') as f:
+              pins = tomllib.load(f)
+          print('ver={} rel={}'.format(pins['firefox']['version'], pins['kyber']['build']))
+          PY
+          )"
+          echo "Expecting $ver-$rel"
+          echo "EXPECTED=Kyber Fox $ver-$rel" >> "$GITHUB_ENV"
+          tarballs=("$RUNNER_TEMP"/kyberfox/obj-*/dist/*.linux-x86_64.tar.xz)
+          if [ "${#tarballs[@]}" -ne 1 ] || [ ! -f "${tarballs[0]}" ]; then
+            echo "Expected one tarball, found: ${tarballs[*]}"
+            find "$RUNNER_TEMP/kyberfox" -type f
+            exit 1
+          fi
+          build=/home/builder/pkg
+          mkdir -p "$build"
+          cp packaging/arch/PKGBUILD packaging/arch/kyberfox.desktop packaging/arch/LICENSE "$build/"
+          cp "${tarballs[0]}" "$build/kyberfox-$ver-$rel.linux-x86_64.tar.xz"
+          chown -R builder: "$build"
+          cd "$build"
+          # makepkg refuses to run as root. The tarball is the unreleased CI
+          # build, so its placeholder checksum is skipped. Dependencies are checked
+          # when pacman installs the package.
+          runuser -u builder -- makepkg --skipchecksums --noconfirm --nodeps
+          ls -l ./*.pkg.tar.zst
+
+      - name: Create a local repo
+        run: |
+          mkdir -p /srv/kyberfox
+          cp /home/builder/pkg/kyberfox-*.pkg.tar.zst /srv/kyberfox/
+          repo-add /srv/kyberfox/kyberfox.db.tar.gz /srv/kyberfox/kyberfox-*.pkg.tar.zst
+          chmod -R a+rX /srv/kyberfox
+          # Unsigned on purpose; signing is exercised by the release workflow.
+          {
+            echo
+            echo "[kyberfox]"
+            echo "SigLevel = Never"
+            echo "Server = file:///srv/kyberfox"
+          } >> /etc/pacman.conf
+
+      - name: Install with pacman
+        run: pacman -Sy --noconfirm kyberfox
+
+      - name: Check the installed files
+        run: |
+          test -L /usr/bin/kyberfox
+          test -x /opt/kyberfox/kyberfox-bin
+          test -f /usr/share/applications/kyberfox.desktop
+          test -e /usr/share/icons/hicolor/128x128/apps/kyberfox.png
+          test -f /usr/share/licenses/kyberfox/LICENSE
+          desktop-file-validate /usr/share/applications/kyberfox.desktop
+          pacman -Qi kyberfox
+          # Libraries the binary needs that no package provides.
+          if ldd /opt/kyberfox/kyberfox-bin /opt/kyberfox/libxul.so | grep 'not found'; then
+            echo "Missing shared libraries"
+            exit 1
+          fi
+          ldd /opt/kyberfox/kyberfox-bin | awk '{print $1}' | sort
+
+      - name: Check the version
+        run: |
+          out=$(/usr/bin/kyberfox --version)
+          echo "kyberfox --version: $out"
+          if [ "$out" != "$EXPECTED" ]; then
+            echo "Expected '$EXPECTED'"
+            exit 1
+          fi
