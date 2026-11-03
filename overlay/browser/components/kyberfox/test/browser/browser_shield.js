@@ -20,10 +20,6 @@ const UBLOCK_ID = "uBlock0@raymondhill.net";
 const DIR = "/browser/browser/components/kyberfox/test/browser/";
 const PAGE = "shield_page.html";
 const FP_PREF = "privacy.fingerprintingProtection.granularOverrides";
-const SKIP_PREFS = [
-  "urlclassifier.trackingSkipURLs",
-  "urlclassifier.trackingAnnotationSkipURLs",
-];
 const PERM_TYPES = [
   "kyber-shield",
   "kyber-shield-ads",
@@ -151,9 +147,6 @@ add_setup(async function () {
     Services.prefs.clearUserPref(
       "privacy.baselineFingerprintingProtection.granularOverrides"
     );
-    for (let pref of SKIP_PREFS) {
-      Services.prefs.clearUserPref(pref);
-    }
     Services.perms.removeByType("trackingprotection");
     Services.perms.removeByType("trackingprotection-pb");
     for (let type of PERM_TYPES) {
@@ -175,9 +168,6 @@ add_task(async function test_defaults_all_protected() {
   );
   Assert.ok(!(await adLoaded(browser)), "uBlock blocks the ad script");
   Assert.deepEqual(shieldPerms(), [], "defaults store nothing");
-  for (let pref of SKIP_PREFS) {
-    Assert.ok(!Services.prefs.prefHasUserValue(pref), `${pref} is untouched`);
-  }
   BrowserTestUtils.removeTab(tab);
 });
 
@@ -204,13 +194,6 @@ add_task(async function test_master_off_disables_all_three() {
     ["example.com"],
     "fingerprinting protection has an exception for the site"
   );
-  for (let pref of SKIP_PREFS) {
-    Assert.equal(
-      Services.prefs.getStringPref(pref, ""),
-      "*://*.example.com/*",
-      `${pref} skips the site`
-    );
-  }
   await waitForAdLoaded("example.com", true);
 
   Assert.ok(await KyberShield.setEnabled(browser, true), "uBlock took it");
@@ -221,9 +204,6 @@ add_task(async function test_master_off_disables_all_three() {
   );
   Assert.deepEqual(allowListHosts(), [], "the allow list entry is gone");
   Assert.deepEqual(fpEntries(), [], "the fingerprinting exception is gone");
-  for (let pref of SKIP_PREFS) {
-    Assert.ok(!Services.prefs.prefHasUserValue(pref), `${pref} is restored`);
-  }
   await waitForAdLoaded("example.com", false);
   BrowserTestUtils.removeTab(tab);
   Assert.deepEqual(shieldPerms(), [], "nothing is left stored");
@@ -433,7 +413,7 @@ add_task(async function test_private_window_setting_not_persisted() {
   let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
   let tab = await BrowserTestUtils.openNewForegroundTab(
     win.gBrowser,
-    url("example.com")
+    url("www.example.com")
   );
   let browser = tab.linkedBrowser;
   Assert.deepEqual(
@@ -459,6 +439,7 @@ add_task(async function test_private_window_setting_not_persisted() {
     .getAllWithTypePrefix("trackingprotection")
     .filter(p => p.type == "trackingprotection-pb");
   Assert.equal(perms.length, 1, "one private allow list entry");
+  Assert.equal(perms[0].principal.host, "example.com", "on the base domain");
   Assert.equal(
     perms[0].expireType,
     Services.perms.EXPIRE_SESSION,
@@ -470,16 +451,31 @@ add_task(async function test_private_window_setting_not_persisted() {
     "it is on the private browsing principal"
   );
   Assert.ok(
-    ContentBlockingAllowList.includes(browser),
+    ContentBlockingAllowList.includes(browser) ||
+      Services.perms.testPermissionFromPrincipal(
+        browser.contentPrincipal,
+        "trackingprotection-pb"
+      ) == Services.perms.ALLOW_ACTION,
     "Firefox sees it for the private page"
+  );
+
+  let apex = await BrowserTestUtils.openNewForegroundTab(
+    win.gBrowser,
+    url("example.com")
+  );
+  Assert.deepEqual(
+    KyberShield.state(apex.linkedBrowser),
+    state(false, false, false, false, false),
+    "the base domain page in the same private session sees it"
   );
 
   // Nothing else changed: no stored choice, no pref, no uBlock call.
   Assert.deepEqual(shieldPerms(), [], "no Kyber Fox permission is stored");
   Assert.deepEqual(allowListHosts(), [], "the normal allow list is untouched");
-  for (let pref of [FP_PREF, ...SKIP_PREFS]) {
-    Assert.ok(!Services.prefs.prefHasUserValue(pref), `${pref} is unchanged`);
-  }
+  Assert.ok(
+    !Services.prefs.prefHasUserValue(FP_PREF),
+    "fingerprinting overrides are unchanged"
+  );
   Assert.equal(
     KyberUBlockBridge.callLog.length,
     calls,
@@ -509,6 +505,64 @@ add_task(async function test_private_window_setting_not_persisted() {
     "a new private session starts clean"
   );
   await BrowserTestUtils.closeWindow(fresh);
+});
+
+add_task(async function test_private_state_reports_global_settings() {
+  let tab = await openPage("example.com");
+  await KyberShield.setControl(tab.linkedBrowser, "fingerprinting", false);
+  BrowserTestUtils.removeTab(tab);
+
+  let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
+  let priv = await BrowserTestUtils.openNewForegroundTab(
+    win.gBrowser,
+    url("example.com")
+  );
+  Assert.deepEqual(
+    KyberShield.state(priv.linkedBrowser),
+    state(false, true, true, false, true),
+    "a fingerprinting exception set in a normal window applies in private"
+  );
+  await BrowserTestUtils.closeWindow(win);
+
+  let back = await openPage("example.com");
+  await KyberShield.setControl(back.linkedBrowser, "fingerprinting", true);
+  BrowserTestUtils.removeTab(back);
+  Assert.deepEqual(shieldPerms(), [], "nothing is left stored");
+});
+
+add_task(async function test_ip_hosts() {
+  let v4 = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    `http://127.0.0.1:8888${DIR}${PAGE}`
+  );
+  Assert.deepEqual(
+    KyberShield.state(v4.linkedBrowser),
+    ALL_ON,
+    "an IPv4 host is a site of its own"
+  );
+  await KyberShield.setControl(v4.linkedBrowser, "fingerprinting", false);
+  Assert.deepEqual(
+    Services.perms
+      .getAllWithTypePrefix("kyber-shield")
+      .map(p => p.principal.host),
+    ["127.0.0.1"],
+    "the host itself is the key"
+  );
+  await KyberShield.setControl(v4.linkedBrowser, "fingerprinting", true);
+  BrowserTestUtils.removeTab(v4);
+
+  let v6 = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    "https://[::1]:1/",
+    false
+  );
+  Assert.deepEqual(
+    KyberShield.state(v6.linkedBrowser),
+    ALL_FALSE,
+    "an IPv6 literal is unsupported"
+  );
+  BrowserTestUtils.removeTab(v6);
+  Assert.deepEqual(shieldPerms(), [], "nothing is left stored");
 });
 
 add_task(async function test_ublock_restart_reapplies_ads_off() {

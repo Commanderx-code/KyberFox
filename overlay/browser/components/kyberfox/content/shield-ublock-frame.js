@@ -62,9 +62,9 @@ addMessageListener("KyberShield:Ublock", ({ data }) => {
       });
     }
     reply.sites = readSites();
-    // A call that found no page store changes nothing; the read-back shows it.
-    reply.ok =
-      data.op != "toggle" || reply.sites.includes(data.domain) == !data.state;
+    // The parent compares the effective state with the request, which also
+    // shows a call that found no page store.
+    reply.ok = true;
   } catch (e) {
     console.error("KyberShield: uBlock call failed", e);
   }

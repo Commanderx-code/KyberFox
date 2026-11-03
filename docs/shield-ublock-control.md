@@ -54,8 +54,9 @@ call that same listener with `url: https://<base domain>/`. Observed:
   no window or tab lookup is needed.
 - The frame script treats `vAPI.messaging.UNHANDLED` as a failure, and reads
   the trusted-sites list back (`getWhitelist` through the default handler)
-  after every toggle; a call that found no page store changes nothing and
-  shows up as a mismatch. The parent warns on a failed call and the shield's
+  after every toggle and compares the effective state (the host or a parent
+  domain trusted) with the request; a call that found no page store changes
+  nothing and shows up as a mismatch. The parent warns on a failed call and the shield's
   `setEnabled` / `setControl` resolve to `false`.
 - When uBlock's background starts (`ready` event), the shield re-applies every
   stored ads-off domain.
@@ -70,10 +71,12 @@ changes them.
 
 ## Mapping of the three controls
 
-- ads: uBlock's switch for the base domain, plus the pattern
-  `*://*.<base domain>/*` in `urlclassifier.trackingSkipURLs` and
-  `urlclassifier.trackingAnnotationSkipURLs` (exact entries added and removed,
-  others kept). That lifts Firefox's tracker blocking and annotation only.
+- ads: uBlock's switch for the base domain, and nothing else. Firefox's own
+  tracker blocking stays on whatever this control says. (The
+  `urlclassifier.trackingSkipURLs` prefs were tried and dropped: they are
+  matched against the blocked tracker resource's URL, not the page, so an entry
+  for a site exempts that site's resources everywhere and changes nothing on
+  the site itself.)
 - fingerprinting: an entry `{firstPartyDomain, overrides: "-AllTargets"}` in
   `privacy.fingerprintingProtection.granularOverrides` (and the baseline
   variant).
@@ -82,12 +85,15 @@ changes them.
 ## Coupling
 
 The `trackingprotection` permission is Firefox's content blocking allow list,
-its only per-site lever for cookie blocking. With cookies off, Firefox's tracker
-and fingerprinting protection are lifted for that site too, while uBlock keeps
+its only per-site lever for cookie blocking, and the only thing that lifts
+Firefox's tracker blocking for a site. With cookies off, Firefox's tracker and
+fingerprinting protection are lifted for that site too, while uBlock keeps
 blocking. `state()` reports this: `fingerprinting` and `cookies` read false
-whenever the allow list covers the site, and `ads` follows uBlock's actual
-state. Re-enabling cookies removes the entry and any leftover entries for
-subdomains of the base domain.
+whenever the allow list covers the site (an entry on the base domain, or one
+Firefox wrote for the page's own principal), and `ads` follows uBlock's actual
+state. The shield owns a site's exceptions in Kyber Fox: re-enabling cookies
+(or the master switch) removes the entry and any entries for subdomains of the
+base domain, including ones Firefox wrote.
 
 ## Running uBlock offline under the harness
 
@@ -123,9 +129,18 @@ bundled `filters.txt` lists were not used; the test rule is a user filter.
 ## Private windows
 
 Nothing global is ever written from a private window: no fingerprinting
-override, no skip-URL pref, no uBlock call. uBlock's trusted-sites list and
-those prefs are shared with normal windows and are saved to disk. The only
-lever is the master switch, as the session-only `trackingprotection-pb`
-permission on the private-browsing principal (Firefox removes it with the last
-private window). `state().perControl` is false there and `ads`,
-`fingerprinting` and `cookies` mirror `enabled`; `setControl` does nothing.
+override and no uBlock call. uBlock's trusted-sites list and the prefs are
+shared with normal windows and are saved to disk. The only lever is the master
+switch, as the session-only `trackingprotection-pb` permission written on the
+`https://<base domain>` principal with `privateBrowsingId: 1` (read non-exactly,
+so a `www.` page and the base domain share it; removed with the last private
+window). `state().perControl` is false there and `ads`, `fingerprinting` and
+`cookies` mirror `enabled`, except that `state()` still reports global state
+written from normal windows, which applies in private windows too: an allow
+list entry, a fingerprinting exception, and (if uBlock is allowed in private
+windows) a site uBlock does not filter. `setControl` does nothing there.
+
+## IP hosts
+
+A literal IPv4 host is its own site (the host is the key). IPv6 literals are
+unsupported.

@@ -1,6 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
  * Kyber Fox shield: the per-site switch over three protections.
@@ -10,9 +10,8 @@
  * means protected: only a switched-off protection is stored. Each choice is
  * applied to the mechanism that does the protecting:
  *
- *  - ads: uBlock Origin's per-site switch (KyberUBlockBridge), plus the
- *    base domain in the two tracking skip-URL prefs, which lifts Firefox's
- *    tracker blocking and annotation;
+ *  - ads: uBlock Origin's per-site switch (KyberUBlockBridge). Firefox's own
+ *    tracker blocking stays on whatever this control says;
  *  - fingerprinting: a per-domain override of Firefox's fingerprinting
  *    protection;
  *  - cookies: the "trackingprotection" permission, Firefox's only per-site
@@ -23,8 +22,10 @@
  * the site too (uBlock keeps blocking). state() reports this truth.
  *
  * Private windows: nothing global is written. The only lever is the master
- * switch, as the session-only "trackingprotection-pb" permission, and the
- * three controls follow it (state().perControl is false there).
+ * switch, as the session-only "trackingprotection-pb" permission on the
+ * private-browsing principal of the base domain, and the three controls
+ * follow it (state().perControl is false there). state() still reports global
+ * state written from normal windows, which applies there too.
  */
 
 import { KyberUBlockBridge } from "resource:///modules/KyberUBlockBridge.sys.mjs";
@@ -43,6 +44,7 @@ const CONTROLS = {
   cookies: "kyber-shield-cookies",
 };
 const ALLOW_LIST = "trackingprotection";
+const ALLOW_LIST_PB = "trackingprotection-pb";
 
 const FP_PREFS = [
   "privacy.fingerprintingProtection.granularOverrides",
@@ -50,13 +52,9 @@ const FP_PREFS = [
 ];
 const FP_OVERRIDE = "-AllTargets";
 
-const SKIP_PREFS = [
-  "urlclassifier.trackingSkipURLs",
-  "urlclassifier.trackingAnnotationSkipURLs",
-];
-
 /**
  * The site a browser shows, or null if the shield does not handle the page.
+ * Literal IPv4 hosts are their own site; IPv6 literals are not handled.
  *
  * @param {XULBrowserElement} browser
  * @returns {{domain: string, priv: boolean}|null}
@@ -66,22 +64,22 @@ function siteOf(browser) {
   if (!uri || (uri.scheme != "http" && uri.scheme != "https")) {
     return null;
   }
-  let domain;
+  let host;
   try {
-    domain = Services.eTLD.getBaseDomain(uri);
+    host = uri.host;
   } catch (e) {
-    // An IP address, or a single-label host such as localhost.
-    try {
-      domain = uri.host;
-    } catch (e2) {
-      return null;
-    }
-  }
-  if (!domain) {
     return null;
   }
-  if (domain.includes(":")) {
-    domain = `[${domain}]`;
+  if (!host || host.includes(":") || host.startsWith("[")) {
+    return null;
+  }
+  let domain = host;
+  if (!/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    try {
+      domain = Services.eTLD.getBaseDomain(uri);
+    } catch (e) {
+      // A single-label host such as localhost.
+    }
   }
   return { domain, priv: lazy.PrivateBrowsingUtils.isBrowserPrivate(browser) };
 }
@@ -120,14 +118,68 @@ function isProtected(domain, control) {
   return isOn(domain, MASTER) && isOn(domain, CONTROLS[control]);
 }
 
-// Whether the content blocking allow list covers the site.
-function allowListed(domain) {
+// Whether the content blocking allow list covers the site: an entry on the
+// base domain (Firefox looks entries up non-exactly), or one Firefox wrote
+// for the browser's own principal, such as a www. page.
+function allowListed(domain, browser) {
   return (
     Services.perms.testPermissionFromPrincipal(
       principalFor(domain),
       ALLOW_LIST
-    ) == Services.perms.ALLOW_ACTION
+    ) == Services.perms.ALLOW_ACTION ||
+    (!!browser &&
+      lazy.ContentBlockingAllowList.canHandle(browser) &&
+      lazy.ContentBlockingAllowList.includes(browser))
   );
+}
+
+// The private-browsing master switch is a session permission on the base
+// domain's private-browsing principal.
+function privatePrincipal(domain) {
+  return Services.scriptSecurityManager.createContentPrincipal(
+    Services.io.newURI(`https://${domain}`),
+    { privateBrowsingId: 1 }
+  );
+}
+
+function privateEntry(domain, browser) {
+  return (
+    Services.perms.testPermissionFromPrincipal(
+      privatePrincipal(domain),
+      ALLOW_LIST_PB
+    ) == Services.perms.ALLOW_ACTION ||
+    (lazy.ContentBlockingAllowList.canHandle(browser) &&
+      lazy.ContentBlockingAllowList.includes(browser))
+  );
+}
+
+let gObservingPrivate = false;
+
+function setPrivateEntry(domain, off) {
+  let principal = privatePrincipal(domain);
+  if (off) {
+    if (!gObservingPrivate) {
+      gObservingPrivate = true;
+      // Session permissions outlive the last private window; drop them.
+      Services.obs.addObserver(() => {
+        Services.perms.removeByType(ALLOW_LIST_PB);
+      }, "last-pb-context-exited");
+    }
+    Services.perms.addFromPrincipal(
+      principal,
+      ALLOW_LIST_PB,
+      Services.perms.ALLOW_ACTION,
+      Services.perms.EXPIRE_SESSION
+    );
+    return;
+  }
+  Services.perms.removeFromPrincipal(principal, ALLOW_LIST_PB);
+  for (let perm of Services.perms.getAllWithTypePrefix(ALLOW_LIST_PB)) {
+    let host = perm.principal.host;
+    if (perm.type == ALLOW_LIST_PB && host.endsWith(`.${domain}`)) {
+      Services.perms.removePermission(perm);
+    }
+  }
 }
 
 // Fingerprinting protection
@@ -138,6 +190,18 @@ function fpEntryIsOurs(entry, domain) {
     entry.overrides === FP_OVERRIDE &&
     !entry.thirdPartyDomain
   );
+}
+
+// Whether Firefox's fingerprinting protection has our exception for the site.
+function fpOverridden(domain) {
+  try {
+    let list = JSON.parse(
+      Services.prefs.getStringPref(FP_PREFS[0], "") || "[]"
+    );
+    return Array.isArray(list) && list.some(e => fpEntryIsOurs(e, domain));
+  } catch (e) {
+    return false;
+  }
 }
 
 function enforceFingerprinting(domain, protect) {
@@ -194,31 +258,7 @@ function enforceCookies(domain, protect) {
 
 // Ads: uBlock Origin and Firefox's tracker blocking
 
-function skipPattern(domain) {
-  return `*://*.${domain}/*`;
-}
-
-function enforceSkipUrls(domain, protect) {
-  let entry = skipPattern(domain);
-  for (let pref of SKIP_PREFS) {
-    let list = Services.prefs
-      .getStringPref(pref, "")
-      .split(",")
-      .filter(Boolean);
-    if (list.includes(entry) == !protect) {
-      continue;
-    }
-    list = protect ? list.filter(e => e != entry) : [...list, entry];
-    if (list.length) {
-      Services.prefs.setStringPref(pref, list.join(","));
-    } else {
-      Services.prefs.clearUserPref(pref);
-    }
-  }
-}
-
 function enforceAds(domain, protect) {
-  enforceSkipUrls(domain, protect);
   return KyberUBlockBridge.setSite(domain, protect);
 }
 
@@ -285,17 +325,23 @@ export const KyberShield = {
     }
     let { domain, priv } = site;
     if (priv) {
-      let enabled = !lazy.ContentBlockingAllowList.includes(browser);
+      // Global state from normal windows applies here too.
+      let enabled = !privateEntry(domain, browser) && !allowListed(domain);
       return {
         supported: true,
         perControl: false,
         enabled,
-        ads: enabled,
-        fingerprinting: enabled,
+        ads:
+          enabled &&
+          !(
+            KyberUBlockBridge.privateAllowed &&
+            KyberUBlockBridge.isSiteOff(domain)
+          ),
+        fingerprinting: enabled && !fpOverridden(domain),
         cookies: enabled,
       };
     }
-    let listed = allowListed(domain);
+    let listed = allowListed(domain, browser);
     return {
       supported: true,
       perControl: true,
@@ -322,13 +368,7 @@ export const KyberShield = {
       return true;
     }
     if (site.priv) {
-      if (lazy.ContentBlockingAllowList.canHandle(browser)) {
-        if (value) {
-          lazy.ContentBlockingAllowList.remove(browser);
-        } else {
-          lazy.ContentBlockingAllowList.add(browser);
-        }
-      }
+      setPrivateEntry(site.domain, !value);
       return true;
     }
     storeChoice(site.domain, MASTER, !!value);

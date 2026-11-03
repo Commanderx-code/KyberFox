@@ -38,6 +38,18 @@ const gCallLog = [];
 const gStartCallbacks = new Set();
 let gWatching = false;
 
+// uBlock's own rule: the page's hostname or any parent domain is trusted.
+function isOff(sites, domain) {
+  for (let key = domain; ; key = key.slice(key.indexOf(".") + 1)) {
+    if (sites.has(key)) {
+      return true;
+    }
+    if (!key.includes(".")) {
+      return false;
+    }
+  }
+}
+
 function extension() {
   return lazy.ExtensionParent.GlobalManager.getExtension(UBLOCK_ID);
 }
@@ -122,9 +134,15 @@ export const KyberUBlockBridge = {
     watchStart();
   },
 
-  // Whether uBlock does not filter a base domain (last known).
+  /** Whether uBlock is allowed to run in private windows. */
+  get privateAllowed() {
+    return !!extension()?.privateBrowsingAllowed;
+  },
+
+  // Whether uBlock does not filter a base domain (last known): a trusted-site
+  // directive for it or for a parent domain.
   isSiteOff(domain) {
-    return gOffSites.has(domain);
+    return isOff(gOffSites, domain);
   },
 
   /**
@@ -160,11 +178,12 @@ export const KyberUBlockBridge = {
       url: `https://${domain}/`,
       state: protect,
     });
-    let ok = !!reply?.ok;
-    gCallLog.push({ domain, protect, ok });
     if (reply?.sites) {
       gOffSites = new Set(reply.sites);
     }
+    // Compare the effective state, not the exact directive.
+    let ok = !!reply?.ok && isOff(gOffSites, domain) == !protect;
+    gCallLog.push({ domain, protect, ok });
     if (!ok) {
       console.warn(
         `KyberShield: uBlock Origin did not ${protect ? "enable" : "disable"} filtering for ${domain}`
