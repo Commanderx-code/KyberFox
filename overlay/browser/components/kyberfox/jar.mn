@@ -4,6 +4,7 @@
 
 browser.jar:
 % content kyberfox %content/kyberfox/
+  content/kyberfox/themes-init.mjs (content/themes-init.mjs)
   content/kyberfox/privacy-presets.mjs (content/privacy-presets.mjs)
   content/kyberfox/shield-ublock-frame.js (content/shield-ublock-frame.js)
   content/kyberfox/shield-off.svg (content/shield-off.svg)
@@ -12,3 +13,6 @@ browser.jar:
   content/kyberfox/shield.svg (content/shield.svg)
   content/kyberfox/workspaces-ui.mjs (content/workspaces-ui.mjs)
   content/kyberfox/workspaces.css (content/workspaces.css)
+  content/kyberfox/themes/base.css (themes/base.css)
+  content/kyberfox/themes/palettes.json (themes/palettes.json)
+  content/kyberfox/themes/status.json (themes/status.json)

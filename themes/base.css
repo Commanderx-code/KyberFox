@@ -1,0 +1,66 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Maps the Kyber theme variables (set from palettes.json by KyberThemes) onto
+ * Firefox's own browser window variables. Registered as a user sheet, so
+ * every declaration needs !important to beat author rules, and the whole
+ * sheet is limited to the browser window so web pages are unaffected. */
+
+@-moz-document url-prefix("chrome://browser/content/browser.xhtml") {
+  :root {
+    --toolbox-background-color: var(--kf-bg) !important;
+    --toolbox-background-color-inactive: var(--kf-bg) !important;
+    --toolbox-text-color: var(--kf-fg) !important;
+    --toolbox-text-color-inactive: var(--kf-fg-muted) !important;
+    --toolbar-background-color: var(--kf-bg-toolbar) !important;
+    --toolbar-text-color: var(--kf-fg) !important;
+    --tab-background-color-selected: var(--kf-bg-tab-active) !important;
+    --toolbar-field-background-color: var(--kf-bg-urlbar) !important;
+    --toolbar-field-background-color-focus: var(--kf-bg-urlbar) !important;
+    --toolbar-field-text-color: var(--kf-fg) !important;
+    --toolbar-field-text-color-focus: var(--kf-fg) !important;
+    --toolbar-field-border-color: var(--kf-border) !important;
+    --urlbar-box-background-color: var(--kf-bg-urlbar) !important;
+    --urlbar-box-text-color: var(--kf-fg) !important;
+    --chrome-content-separator-color: var(--kf-border) !important;
+    --color-accent-primary: var(--kf-accent) !important;
+    --focus-outline-color: var(--kf-accent) !important;
+    --tab-text-color: var(--kf-fg-muted) !important;
+    --tab-text-color-hover: var(--kf-fg) !important;
+    --tab-text-color-selected: var(--kf-fg) !important;
+    --toolbarbutton-icon-fill: var(--kf-fg) !important;
+    --tab-border-radius: var(--kf-radius) !important;
+    --toolbarbutton-border-radius: var(--kf-radius) !important;
+    --urlbar-border-radius: var(--kf-radius) !important;
+    --urlbarview-border-radius: var(--kf-radius) !important;
+    --urlbar-background-border-radius: var(--kf-radius) !important;
+  }
+
+  #navigator-toolbox {
+    font-family: var(--kf-font) !important;
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens -- Kyber palette variable, not a Firefox token */
+    color: var(--kf-fg) !important;
+  }
+
+  #TabsToolbar,
+  #nav-bar {
+    background-image: var(--kf-bg-image) !important;
+  }
+
+  tooltip,
+  panel[type="arrow"] {
+    --panel-background: var(--kf-bg-toolbar) !important;
+    --panel-color: var(--kf-fg) !important;
+    --panel-border-color: var(--kf-border) !important;
+  }
+
+  tooltip {
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens -- Kyber palette variable, not a Firefox token */
+    background-color: var(--kf-bg-toolbar) !important;
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens -- Kyber palette variable, not a Firefox token */
+    color: var(--kf-fg) !important;
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens -- Kyber palette variable, not a Firefox token */
+    border-color: var(--kf-border) !important;
+  }
+}

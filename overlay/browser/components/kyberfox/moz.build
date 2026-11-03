@@ -15,6 +15,7 @@ EXTRA_JS_MODULES += [
     "KyberPrivacyPresets.sys.mjs",
     "KyberShield.sys.mjs",
     "KyberShieldWidget.sys.mjs",
+    "KyberThemes.sys.mjs",
     "KyberUBlockBridge.sys.mjs",
     "KyberWorkspaces.sys.mjs",
 ]

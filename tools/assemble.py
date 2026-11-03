@@ -127,6 +127,13 @@ def _merge_terms(target: Path, source_text: str) -> None:
     target.write_text(upstream, encoding="utf-8")
 
 
+def copy_themes(tree: Path) -> None:
+    """Copies themes/ (palettes, base.css, notices) into the Kyber component, after the overlay."""
+    themes = REPO_ROOT / "themes"
+    if themes.is_dir():
+        shutil.copytree(themes, tree / "browser/components/kyberfox/themes", dirs_exist_ok=True)
+
+
 def apply_librewolf_l10n(tree: Path, librewolf: Path) -> list[Path]:
     """Apply LibreWolf's en-US strings, as scripts/librewolf-patches.py does.
 
@@ -224,6 +231,7 @@ def assemble(pins, workdir: Path, allow_failed: bool = False) -> AssemblyResult:
     overlay = REPO_ROOT / "overlay"
     if overlay.is_dir():
         shutil.copytree(overlay, tree, dirs_exist_ok=True)
+    copy_themes(tree)
     _finish_tree(tree, pins, touched, ublock)
     shutil.rmtree(scratch, ignore_errors=True)
     return result
