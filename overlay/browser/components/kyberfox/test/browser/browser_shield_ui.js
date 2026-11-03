@@ -103,6 +103,7 @@ add_setup(async function () {
     for (let pref of [
       "privacy.fingerprintingProtection.granularOverrides",
       "privacy.baselineFingerprintingProtection.granularOverrides",
+      "privacy.resistFingerprinting.exemptedDomains",
     ]) {
       Services.prefs.clearUserPref(pref);
     }

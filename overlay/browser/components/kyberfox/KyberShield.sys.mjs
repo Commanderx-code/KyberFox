@@ -13,7 +13,9 @@
  *  - ads: uBlock Origin's per-site switch (KyberUBlockBridge). Firefox's own
  *    tracker blocking stays on whatever this control says;
  *  - fingerprinting: a per-domain override of Firefox's fingerprinting
- *    protection;
+ *    protection, and an entry in the resist fingerprinting exemption list,
+ *    which is the only per-site lever while resistFingerprinting is on (the
+ *    Strict preset): Firefox reads no override in that mode;
  *  - cookies: the "trackingprotection" permission, Firefox's only per-site
  *    lever for cookie blocking.
  *
@@ -51,6 +53,7 @@ const FP_PREFS = [
   "privacy.baselineFingerprintingProtection.granularOverrides",
 ];
 const FP_OVERRIDE = "-AllTargets";
+const RFP_EXEMPT = "privacy.resistFingerprinting.exemptedDomains";
 
 /**
  * The site a browser shows, or null if the shield does not handle the page.
@@ -231,6 +234,44 @@ function enforceFingerprinting(domain, protect) {
   }
 }
 
+// The exemption list entries for a site: the base domain and its subdomains.
+function rfpEntries(domain) {
+  return /^\d+\.\d+\.\d+\.\d+$/.test(domain)
+    ? [domain]
+    : [domain, `*.${domain}`];
+}
+
+function rfpExemptList() {
+  return Services.prefs
+    .getStringPref(RFP_EXEMPT, "")
+    .split(",")
+    .map(e => e.trim())
+    .filter(Boolean);
+}
+
+// Whether resist fingerprinting exempts the site.
+function rfpExempted(domain) {
+  return rfpExemptList().some(e => e.toLowerCase() == domain);
+}
+
+// Adds or removes the site's entries, keeping every other entry.
+function enforceRFPExemption(domain, protect) {
+  let ours = rfpEntries(domain);
+  let kept = rfpExemptList().filter(e => !ours.includes(e.toLowerCase()));
+  if (!protect) {
+    kept.push(...ours);
+  }
+  let value = kept.join(",");
+  let initial = Services.prefs
+    .getDefaultBranch("")
+    .getStringPref(RFP_EXEMPT, "");
+  if (value == initial) {
+    Services.prefs.clearUserPref(RFP_EXEMPT);
+  } else {
+    Services.prefs.setStringPref(RFP_EXEMPT, value);
+  }
+}
+
 // Cookies: the content blocking allow list
 
 function enforceCookies(domain, protect) {
@@ -270,6 +311,7 @@ function enforce(domain, control) {
       return enforceAds(domain, protect);
     case "fingerprinting":
       enforceFingerprinting(domain, protect);
+      enforceRFPExemption(domain, protect);
       break;
     case "cookies":
       enforceCookies(domain, protect);
@@ -337,7 +379,8 @@ export const KyberShield = {
             KyberUBlockBridge.privateAllowed &&
             KyberUBlockBridge.isSiteOff(domain)
           ),
-        fingerprinting: enabled && !fpOverridden(domain),
+        fingerprinting:
+          enabled && !fpOverridden(domain) && !rfpExempted(domain),
         cookies: enabled,
       };
     }
@@ -347,7 +390,10 @@ export const KyberShield = {
       perControl: true,
       enabled: isOn(domain, MASTER),
       ads: isProtected(domain, "ads") && !KyberUBlockBridge.isSiteOff(domain),
-      fingerprinting: isProtected(domain, "fingerprinting") && !listed,
+      fingerprinting:
+        isProtected(domain, "fingerprinting") &&
+        !listed &&
+        !rfpExempted(domain),
       cookies: isProtected(domain, "cookies") && !listed,
     };
   },

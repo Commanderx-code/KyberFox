@@ -79,7 +79,10 @@ changes them.
   the site itself.)
 - fingerprinting: an entry `{firstPartyDomain, overrides: "-AllTargets"}` in
   `privacy.fingerprintingProtection.granularOverrides` (and the baseline
-  variant).
+  variant), plus `<domain>,*.<domain>` in
+  `privacy.resistFingerprinting.exemptedDomains`. With resistFingerprinting on
+  (the Strict preset) Firefox reads no override, so the exemption list is the
+  only per-site lever there. Other entries in the list are kept.
 - cookies: the `trackingprotection` permission on the base-domain principal.
 
 ## Coupling

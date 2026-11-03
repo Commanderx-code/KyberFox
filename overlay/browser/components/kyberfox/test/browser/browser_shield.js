@@ -20,6 +20,7 @@ const UBLOCK_ID = "uBlock0@raymondhill.net";
 const DIR = "/browser/browser/components/kyberfox/test/browser/";
 const PAGE = "shield_page.html";
 const FP_PREF = "privacy.fingerprintingProtection.granularOverrides";
+const RFP_EXEMPT = "privacy.resistFingerprinting.exemptedDomains";
 const PERM_TYPES = [
   "kyber-shield",
   "kyber-shield-ads",
@@ -147,6 +148,7 @@ add_setup(async function () {
     Services.prefs.clearUserPref(
       "privacy.baselineFingerprintingProtection.granularOverrides"
     );
+    Services.prefs.clearUserPref(RFP_EXEMPT);
     Services.perms.removeByType("trackingprotection");
     Services.perms.removeByType("trackingprotection-pb");
     for (let type of PERM_TYPES) {
@@ -275,6 +277,69 @@ add_task(async function test_control_persists_per_site() {
   Assert.deepEqual(shieldPerms(), [], "turning it back on stores nothing");
   Assert.deepEqual(fpEntries(), [], "and removes the exception");
   BrowserTestUtils.removeTab(back);
+});
+
+// Strict turns resistFingerprinting on, and Firefox then reads no granular
+// override: the exemption list is what relaxes the site.
+add_task(async function test_fingerprinting_off_exempts_site_from_rfp() {
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["privacy.resistFingerprinting", true],
+      [RFP_EXEMPT, "*.example.invalid,keep.example.net"],
+    ],
+  });
+  let exempt = () => Services.prefs.getStringPref(RFP_EXEMPT, "").split(",");
+  let tab = await openPage("www.example.com");
+  let browser = tab.linkedBrowser;
+
+  await KyberShield.setControl(browser, "fingerprinting", false);
+  Assert.deepEqual(
+    exempt(),
+    ["*.example.invalid", "keep.example.net", "example.com", "*.example.com"],
+    "the base domain and its subdomains are exempted, other entries kept"
+  );
+  Assert.equal(
+    KyberShield.state(browser).fingerprinting,
+    false,
+    "state reports fingerprinting protection off"
+  );
+
+  await KyberShield.setControl(browser, "fingerprinting", false);
+  await KyberShield.setEnabled(browser, false);
+  Assert.deepEqual(
+    exempt(),
+    ["*.example.invalid", "keep.example.net", "example.com", "*.example.com"],
+    "turning it off again, or the master switch off, adds nothing twice"
+  );
+  await KyberShield.setEnabled(browser, true);
+
+  await KyberShield.setControl(browser, "fingerprinting", true);
+  Assert.deepEqual(
+    exempt(),
+    ["*.example.invalid", "keep.example.net"],
+    "turning it back on removes only the site's entries"
+  );
+  Assert.deepEqual(
+    KyberShield.state(browser),
+    ALL_ON,
+    "state reports fingerprinting protection on"
+  );
+
+  await KyberShield.setEnabled(browser, false);
+  Assert.ok(
+    exempt().includes("example.com"),
+    "the master switch off also exempts the site"
+  );
+  await KyberShield.setEnabled(browser, true);
+  Assert.deepEqual(
+    exempt(),
+    ["*.example.invalid", "keep.example.net"],
+    "and the master switch on removes it"
+  );
+
+  BrowserTestUtils.removeTab(tab);
+  Assert.deepEqual(shieldPerms(), [], "nothing is left stored");
+  await SpecialPowers.popPrefEnv();
 });
 
 add_task(async function test_cookies_off_lifts_firefox_protection() {
@@ -475,6 +540,10 @@ add_task(async function test_private_window_setting_not_persisted() {
   Assert.ok(
     !Services.prefs.prefHasUserValue(FP_PREF),
     "fingerprinting overrides are unchanged"
+  );
+  Assert.ok(
+    !Services.prefs.prefHasUserValue(RFP_EXEMPT),
+    "the resist fingerprinting exemption list is unchanged"
   );
   Assert.equal(
     KyberUBlockBridge.callLog.length,
