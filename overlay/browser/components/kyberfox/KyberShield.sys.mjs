@@ -1,47 +1,40 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /**
  * Kyber Fox shield: the per-site switch over three protections.
  *
  * The user's choices live in Services.perms, keyed by the site's base domain
  * (the principal of https://<base domain>), so subdomains share them. Absent
- * means protected: only a switched-off protection is stored. The module
- * applies each choice to the mechanism that does the protecting:
+ * means protected: only a switched-off protection is stored. Each choice is
+ * applied to the mechanism that does the protecting:
  *
- *  - ads: uBlock Origin's per-site switch, plus Firefox's tracking protection
- *    through the content blocking allow list;
+ *  - ads: uBlock Origin's per-site switch (KyberUBlockBridge), plus the
+ *    base domain in the two tracking skip-URL prefs, which lifts Firefox's
+ *    tracker blocking and annotation;
  *  - fingerprinting: a per-domain override of Firefox's fingerprinting
  *    protection;
- *  - cookies: the "cookie" permission.
+ *  - cookies: the "trackingprotection" permission, Firefox's only per-site
+ *    lever for cookie blocking.
  *
- * uBlock stays the signed upstream add-on. It has no external messaging and
- * extensions.quarantinedDomains cannot silence it (docs/shield-ublock-
- * control.md), so a frame script runs in its background page and calls the
- * listener its own popup uses.
+ * Coupling: that permission is the content blocking allow list, so with
+ * cookies off Firefox's tracker and fingerprinting protection are lifted for
+ * the site too (uBlock keeps blocking). state() reports this truth.
  *
- * In a private window the choice is kept for the session only: it goes to
- * "-pb" permissions (the content blocking allow list does the same), which
- * Firefox drops with the last private window. The prefs and uBlock's list
- * that enforce a choice are global, so the module records which domains a
- * private window touched and puts them back to the normal settings when the
- * last private window closes.
+ * Private windows: nothing global is written. The only lever is the master
+ * switch, as the session-only "trackingprotection-pb" permission, and the
+ * three controls follow it (state().perControl is false there).
  */
+
+import { KyberUBlockBridge } from "resource:///modules/KyberUBlockBridge.sys.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   ContentBlockingAllowList:
     "resource://gre/modules/ContentBlockingAllowList.sys.mjs",
-  ExtensionParent: "resource://gre/modules/ExtensionParent.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
-  clearTimeout: "resource://gre/modules/Timer.sys.mjs",
-  setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
-
-const UBLOCK_ID = "uBlock0@raymondhill.net";
-const FRAME_SCRIPT = "chrome://kyberfox/content/shield-ublock-frame.js";
-const UBLOCK_TIMEOUT_MS = 5000;
 
 const MASTER = "kyber-shield";
 const CONTROLS = {
@@ -49,7 +42,7 @@ const CONTROLS = {
   fingerprinting: "kyber-shield-fp",
   cookies: "kyber-shield-cookies",
 };
-const PB_SUFFIX = "-pb";
+const ALLOW_LIST = "trackingprotection";
 
 const FP_PREFS = [
   "privacy.fingerprintingProtection.granularOverrides",
@@ -57,13 +50,10 @@ const FP_PREFS = [
 ];
 const FP_OVERRIDE = "-AllTargets";
 
-/** Domains whose enforcement a private window changed. */
-const gPrivateDomains = new Set();
-let gObservingPrivate = false;
-
-/** Background pages that already have the frame script. */
-const gScripted = new WeakSet();
-let gCallId = 0;
+const SKIP_PREFS = [
+  "urlclassifier.trackingSkipURLs",
+  "urlclassifier.trackingAnnotationSkipURLs",
+];
 
 /**
  * The site a browser shows, or null if the shield does not handle the page.
@@ -90,6 +80,9 @@ function siteOf(browser) {
   if (!domain) {
     return null;
   }
+  if (domain.includes(":")) {
+    domain = `[${domain}]`;
+  }
   return { domain, priv: lazy.PrivateBrowsingUtils.isBrowserPrivate(browser) };
 }
 
@@ -99,39 +92,18 @@ function principalFor(domain) {
   );
 }
 
-// Whether a protection is on: a private choice first, then the stored one.
-function isOn(domain, type, priv) {
-  let principal = principalFor(domain);
-  if (priv) {
-    let action = Services.perms.testExactPermissionFromPrincipal(
-      principal,
-      type + PB_SUFFIX
-    );
-    if (action == Services.perms.ALLOW_ACTION) {
-      return true;
-    }
-    if (action == Services.perms.DENY_ACTION) {
-      return false;
-    }
-  }
+function isOn(domain, type) {
   return (
-    Services.perms.testExactPermissionFromPrincipal(principal, type) !=
-    Services.perms.DENY_ACTION
+    Services.perms.testExactPermissionFromPrincipal(
+      principalFor(domain),
+      type
+    ) != Services.perms.DENY_ACTION
   );
 }
 
-function storeChoice(domain, type, value, priv) {
+function storeChoice(domain, type, value) {
   let principal = principalFor(domain);
-  if (priv) {
-    observePrivate();
-    gPrivateDomains.add(domain);
-    Services.perms.addFromPrincipal(
-      principal,
-      type + PB_SUFFIX,
-      value ? Services.perms.ALLOW_ACTION : Services.perms.DENY_ACTION,
-      Services.perms.EXPIRE_SESSION
-    );
-  } else if (value) {
+  if (value) {
     Services.perms.removeFromPrincipal(principal, type);
   } else {
     Services.perms.addFromPrincipal(
@@ -143,29 +115,19 @@ function storeChoice(domain, type, value, priv) {
   }
 }
 
-// Whether a control protects the site right now: it and the master are on.
-function isProtected(domain, control, priv) {
-  return isOn(domain, MASTER, priv) && isOn(domain, CONTROLS[control], priv);
+// Whether a control's own choice and the master are both on.
+function isProtected(domain, control) {
+  return isOn(domain, MASTER) && isOn(domain, CONTROLS[control]);
 }
 
-function observePrivate() {
-  if (gObservingPrivate) {
-    return;
-  }
-  gObservingPrivate = true;
-  Services.obs.addObserver(() => {
-    for (let type of [MASTER, ...Object.values(CONTROLS)]) {
-      Services.perms.removeByType(type + PB_SUFFIX);
-    }
-    let domains = [...gPrivateDomains];
-    gPrivateDomains.clear();
-    for (let domain of domains) {
-      // The window is gone; the allow list drops its own private entries.
-      enforce(null, domain, "ads", false);
-      enforce(null, domain, "fingerprinting", false);
-      enforce(null, domain, "cookies", false);
-    }
-  }, "last-pb-context-exited");
+// Whether the content blocking allow list covers the site.
+function allowListed(domain) {
+  return (
+    Services.perms.testPermissionFromPrincipal(
+      principalFor(domain),
+      ALLOW_LIST
+    ) == Services.perms.ALLOW_ACTION
+  );
 }
 
 // Fingerprinting protection
@@ -205,133 +167,116 @@ function enforceFingerprinting(domain, protect) {
   }
 }
 
-// Cookies
+// Cookies: the content blocking allow list
 
-function enforceCookies(domain, protect, priv) {
+function enforceCookies(domain, protect) {
   let principal = principalFor(domain);
   if (!protect) {
     Services.perms.addFromPrincipal(
       principal,
-      "cookie",
+      ALLOW_LIST,
       Services.perms.ALLOW_ACTION,
-      priv ? Services.perms.EXPIRE_SESSION : Services.perms.EXPIRE_NEVER
+      Services.perms.EXPIRE_NEVER
     );
-  } else if (
-    Services.perms.testExactPermissionFromPrincipal(principal, "cookie") ==
-    Services.perms.ALLOW_ACTION
-  ) {
-    Services.perms.removeFromPrincipal(principal, "cookie");
+    return;
+  }
+  // Also entries Firefox wrote for a subdomain page.
+  for (let perm of Services.perms.getAllWithTypePrefix(ALLOW_LIST)) {
+    let host = perm.principal.host;
+    if (
+      perm.type == ALLOW_LIST &&
+      (host == domain || host.endsWith(`.${domain}`))
+    ) {
+      Services.perms.removePermission(perm);
+    }
   }
 }
 
-// Ads: uBlock Origin and Firefox tracking protection
+// Ads: uBlock Origin and Firefox's tracker blocking
 
-function ublockExtension() {
-  return lazy.ExtensionParent.GlobalManager.getExtension(UBLOCK_ID);
+function skipPattern(domain) {
+  return `*://*.${domain}/*`;
 }
 
-// The tab to send uBlock's call from: the browser's, or any normal window's.
-function tabForUblock(browser) {
-  let win = browser
-    ? browser.documentGlobal
-    : Services.wm.getMostRecentWindow("navigator:browser");
-  if (!win?.gBrowser) {
-    return null;
-  }
-  return browser
-    ? win.gBrowser.getTabForBrowser(browser)
-    : win.gBrowser.selectedTab;
-}
-
-// Turns uBlock's per-site switch for a domain on or off through the listener
-// its popup panel uses. Resolves true if uBlock took the call. A tab is
-// needed because uBlock looks the page store up by tab id.
-async function setUblock(browser, domain, protect) {
-  try {
-    let ext = ublockExtension();
-    let bg = ext?.backgroundContext?.xulBrowser;
-    let tab = tabForUblock(browser);
-    if (!bg || !tab) {
-      return false;
+function enforceSkipUrls(domain, protect) {
+  let entry = skipPattern(domain);
+  for (let pref of SKIP_PREFS) {
+    let list = Services.prefs
+      .getStringPref(pref, "")
+      .split(",")
+      .filter(Boolean);
+    if (list.includes(entry) == !protect) {
+      continue;
     }
-    let tabId = ext.tabManager.getWrapper(tab)?.id;
-    if (tabId === undefined) {
-      return false;
-    }
-    let mm = bg.messageManager;
-    if (!gScripted.has(bg)) {
-      mm.loadFrameScript(FRAME_SCRIPT, true);
-      gScripted.add(bg);
-    }
-    let id = ++gCallId;
-    return await new Promise(resolve => {
-      let done = result => {
-        lazy.clearTimeout(timer);
-        mm.removeMessageListener("KyberShield:UblockDone", listener);
-        resolve(result);
-      };
-      let listener = ({ data }) => {
-        if (data.id == id) {
-          done(data.ok);
-        }
-      };
-      let timer = lazy.setTimeout(() => done(false), UBLOCK_TIMEOUT_MS);
-      mm.addMessageListener("KyberShield:UblockDone", listener);
-      mm.sendAsyncMessage("KyberShield:Ublock", {
-        id,
-        url: `https://${domain}/`,
-        state: protect,
-        tabId,
-      });
-    });
-  } catch (e) {
-    console.error("KyberShield: could not reach uBlock Origin", e);
-    return false;
-  }
-}
-
-async function enforceAds(browser, domain, protect) {
-  if (browser && lazy.ContentBlockingAllowList.canHandle(browser)) {
-    if (protect) {
-      lazy.ContentBlockingAllowList.remove(browser);
+    list = protect ? list.filter(e => e != entry) : [...list, entry];
+    if (list.length) {
+      Services.prefs.setStringPref(pref, list.join(","));
     } else {
-      lazy.ContentBlockingAllowList.add(browser);
+      Services.prefs.clearUserPref(pref);
     }
   }
-  await setUblock(browser, domain, protect);
+}
+
+function enforceAds(domain, protect) {
+  enforceSkipUrls(domain, protect);
+  return KyberUBlockBridge.setSite(domain, protect);
 }
 
 // Applies one control's current effective value to its mechanism.
-function enforce(browser, domain, control, priv) {
-  let protect = isProtected(domain, control, priv);
+function enforce(domain, control) {
+  let protect = isProtected(domain, control);
   switch (control) {
     case "ads":
-      return enforceAds(browser, domain, protect);
+      return enforceAds(domain, protect);
     case "fingerprinting":
       enforceFingerprinting(domain, protect);
       break;
     case "cookies":
-      enforceCookies(domain, protect, priv);
+      enforceCookies(domain, protect);
       break;
   }
-  return Promise.resolve();
+  return Promise.resolve(true);
 }
+
+// Every base domain with a stored choice.
+function storedDomains() {
+  let domains = new Set();
+  for (let perm of Services.perms.getAllWithTypePrefix("kyber-shield")) {
+    domains.add(perm.principal.host);
+  }
+  return domains;
+}
+
+// uBlock may start after the browser (or be reinstalled): give it back the
+// sites the user switched ads off for.
+KyberUBlockBridge.onStart(async () => {
+  for (let domain of storedDomains()) {
+    if (!isProtected(domain, "ads")) {
+      await enforceAds(domain, false);
+    }
+  }
+});
 
 export const KyberShield = {
   /**
    * The shield's state for the page in a browser. For a page the shield does
    * not handle (about:, moz-extension:, file:, view-source:, blank) every
-   * flag is false. A control reads as off while the master switch is off.
+   * flag is false. The flags are the effective truth: all three read off
+   * while the master switch is off, fingerprinting and cookies read off while
+   * the content blocking allow list covers the site, and ads read off while
+   * uBlock does not filter it. In a private window only the master switch
+   * exists: perControl is false and the three controls mirror enabled.
    *
    * @param {XULBrowserElement} browser
-   * @returns {{supported: boolean, enabled: boolean, ads: boolean,
-   *   fingerprinting: boolean, cookies: boolean}}
+   * @returns {{supported: boolean, perControl: boolean, enabled: boolean,
+   *   ads: boolean, fingerprinting: boolean, cookies: boolean}}
    */
   state(browser) {
     let site = siteOf(browser);
     if (!site) {
       return {
         supported: false,
+        perControl: false,
         enabled: false,
         ads: false,
         fingerprinting: false,
@@ -339,52 +284,77 @@ export const KyberShield = {
       };
     }
     let { domain, priv } = site;
+    if (priv) {
+      let enabled = !lazy.ContentBlockingAllowList.includes(browser);
+      return {
+        supported: true,
+        perControl: false,
+        enabled,
+        ads: enabled,
+        fingerprinting: enabled,
+        cookies: enabled,
+      };
+    }
+    let listed = allowListed(domain);
     return {
       supported: true,
-      enabled: isOn(domain, MASTER, priv),
-      ads: isProtected(domain, "ads", priv),
-      fingerprinting: isProtected(domain, "fingerprinting", priv),
-      cookies: isProtected(domain, "cookies", priv),
+      perControl: true,
+      enabled: isOn(domain, MASTER),
+      ads: isProtected(domain, "ads") && !KyberUBlockBridge.isSiteOff(domain),
+      fingerprinting: isProtected(domain, "fingerprinting") && !listed,
+      cookies: isProtected(domain, "cookies") && !listed,
     };
   },
 
   /**
    * Turns the whole shield on or off for the site, keeping each control's own
-   * choice. Resolves once uBlock has acted.
+   * choice. In a private window this is the only switch and lasts for the
+   * session.
    *
    * @param {XULBrowserElement} browser
    * @param {boolean} value
-   * @returns {Promise<void>}
+   * @returns {Promise<boolean>} False if uBlock is running but could not be
+   *   reached; true otherwise, also for a page the shield does not handle.
    */
   async setEnabled(browser, value) {
     let site = siteOf(browser);
     if (!site) {
-      return;
+      return true;
     }
-    storeChoice(site.domain, MASTER, !!value, site.priv);
-    await Promise.all(
-      Object.keys(CONTROLS).map(control =>
-        enforce(browser, site.domain, control, site.priv)
-      )
+    if (site.priv) {
+      if (lazy.ContentBlockingAllowList.canHandle(browser)) {
+        if (value) {
+          lazy.ContentBlockingAllowList.remove(browser);
+        } else {
+          lazy.ContentBlockingAllowList.add(browser);
+        }
+      }
+      return true;
+    }
+    storeChoice(site.domain, MASTER, !!value);
+    let results = await Promise.all(
+      Object.keys(CONTROLS).map(control => enforce(site.domain, control))
     );
+    return results.every(Boolean);
   },
 
   /**
-   * Turns one protection on or off for the site. Resolves once uBlock has
-   * acted.
+   * Turns one protection on or off for the site. Does nothing in a private
+   * window, which has no per-control switches.
    *
    * @param {XULBrowserElement} browser
    * @param {"ads"|"fingerprinting"|"cookies"} control
    * @param {boolean} value
-   * @returns {Promise<void>}
+   * @returns {Promise<boolean>} False if uBlock is running but could not be
+   *   reached; true otherwise.
    */
   async setControl(browser, control, value) {
     let site = siteOf(browser);
-    if (!site || !Object.hasOwn(CONTROLS, control)) {
-      return;
+    if (!site || site.priv || !Object.hasOwn(CONTROLS, control)) {
+      return true;
     }
-    storeChoice(site.domain, CONTROLS[control], !!value, site.priv);
-    await enforce(browser, site.domain, control, site.priv);
+    storeChoice(site.domain, CONTROLS[control], !!value);
+    return enforce(site.domain, control);
   },
 
   /**
@@ -396,18 +366,6 @@ export const KyberShield = {
    * @returns {string}
    */
   blockedCount(browser) {
-    try {
-      let ext = ublockExtension();
-      let tab = tabForUblock(browser);
-      if (!ext || !tab) {
-        return "";
-      }
-      // browserActionFor() returns the API object; its action holds the
-      // per-tab data.
-      let api = lazy.ExtensionParent.apiManager.global.browserActionFor(ext);
-      return api.action.getContextData(tab).badgeText ?? "";
-    } catch (e) {
-      return "";
-    }
+    return KyberUBlockBridge.blockedCount(browser);
   },
 };

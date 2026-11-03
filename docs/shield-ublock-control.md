@@ -41,7 +41,7 @@ uBlock's background page registers message listeners in
 `vAPI.messaging.listeners`. The toolbar popup's power button sends
 `{what: "toggleNetFiltering", url, scope, state, tabId}` to the `popupPanel`
 listener, which adds or removes the site in uBlock's trusted-sites list.
-`KyberShield` loads `content/shield-ublock-frame.js` into the background
+`KyberUBlockBridge` loads `content/shield-ublock-frame.js` into the background
 page's browser (`messageManager.loadFrameScript`, chrome privilege) and has it
 call that same listener with `url: https://<base domain>/`. Observed:
 
@@ -49,15 +49,45 @@ call that same listener with `url: https://<base domain>/`. Observed:
   and on `www.example.com` (uBlock's list matches subdomains). Turning it back
   on blocks it again on the next load.
 - uBlock persists the list itself, so the choice survives a restart.
-- The call needs a tab id, because uBlock looks up the page store by tab. The
-  engine uses the tab of the browser being changed.
+- The bridge passes `tabId: -1` (`vAPI.noTabId`), which is not a real tab.
+  uBlock keeps a "behind the scene" page store for it that always exists, so
+  no window or tab lookup is needed.
+- The frame script treats `vAPI.messaging.UNHANDLED` as a failure, and reads
+  the trusted-sites list back (`getWhitelist` through the default handler)
+  after every toggle; a call that found no page store changes nothing and
+  shows up as a mismatch. The parent warns on a failed call and the shield's
+  `setEnabled` / `setControl` resolve to `false`.
+- When uBlock's background starts (`ready` event), the shield re-applies every
+  stored ads-off domain.
 - `blockedCount` reads the badge: `browserActionFor(extension).action
   .getContextData(tab).badgeText` (the API object keeps the action in
   `.action`). It is `"1"` after the page blocks one request, `""` when none.
 
-Dependencies on uBlock internals: `vAPI.messaging.listeners`, the `popupPanel`
-channel and the `toggleNetFiltering` message. Version 1.75.2 is pinned in
-`pins.toml`; `browser_shield.js` fails if an update changes them.
+Dependencies on uBlock internals: `vAPI.messaging.listeners`, the
+`popupPanel` channel, the `toggleNetFiltering` and `getWhitelist` messages.
+Version 1.75.2 is pinned in `pins.toml`; `browser_shield.js` fails if an update
+changes them.
+
+## Mapping of the three controls
+
+- ads: uBlock's switch for the base domain, plus the pattern
+  `*://*.<base domain>/*` in `urlclassifier.trackingSkipURLs` and
+  `urlclassifier.trackingAnnotationSkipURLs` (exact entries added and removed,
+  others kept). That lifts Firefox's tracker blocking and annotation only.
+- fingerprinting: an entry `{firstPartyDomain, overrides: "-AllTargets"}` in
+  `privacy.fingerprintingProtection.granularOverrides` (and the baseline
+  variant).
+- cookies: the `trackingprotection` permission on the base-domain principal.
+
+## Coupling
+
+The `trackingprotection` permission is Firefox's content blocking allow list,
+its only per-site lever for cookie blocking. With cookies off, Firefox's tracker
+and fingerprinting protection are lifted for that site too, while uBlock keeps
+blocking. `state()` reports this: `fingerprinting` and `cookies` read false
+whenever the allow list covers the site, and `ads` follows uBlock's actual
+state. Re-enabling cookies removes the entry and any leftover entries for
+subdomains of the base domain.
 
 ## Running uBlock offline under the harness
 
@@ -92,7 +122,10 @@ bundled `filters.txt` lists were not used; the test rule is a user filter.
 
 ## Private windows
 
-uBlock is not allowed in private windows unless the user grants it, and its
-trusted-sites list is global. The engine therefore stores a private-window
-choice in session-only permissions and undoes the global enforcement when the
-last private window closes (see `KyberShield.sys.mjs`).
+Nothing global is ever written from a private window: no fingerprinting
+override, no skip-URL pref, no uBlock call. uBlock's trusted-sites list and
+those prefs are shared with normal windows and are saved to disk. The only
+lever is the master switch, as the session-only `trackingprotection-pb`
+permission on the private-browsing principal (Firefox removes it with the last
+private window). `state().perControl` is false there and `ads`,
+`fingerprinting` and `cookies` mirror `enabled`; `setControl` does nothing.
