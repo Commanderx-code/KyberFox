@@ -92,6 +92,8 @@ def _follow_collection_pref(tree: Path) -> None:
 # LibreWolf's brandings.ftl lists only its renamed terms. Applying it means
 # replacing those terms in the upstream file in place and keeping the rest.
 BRANDINGS_L10N = "toolkit/toolkit/branding/brandings.ftl"
+# Terms LibreWolf leaves with a Mozilla name; Settings search shows this one.
+KYBER_BRAND_TERMS = "-firefoxlabs-brand-name = Labs\n"
 
 _TERM_START = re.compile(r"^(-[A-Za-z0-9_-]+)[ \t]*=", re.MULTILINE)
 
@@ -176,6 +178,12 @@ def apply_librewolf_l10n(tree: Path, librewolf: Path) -> list[Path]:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(text, encoding="utf-8")
         written.append(target)
+        if rel.as_posix() == BRANDINGS_L10N:
+            present = _term_blocks(target.read_text(encoding="utf-8"))
+            ours = "".join(l + "\n" for l in KYBER_BRAND_TERMS.splitlines()
+                           if l.split("=")[0].strip() in present)
+            if ours:
+                _merge_terms(target, ours)
     return written
 
 

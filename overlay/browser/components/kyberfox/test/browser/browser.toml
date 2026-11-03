@@ -12,6 +12,10 @@ prefs = [
 
 ["browser_identity.js"]
 
+["browser_import_wizard.js"]
+
+["browser_sync_hidden.js"]
+
 ["browser_privacy_presets.js"]
 
 ["browser_shield.js"]

@@ -37,7 +37,16 @@ diff --git a/browser/components/preferences/config/account-sync.mjs b/browser/co
 diff --git a/browser/components/preferences/preferences.js b/browser/components/preferences/preferences.js
 --- a/browser/components/preferences/preferences.js
 +++ b/browser/components/preferences/preferences.js
-@@ -588,7 +588,8 @@
+@@ -457,6 +457,8 @@
+     ],
+     module: "chrome://browser/content/preferences/config/account-sync.mjs",
+     replaces: "sync",
++    // Kyber Fox: no pane, nav button or search result while accounts are off.
++    visible: () => Services.prefs.getBoolPref("identity.fxaccounts.enabled"),
+   },
+   moreFromMozilla: {
+     l10nId: "more-from-moz-page-header",
+@@ -588,7 +590,8 @@
    if (redesignEnabled) {
      categorySync.setAttribute("data-l10n-id", "pane-account-sync-title2");
      categorySync.iconSrc = "chrome://browser/skin/fxa/avatar-empty.svg";
@@ -47,7 +56,7 @@ diff --git a/browser/components/preferences/preferences.js b/browser/components/
    } else if (accountsEnabled) {
      categorySync.hidden = false;
      register_module("paneSync", gSyncPane);
-@@ -736,10 +737,19 @@
+@@ -736,10 +739,19 @@
  ) {
    let redesignEnabled = srdSectionPrefs.all;
    let categories = document.getElementById("categories");
@@ -69,3 +78,23 @@ diff --git a/browser/components/preferences/preferences.js b/browser/components/
    let hash = document.location.hash;
    let category = aCategory || hash.substring(1) || kDefaultCategoryInternalName;
  
+diff --git a/browser/components/migration/MigrationUtils.sys.mjs b/browser/components/migration/MigrationUtils.sys.mjs
+--- a/browser/components/migration/MigrationUtils.sys.mjs
++++ b/browser/components/migration/MigrationUtils.sys.mjs
+@@ -666,6 +666,16 @@
+       return Promise.resolve();
+     }
+ 
++    // Kyber Fox: the Sync category that hosts the wizard in the redesigned
++    // Settings is hidden while accounts are off, so open the wizard on its own.
++    if (
++      !Services.prefs.getBoolPref("identity.fxaccounts.enabled", false) &&
++      Services.prefs.getBoolPref("browser.settings-redesign.enabled", false)
++    ) {
++      openStandaloneWindow(false /* blocking */);
++      return Promise.resolve();
++    }
++
+     if (aOpener?.openPreferences) {
+       if (aOptions.entrypoint == this.MIGRATION_ENTRYPOINTS.NEWTAB) {
+         if (aboutWelcomeBehavior == "autoclose") {

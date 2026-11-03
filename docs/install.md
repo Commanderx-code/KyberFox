@@ -68,7 +68,7 @@ addons.mozilla.org. You can skip the page and find it again later under Privacy
 and security in Settings. uBlock Origin is already included.
 
 To bring bookmarks, passwords and history over from another browser, use
-File, Import from Another Browser (press Alt if the menu bar is hidden), or
+File, Import From Another Browser… (press Alt if the menu bar is hidden), or
 Import and Backup in the bookmarks Library window. There is no Account or
 Sync page in Settings, so that is the only import path.
 

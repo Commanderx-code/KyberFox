@@ -53,6 +53,15 @@ def test_brandings_terms_are_replaced_in_place(tmp_path):
     )
 
 
+def test_labs_term_is_renamed_after_librewolf_terms(tmp_path):
+    tree, lw, l10n = _setup(tmp_path)
+    target = tree / "toolkit/locales/en-US/toolkit/branding/brandings.ftl"
+    _write(target, "-firefoxlabs-brand-name = Firefox Labs by Mozilla\n-b-brand-name = Old B\n")
+    _write(l10n / "en-US/toolkit/toolkit/branding/brandings.ftl", "-b-brand-name = B\n")
+    apply_librewolf_l10n(tree, lw)
+    assert target.read_text(encoding="utf-8") == "-firefoxlabs-brand-name = Labs\n-b-brand-name = B\n"
+
+
 def test_brandings_unknown_term_raises(tmp_path):
     tree, lw, l10n = _setup(tmp_path)
     _write(tree / "toolkit/locales/en-US/toolkit/branding/brandings.ftl", "-a = A\n")
