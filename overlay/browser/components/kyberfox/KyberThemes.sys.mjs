@@ -14,6 +14,7 @@ const THEMES_URI = "chrome://kyberfox/content/themes/";
 const ID_PREF = "kyberfox.theme.id";
 const DISABLED_PREF = "kyberfox.theme.disabled";
 const CUSTOM_PREF = "kyberfox.theme.custom";
+const SKIN_BACKUP_PREF = "kyberfox.theme.skinPrefBackup";
 const DEFAULT_ID = "ember";
 const CUSTOM_MAX_BYTES = 1024 * 1024;
 const CUSTOM_NAME = "kyberfox-custom.css";
@@ -52,6 +53,10 @@ let gPaletteUri = null;
 let gCurrent = DEFAULT_ID;
 let gOnFallback = false;
 let gCustomUri = null;
+// Skins: id -> skin.json, and the sheets of the skin in effect.
+let gSkins = {};
+let gSkinUris = [];
+let gSkinId = null;
 let gCustomLoading = Promise.resolve();
 // Awaited by every import so a reset cannot delete a file imported after it.
 let gFileWork = Promise.resolve();
@@ -74,11 +79,49 @@ function load() {
     }
     gPalettes = palettes;
     gStatus = status;
+    loadSkins();
   } catch (e) {
     console.error("KyberThemes: cannot read the theme files", e);
     gPalettes = FALLBACK;
     gOnFallback = true;
     gStatus = { disabled: [] };
+  }
+}
+
+/**
+ * Adds every skin listed in skins/index.json to gPalettes as kind "skin".
+ * A skin that cannot be read is left out and logged; the others still load.
+ */
+function loadSkins() {
+  let ids;
+  try {
+    ids = readJSON("skins/index.json").skins;
+  } catch (e) {
+    console.error("KyberThemes: cannot read skins/index.json", e);
+    return;
+  }
+  for (let id of Array.isArray(ids) ? ids : []) {
+    try {
+      let skin = readJSON(`skins/${id}/skin.json`);
+      if (
+        skin.id != id ||
+        skin.kind != "skin" ||
+        !Array.isArray(skin.sheets) ||
+        !skin.sheets.length ||
+        Object.hasOwn(gPalettes, id)
+      ) {
+        throw new Error("skin.json has the wrong shape");
+      }
+      gSkins[id] = skin;
+      gPalettes[id] = {
+        name: skin.name,
+        kind: "skin",
+        scheme: skin.scheme,
+        vars: skin.vars,
+      };
+    } catch (e) {
+      console.error(`KyberThemes: cannot read skin ${id}`, e);
+    }
   }
 }
 
@@ -110,9 +153,13 @@ function usable(id) {
 }
 
 function paletteCss(palette) {
-  let body = Object.entries(palette.vars)
-    .map(([k, v]) => `${k}: ${v};`)
-    .join(" ");
+  // A skin brings its own colors; it only gets the color-scheme rules.
+  let body =
+    palette.kind == "skin"
+      ? ""
+      : Object.entries(palette.vars)
+          .map(([k, v]) => `${k}: ${v};`)
+          .join(" ");
   // color-scheme settles Firefox's light-dark() tokens in the browser window
   // whatever browser.theme.* says (LightweightThemeConsumer rewrites those),
   // and leaves the websites' own appearance setting alone.
@@ -121,7 +168,7 @@ function paletteCss(palette) {
   let css = `:root { color-scheme: ${scheme} !important; ${body} } menupopup, panel, tooltip { color-scheme: ${scheme} !important; }`;
   // Only a palette with its own image overrides toolbar images, so
   // WebExtension themes keep theirs under the other palettes.
-  if (palette.vars["--kf-bg-image"] != "none") {
+  if (palette.kind != "skin" && palette.vars["--kf-bg-image"] != "none") {
     css += ` #TabsToolbar, #nav-bar { background-image: var(--kf-bg-image) !important; background-size: 240px 60px !important; background-repeat: repeat !important; }`;
   }
   return `@-moz-document url-prefix("chrome://browser/content/browser.xhtml") { ${css} }`;
@@ -129,6 +176,108 @@ function paletteCss(palette) {
 
 function register(uri) {
   sss.loadAndRegisterSheet(uri, sss.USER_SHEET);
+}
+
+function readPref(name) {
+  switch (Services.prefs.getPrefType(name)) {
+    case Services.prefs.PREF_BOOL:
+      return Services.prefs.getBoolPref(name);
+    case Services.prefs.PREF_INT:
+      return Services.prefs.getIntPref(name);
+    case Services.prefs.PREF_STRING:
+      return Services.prefs.getStringPref(name);
+  }
+  return undefined;
+}
+
+function writePref(name, value) {
+  switch (typeof value) {
+    case "boolean":
+      Services.prefs.setBoolPref(name, value);
+      break;
+    case "number":
+      Services.prefs.setIntPref(name, value);
+      break;
+    case "string":
+      Services.prefs.setStringPref(name, value);
+      break;
+    default:
+      throw new Error(`unsupported value for ${name}`);
+  }
+}
+
+/** The saved user values of the skin prefs, or null when nothing is saved. */
+function readBackup() {
+  let raw = stringPref(SKIN_BACKUP_PREF, "");
+  if (!raw) {
+    return null;
+  }
+  try {
+    let backup = JSON.parse(raw);
+    return backup && typeof backup == "object" ? backup : null;
+  } catch (e) {
+    console.error("KyberThemes: skin pref backup is damaged", e);
+    return null;
+  }
+}
+
+/** Puts every backed-up pref back (clearing those with no user value). */
+function restoreSkinPrefs() {
+  let backup = readBackup();
+  for (let [name, saved] of Object.entries(backup ?? {})) {
+    try {
+      if (saved.had) {
+        writePref(name, saved.value);
+      } else {
+        Services.prefs.clearUserPref(name);
+      }
+    } catch (e) {
+      console.error(`KyberThemes: cannot restore ${name}`, e);
+    }
+  }
+  Services.prefs.clearUserPref(SKIN_BACKUP_PREF);
+}
+
+/**
+ * Saves the user values of the skin's prefs, then sets the skin's values.
+ * A backup that already covers exactly these prefs (a restart, or a crash
+ * after the prefs were set) is kept as is, so it never records the skin's
+ * own values as the user's.
+ *
+ * @param {object} prefs Pref name to value, from skin.json.
+ */
+function applySkinPrefs(prefs) {
+  let names = Object.keys(prefs);
+  let backup = readBackup();
+  if (
+    backup &&
+    names.length == Object.keys(backup).length &&
+    names.every(n => Object.hasOwn(backup, n))
+  ) {
+    return;
+  }
+  restoreSkinPrefs();
+  let saved = {};
+  for (let name of names) {
+    let had = Services.prefs.prefHasUserValue(name);
+    saved[name] = had ? { had, value: readPref(name) } : { had };
+  }
+  // Written before any pref changes, so a crash cannot lose the user's values.
+  Services.prefs.setStringPref(SKIN_BACKUP_PREF, JSON.stringify(saved));
+  for (let [name, value] of Object.entries(prefs)) {
+    try {
+      writePref(name, value);
+    } catch (e) {
+      console.error(`KyberThemes: cannot set ${name}`, e);
+    }
+  }
+}
+
+function unregisterSkinSheets() {
+  for (let uri of gSkinUris) {
+    sss.unregisterSheet(uri, sss.USER_SHEET);
+  }
+  gSkinUris = [];
 }
 
 /** The only place custom CSS is ever read from or written to. */
@@ -293,11 +442,22 @@ export const KyberThemes = {
     if (!usable(id)) {
       id = DEFAULT_ID;
     }
-    if (!gBaseUri) {
-      gBaseUri = Services.io.newURI(THEMES_URI + "base.css");
-      register(gBaseUri);
-    }
     let palette = gPalettes[id];
+    let skin = palette.kind == "skin" ? gSkins[id] : null;
+    // Whatever skin was in effect goes first: sheets off, prefs back.
+    unregisterSkinSheets();
+    if (skin) {
+      if (gBaseUri) {
+        sss.unregisterSheet(gBaseUri, sss.USER_SHEET);
+        gBaseUri = null;
+      }
+    } else {
+      restoreSkinPrefs();
+      if (!gBaseUri) {
+        gBaseUri = Services.io.newURI(THEMES_URI + "base.css");
+        register(gBaseUri);
+      }
+    }
     let next = Services.io.newURI(
       "data:text/css," + encodeURIComponent(paletteCss(palette))
     );
@@ -306,6 +466,29 @@ export const KyberThemes = {
       sss.unregisterSheet(gPaletteUri, sss.USER_SHEET);
     }
     gPaletteUri = next;
+    if (skin) {
+      // Another skin's prefs go back first. After a restart gSkinId is null
+      // and a matching backup is kept (see applySkinPrefs).
+      if (gSkinId !== null) {
+        restoreSkinPrefs();
+      }
+      try {
+        for (let sheet of skin.sheets) {
+          let uri = Services.io.newURI(`${THEMES_URI}skins/${id}/${sheet}`);
+          register(uri);
+          gSkinUris.push(uri);
+        }
+        applySkinPrefs(skin.prefs ?? {});
+      } catch (e) {
+        console.error(`KyberThemes: cannot apply skin ${id}`, e);
+        unregisterSkinSheets();
+        restoreSkinPrefs();
+        gSkinId = null;
+        this.apply(DEFAULT_ID);
+        return;
+      }
+    }
+    gSkinId = skin ? id : null;
     // Sheets later in registration order win; keep the custom file on top.
     if (gCustomUri) {
       let uri = gCustomUri;
@@ -420,6 +603,8 @@ export const KyberThemes = {
 
   /** Forget everything init() did, so tests can run it again. */
   _resetForTests() {
+    unregisterSkinSheets();
+    gSkinId = null;
     for (let uri of [gBaseUri, gPaletteUri, gCustomUri]) {
       if (uri) {
         sss.unregisterSheet(uri, sss.USER_SHEET);

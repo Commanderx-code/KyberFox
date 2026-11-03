@@ -14,3 +14,4 @@ shield-button.patch
 privacy-presets-pane.patch
 theme-engine.patch
 theme-pane.patch
+lint-skins.patch

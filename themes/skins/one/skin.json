@@ -1,0 +1,30 @@
+{
+  "id": "one",
+  "name": "One-style",
+  "kind": "skin",
+  "scheme": "dark",
+  "sheets": ["colors.css", "userChrome.css"],
+  "prefs": {
+    "svg.context-properties.content.enabled": true,
+    "browser.tabs.delayHidingAudioPlayingIconMS": 0,
+    "browser.newtabpage.activity-stream.improvesearch.handoffToAwesomebar": false,
+    "browser.tabs.allow_transparent_browser": true,
+    "privacy.userContext.enabled": true,
+    "privacy.userContext.ui.enabled": true,
+    "privacy.userContext.longPressBehavior": 2,
+    "firefoxone.without-default-colors": true
+  },
+  "vars": {
+    "--kf-bg": "#09080d",
+    "--kf-bg-toolbar": "#120f19",
+    "--kf-bg-tab-active": "#1d1927",
+    "--kf-bg-urlbar": "#1d1927",
+    "--kf-fg": "#f4f2f7",
+    "--kf-fg-muted": "#aaa4b8",
+    "--kf-accent": "#4c4cff",
+    "--kf-border": "#2a2536",
+    "--kf-radius": "8px",
+    "--kf-font": "inherit",
+    "--kf-bg-image": "none"
+  }
+}

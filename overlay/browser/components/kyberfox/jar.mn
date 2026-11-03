@@ -17,3 +17,6 @@ browser.jar:
   content/kyberfox/themes/base.css (themes/base.css)
   content/kyberfox/themes/palettes.json (themes/palettes.json)
   content/kyberfox/themes/status.json (themes/status.json)
+  content/kyberfox/themes/skins/index.json (themes/skins/index.json)
+  content/kyberfox/themes/skins/gx/ (themes/skins/gx/**)
+  content/kyberfox/themes/skins/one/ (themes/skins/one/**)

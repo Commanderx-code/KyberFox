@@ -34,6 +34,37 @@ Reset (the button, or Ctrl+Shift+Alt+T in any browser window) removes the
 sheet and the file and applies Ember. In safe mode `init()` does nothing, so a
 broken theme or custom file cannot lock you out.
 
+## Skins
+
+`themes/skins/<id>/` holds full skins (kind `skin`): GX-style (`gx`) and
+One-style (`one`), vendored from Godiesc's projects by
+`python -m tools.vendor_skins` at the commits pinned in `pins.toml` (see
+`themes/NOTICES.md` for what is kept and changed). `skins/index.json` lists
+the ids; each `skin.json` has `name`, `scheme`, `sheets`, `prefs` and the
+`--kf-*` `vars` used for the picker card.
+
+`apply("gx")` removes `base.css` and the color palette, registers a sheet
+that sets only `color-scheme` (from `scheme`), then each sheet of the skin
+as a user sheet (`colors.css` first, `userChrome.css` last). Every skin sheet
+is wrapped in `@-moz-document url-prefix("chrome://")`, so it styles browser
+windows and dialogs and never web pages. In-content `about:` pages are not
+styled; the skins' `userContent.css` is not shipped.
+
+The skin's `prefs` are set on apply. The user's own values (or the fact that
+there was none) are first saved as JSON in `kyberfox.theme.skinPrefBackup`
+and put back when another theme is applied or `resetToDefault()` runs. After
+a restart a backup that already covers the skin's prefs is kept, so a crash
+cannot save the skin's values as the user's. Some prefs may need a restart
+or a tab reload to show fully: `browser.tabs.allow_transparent_browser`,
+`svg.context-properties.content.enabled`, `layout.css.corner-shape.enabled`.
+
+A skin that cannot be loaded, or that is listed in `status.json` `disabled`,
+falls back to Ember like any theme.
+
+To update a skin: change its pin in `pins.toml`, run
+`python -m tools.vendor_skins <gx|one>`, commit the diff, and run
+`browser_skins.js`.
+
 ## Known limits
 
 - `@media (prefers-color-scheme: ...)` blocks in Firefox's own CSS follow the

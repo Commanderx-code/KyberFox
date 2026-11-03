@@ -1,0 +1,32 @@
+/* Written for Kyber Fox, not copied from upstream. Stands in for the color
+   theme add-on the One-style skin expects: it sets the lightweight-theme and
+   toolbar variables the skin's CSS reads. */
+
+@-moz-document url-prefix("chrome://")
+{
+  :root {
+    --lwt-accent-color: #09080d !important;
+    --toolbox-background-color: #09080d !important;
+    --toolbox-text-color: #f4f2f7 !important;
+    --lwt-text-color: #f4f2f7 !important;
+    --toolbar-background-color: #120f19 !important;
+    --toolbar-text-color: #f4f2f7 !important;
+    --toolbarbutton-icon-fill: #f4f2f7 !important;
+    --toolbarbutton-icon-fill-attention: #4c4cff !important;
+    --color-accent-primary: #4c4cff !important;
+    --tab-text-color: #aaa4b8 !important;
+    --tab-text-color-selected: #f4f2f7 !important;
+    --tab-background-color-selected: #120f19 !important;
+    --toolbar-field-background-color: #1d1927 !important;
+    --toolbar-field-background-color-focus: #1d1927 !important;
+    --toolbar-field-text-color: #f4f2f7 !important;
+    --toolbar-field-text-color-focus: #f4f2f7 !important;
+    --panel-background-color: #1d1927 !important;
+    --panel-text-color: #f4f2f7 !important;
+    --panel-border-color: #2a2536 !important;
+    --toolbarbutton-background-color-hover: #2b2640 !important;
+    --toolbarbutton-hover-personal: #2b2640 !important;
+    --arrowpanel-background: #1d1927 !important;
+    --chrome-content-separator-color: #2a2536 !important;
+  }
+}
