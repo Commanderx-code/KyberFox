@@ -1,10 +1,8 @@
 # Signed Windows updates
 
-<!-- PLACEHOLDER KEYS: overlay/toolkit/mozapps/update/updater/release_primary.der and
-release_secondary.der are placeholders. Their private keys were generated once and
-deleted. No MAR can ever be signed for them, so no update verifies and none is applied.
-This fails safe. The project owner replaces both files with real keys (see "Owner
-steps") and the Windows build is rebuilt. -->
+**The update certificates in this repository are placeholders.** Their private keys were deleted, so no MAR can be signed for them and no update will verify or apply. That fails safe. The project owner replaces both files with real keys (see "Owner steps").
+
+<!-- PLACEHOLDER KEYS: overlay/toolkit/mozapps/update/updater/release_primary.der and release_secondary.der are placeholders. -->
 
 Kyber Fox updates itself on Windows only. The Linux build is built with `--disable-updater` and is updated through the Arch package repository (`docs/arch-repo.md`).
 
@@ -16,7 +14,7 @@ Kyber Fox updates itself on Windows only. The Linux build is built with `--disab
    https://commanderx-code.github.io/KyberFox/update/%CHANNEL%/%BUILD_TARGET%/update.xml
    ```
 
-   `%CHANNEL%` is `release` (`--enable-update-channel=release`).
+   `%CHANNEL%` is `release` (`--enable-update-channel=release`). `%CHANNEL%` is always `release`; a `test` Pages path is never read by a shipped browser, and every MAR, dry-run included, carries `kyberfox-release`.
 2. `update.xml` is a static file on GitHub Pages, written by `tools/update_manifest.py`. It names one complete MAR on GitHub Releases, its SHA-512 and its size. When nothing newer exists, the file is the empty manifest (`<updates></updates>`).
 3. The browser downloads the MAR from `https://github.com/Commanderx-code/KyberFox/releases/download/v<version>/kyberfox-<version>.complete.mar` and checks the SHA-512.
 4. The updater (`updater.exe`) checks the MAR signature against the certificates built into it, `release_primary.der` and `release_secondary.der`. MAR signature checking is on by default in this Firefox; only `--enable-unverified-updates` turns it off, and `mozconfigs/windows-cross` does not use it. A MAR signed with any other key is refused.
@@ -26,7 +24,7 @@ Installs are per user and the maintenance service is off (`--disable-maintenance
 
 ## The `%BUILD_TARGET%` value
 
-The updater expands `%BUILD_TARGET%` as `Services.appinfo.OS + "_" + ABI` (`toolkit/modules/UpdateUtils.sys.mjs`). For the Windows x86_64 build that is `WINNT_x86_64-msvc-x64` (the ABI string carries an `-x64` suffix). The manifest path must match it, so the file for the current release lives at:
+The updater expands `%BUILD_TARGET%` as `Services.appinfo.OS + "_" + ABI` (`toolkit/modules/UpdateUtils.sys.mjs`). The ABI part is `x86_64-msvc` followed by the architecture of the CPU the browser is running on (`UpdateUtils.sys.mjs` appends `gWinCPUArch`), not the architecture it was built for. The Windows x86_64 build on an x64 machine therefore asks for `WINNT_x86_64-msvc-x64`. The same build under x64 emulation on Windows on Arm asks for `WINNT_x86_64-msvc-aarch64`, and would get a 404 and never update. Release 1 publishes the same manifest under both paths (Task 16 does that). The file for the current release lives at:
 
 ```
 update/release/WINNT_x86_64-msvc-x64/update.xml
@@ -60,9 +58,10 @@ python -m tools.update_manifest --version 159.0 --display-version 159.0-1 --buil
 
 The keys and the signing secret belong to the project owner. Nothing here is automated, and no private key is ever committed.
 
-1. Generate two keys and self-signed certificates (RSA-4096, SHA-384), in the private folder `~/github/projects/kyber-fox-private/keys/`:
+1. Generate two keys and self-signed certificates (RSA-4096, SHA-384), in the private folder:
 
    ```
+   mkdir -p ~/github/projects/kyber-fox-private/keys && cd ~/github/projects/kyber-fox-private/keys
    openssl req -x509 -newkey rsa:4096 -sha384 -days 3650 -nodes \
        -keyout release_primary.key -out release_primary.crt \
        -subj "/CN=Kyber Fox release update signing (primary)"
@@ -71,16 +70,27 @@ The keys and the signing secret belong to the project owner. Nothing here is aut
        -keyout release_secondary.key -out release_secondary.crt \
        -subj "/CN=Kyber Fox release update signing (secondary)"
    openssl x509 -in release_secondary.crt -outform DER -out release_secondary.der
+   chmod 600 *.key
    ```
 
 2. Copy the two `.der` files over the placeholders in `overlay/toolkit/mozapps/update/updater/` and commit them. Only the public certificates are committed.
-3. Store the primary private key as the `MAR_SIGNING_KEY` secret of the `release` GitHub environment (the PEM text of `release_primary.key`). Keep the secondary key offline; it is the spare for key rotation.
-4. Rebuild Windows. Builds made with the placeholder certificates cannot take any update, so users must install a build with the real certificates once.
-5. Run the `apply` job of `smoke-update.yml` against a signed MAR (below).
+3. Store the primary private key as the `MAR_SIGNING_KEY` secret of the `release` GitHub environment, from the keys folder:
+
+   ```
+   gh secret set MAR_SIGNING_KEY --env release < release_primary.key
+   ```
+
+   Keep `release_secondary.key` offline. The committed secondary certificate is the spare: every installed browser already trusts it, so it can sign a release if the primary is lost (see "Rolling keys").
+4. Rebuild Windows: push `release-1` to `build-gate`, or dispatch Build Windows from `main`. Builds made with the placeholder certificates cannot take any update, so users must install a build with the real certificates once.
+5. Exercise the `apply` job against a signed MAR:
+
+   ```
+   gh workflow run smoke-update.yml -f run-id=<Build Windows run> -f signed-mar-run-id=<run that uploaded kyberfox-windows-signed-mar>
+   ```
 
 ## Rolling keys
 
-Firefox accepts a MAR that verifies against either certificate. To replace the primary key: sign releases with the primary, ship a build that carries the new certificate as the secondary (and still the old primary), then switch to signing with the new key, and later drop the old certificate. Never remove the only certificate that the installed base trusts before a build carrying its successor has been out long enough.
+The updater accepts a MAR that verifies against either built-in certificate. A build carries a primary (used for signing) and a secondary (the spare, never used until needed). To rotate, for example after the primary key is lost or exposed: sign the next release with the secondary key (set it as `MAR_SIGNING_KEY`). Every installed browser trusts it, so that release installs. In that release's build, commit the old secondary certificate as the new primary and a freshly generated certificate as the new secondary, so a spare exists again. Never ship a build that drops the certificate the installed base still needs to verify the next update.
 
 ## Smoke test
 

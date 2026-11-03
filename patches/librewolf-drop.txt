@@ -4,4 +4,4 @@ patches/mullvad-dns-migration.patch  # migrates users to Mullvad DNS, a LibreWol
 patches/msix.patch  # Windows MSIX packaging for LibreWolf, not used here
 patches/temp-macos-fix.patch  # temporary macOS build workaround, Kyber Fox does not target macOS
 patches/ui-patches/lw-logo-devtools.patch  # puts the LibreWolf logo in devtools
-patches/updater.patch  # points updates at update.librewolf.net; replaced by patches/kyber/updater.patch with a placeholder host
+patches/updater.patch  # points updates at update.librewolf.net; replaced by patches/kyber/updater.patch with Kyber Fox's own update host (commanderx-code.github.io)

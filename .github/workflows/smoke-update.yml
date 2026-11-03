@@ -20,6 +20,9 @@ name: Smoke test Windows updates
 #
 # Both jobs run tools/smoke_update.ps1. By hand, after this file is on main:
 #   gh workflow run smoke-update.yml -f run-id=<Build Windows run id>
+# and with the apply job (needs the real key):
+#   gh workflow run smoke-update.yml -f run-id=<Build Windows run id> \
+#     -f signed-mar-run-id=<run that uploaded kyberfox-windows-signed-mar>
 # Before the merge, Build Windows calls the refuse job after its Windows smoke.
 on:
   workflow_dispatch:
