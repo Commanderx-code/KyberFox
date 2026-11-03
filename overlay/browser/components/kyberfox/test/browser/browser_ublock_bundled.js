@@ -3,22 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-// uBlock Origin ships in distribution/extensions and is installed on the
-// first run of a clean profile, with no network access.
+// uBlock Origin ships in distribution/extensions. The install itself is
+// checked on a real profile in the first-run audit, because the test harness
+// forbids the network access its filter-list fetch needs.
 const UBLOCK_ID = "uBlock0@raymondhill.net";
-
-add_task(async function test_ublock_is_installed_and_active() {
-  let addon = await AddonManager.getAddonByID(UBLOCK_ID);
-  Assert.ok(addon, "uBlock Origin is installed");
-  Assert.ok(addon.isActive, "uBlock Origin is active");
-  Assert.ok(!addon.userDisabled, "uBlock Origin is not disabled by the user");
-  Assert.ok(!addon.appDisabled, "uBlock Origin is not disabled by the app");
-  Assert.equal(
-    addon.signedState,
-    AddonManager.SIGNEDSTATE_SIGNED,
-    "the bundled XPI keeps its signature"
-  );
-});
 
 add_task(function test_xpi_is_packaged() {
   let file = Services.dirsvc.get("GreD", Ci.nsIFile);
