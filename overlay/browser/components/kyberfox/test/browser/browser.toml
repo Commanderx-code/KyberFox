@@ -14,6 +14,13 @@ support-files = [
   "shield_page.html",
 ]
 
+["browser_shield_ui.js"]
+support-files = [
+  "shield_ad.js",
+  "shield_assets.json",
+  "shield_page.html",
+]
+
 ["browser_ublock_bundled.js"]
 
 ["browser_workspaces.js"]

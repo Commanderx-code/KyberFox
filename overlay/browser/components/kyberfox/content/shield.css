@@ -1,0 +1,52 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* The shield button, right of the address bar, and its panel. */
+
+#kyber-shield-button {
+  list-style-image: url("chrome://kyberfox/content/shield.svg");
+
+  &[shield-off] {
+    list-style-image: url("chrome://kyberfox/content/shield-off.svg");
+  }
+
+  &[disabled] {
+    opacity: 0.4;
+  }
+}
+
+#kyber-shield-panel {
+  --arrowpanel-padding: 12px;
+  min-width: 280px;
+}
+
+.kyber-shield-body {
+  gap: var(--space-small);
+}
+
+#kyber-shield-site {
+  margin: 0;
+  font-size: 1.15em;
+  font-weight: var(--font-weight-semibold);
+}
+
+.kyber-shield-rows {
+  gap: 6px;
+  padding-inline-start: var(--space-xsmall);
+}
+
+.kyber-shield-note {
+  margin: 0;
+  color: var(--text-color-deemphasized);
+  font-size: 0.9em;
+  max-width: 280px;
+}
+
+#kyber-shield-error {
+  color: var(--text-color-error, currentColor);
+}
+
+#kyber-shield-panel [hidden] {
+  display: none;
+}

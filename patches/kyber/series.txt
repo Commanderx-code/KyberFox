@@ -10,3 +10,4 @@ per-user-install.patch
 installer-title.patch
 workspaces-init.patch
 workspace-button.patch
+shield-button.patch

@@ -5,5 +5,9 @@
 browser.jar:
 % content kyberfox %content/kyberfox/
   content/kyberfox/shield-ublock-frame.js (content/shield-ublock-frame.js)
+  content/kyberfox/shield-off.svg (content/shield-off.svg)
+  content/kyberfox/shield.css (content/shield.css)
+  content/kyberfox/shield-ui.mjs (content/shield-ui.mjs)
+  content/kyberfox/shield.svg (content/shield.svg)
   content/kyberfox/workspaces-ui.mjs (content/workspaces-ui.mjs)
   content/kyberfox/workspaces.css (content/workspaces.css)

@@ -30,3 +30,24 @@ kyberfox-workspace-delete-message =
        *[other] This workspace has { $count } tabs in this window. The tabs move to the first workspace.
     }
 kyberfox-workspace-delete-confirm = Delete workspace
+
+## Shield. The button sits right of the address bar and opens a per-site panel.
+
+kyberfox-shield-button =
+    .label = Shield
+    .tooltiptext = Site protection
+kyberfox-shield-panel =
+    .aria-label = Site protection
+# Variables:
+#   $site (string) - The site the shield applies to, for example example.com.
+kyberfox-shield-master =
+    .label = Shield for { $site }
+kyberfox-shield-ads =
+    .label = Ads and trackers
+kyberfox-shield-fingerprinting =
+    .label = Fingerprinting
+kyberfox-shield-cookies =
+    .label = Cookies
+kyberfox-shield-cookies-note = Also turns off Firefox’s tracker and fingerprint blocking for this site. uBlock Origin keeps blocking ads.
+kyberfox-shield-private-note = Private window: one switch for this site, kept only for this session.
+kyberfox-shield-unreachable = uBlock Origin not reachable.
