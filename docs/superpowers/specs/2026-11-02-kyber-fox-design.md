@@ -144,7 +144,7 @@ The toolbar button shows the blocked count for the current site. Its panel holds
 | Extensions | addons.mozilla.org stays, with a few requests to Mozilla when browsing or updating add-ons |
 | Recommended add-ons | A first-run page lists Bitwarden, Proton Pass, KeePassXC-Browser, Privacy Badger, LocalCDN, ClearURLs, NoScript, Consent-O-Matic, Multi-Account Containers, Facebook Container, ProtonMail Launcher, ProtonMail Notifier, Gmail Notifier, SponsorBlock, Return YouTube Dislike, Dark Reader, Tabliss and nightTab with checkboxes, nothing pre-ticked; chosen ones install from addons.mozilla.org on click, nothing is bundled (added 2026-11-03) |
 | New tab | Firefox Home with top sites on; sponsored content, weather, stories and highlights off |
-| Search engines shipped | DuckDuckGo, Startpage, Brave Search, Wikipedia; Google and Bing addable by the user |
+| Search engines shipped | DuckDuckGo, Google, Brave Search, Startpage, Ecosia, Wikipedia; the first-run page lets the user pick the default among the first five (DuckDuckGo preselected); Bing addable by the user (changed 2026-11-03) |
 | Startup | Restore the previous session |
 | Profile on Linux | `~/.config/kyberfox`, cache `~/.cache/kyberfox` (ADR 0002) |
 | Version | Firefox version plus build counter, `159.0-1` (ADR 0001) |
