@@ -561,3 +561,22 @@ add_task(async function test_safe_mode_skips_theme() {
   );
   KyberThemes.apply("ember");
 });
+
+add_task(async function test_reduce_glow_checkbox() {
+  const GLOW_PREF = "kyberfox.theme.reduceGlow";
+  registerCleanupFunction(() => Services.prefs.clearUserPref(GLOW_PREF));
+  let doc = await openPane();
+  let box = doc.getElementById("kyberfoxThemeReduceGlow");
+  Assert.ok(box, "the Reduce glow checkbox is in the pane");
+  await box.updateComplete;
+  Assert.ok(!box.checked, "unchecked by default");
+  box.inputEl.click();
+  await TestUtils.waitForCondition(() => KyberThemes.reduceGlow());
+  Assert.ok(Services.prefs.getBoolPref(GLOW_PREF), "the pref is on");
+  await TestUtils.waitForCondition(() => box.checked, "the box shows it");
+  await box.updateComplete;
+  box.inputEl.click();
+  await TestUtils.waitForCondition(() => !KyberThemes.reduceGlow());
+  Assert.ok(!Services.prefs.getBoolPref(GLOW_PREF, false), "the pref is off");
+  closePane();
+});

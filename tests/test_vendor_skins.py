@@ -156,7 +156,7 @@ def test_vendor_rejects_unbalanced_braces(tmp_path):
 
 def test_committed_skins_have_no_opera_and_a_license():
     ids = json.loads((SKINS / "index.json").read_text())["skins"]
-    assert ids == ["gx", "one"]
+    assert ids == ["gx", "one", "kyber-crystal", "kyber-crimson", "kyber-azure"]
     for i in ids:
         assert (SKINS / i / "LICENSE").read_text().startswith("Mozilla Public License")
         for p in all_files(SKINS / i):

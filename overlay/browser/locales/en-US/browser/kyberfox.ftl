@@ -87,6 +87,9 @@ kyberfox-theme-grid =
     .aria-label = Themes
 kyberfox-theme-card-current = Current
 kyberfox-theme-card-off = Off in this release
+kyberfox-theme-reduce-glow =
+    .label = Reduce glow
+    .description = Tones down the glow of the Kyber Crystal, Crimson and Azure themes.
 kyberfox-theme-import =
     .label = Import custom CSS…
 kyberfox-theme-import-title = Import custom CSS
@@ -130,3 +133,9 @@ kyberfox-welcome-failed = Something went wrong. Nothing else was changed.
 kyberfox-privacy-recommended-addons-link =
     .label = Recommended add-ons
     .description = Choose add-ons and a default search engine from Kyber Fox's short list.
+
+## The private window page under the Kyber themes
+
+kyberfox-private-heading = Private window
+kyberfox-private-subheading = Search privately
+kyberfox-private-note = Your local browsing history is not saved in this window.

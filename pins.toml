@@ -24,3 +24,12 @@ build = 1
 # python -m tools.vendor_skins.
 gx_commit = "1d2bbf2e27dcf56f72f9cd974dfd271159b37ae8"
 one_commit = "8dae8be19f690317a97a608c408f82751ed040be"
+
+[fonts]
+# Sora and Inter (SIL Open Font License 1.1) for the Kyber pages, from the
+# @fontsource npm packages (files/<family>-latin-<weight>-normal.woff2 and
+# LICENSE). The files are committed in
+# overlay/browser/components/kyberfox/content/fonts/ with their SHA-256 in
+# SHA256SUMS there.
+sora = "5.3.0"
+inter = "5.3.0"

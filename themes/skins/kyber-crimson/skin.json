@@ -1,0 +1,29 @@
+{
+  "id": "kyber-crimson",
+  "name": "Crimson",
+  "kind": "skin",
+  "scheme": "dark",
+  "sheets": [
+    "colors.css"
+  ],
+  "shared": [
+    "base.css",
+    "kyber/fonts.css",
+    "kyber/chrome.css",
+    "kyber/pages.css"
+  ],
+  "prefs": {},
+  "vars": {
+    "--kf-bg": "#050102",
+    "--kf-bg-toolbar": "#0f0306",
+    "--kf-bg-tab-active": "#22060c",
+    "--kf-bg-urlbar": "#140408",
+    "--kf-fg": "#fdfefd",
+    "--kf-fg-muted": "#e0a9b6",
+    "--kf-accent": "#fa0226",
+    "--kf-border": "#3d0a14",
+    "--kf-radius": "10px",
+    "--kf-font": "inherit",
+    "--kf-bg-image": "none"
+  }
+}

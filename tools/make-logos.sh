@@ -128,12 +128,41 @@ $svg_header
 SVG
 done
 
-# Wordmarks: the product name as text, in the same 372x99 box as Firefox's.
+# Wordmarks: the outlined "KYBER FOX" from branding/wordmark.svg (drawn by
+# tools/make_wordmark.py). Firefox sets the fill of these to the page's text
+# color, so "KYBER" takes it (white on dark pages, dark on light ones) and
+# "FOX" keeps its gradient.
 for name in about-wordmark.svg firefox-wordmark.svg; do
-  cat > "$content/$name" <<SVG
-$svg_header
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 372 99">
-  <text x="186" y="70" text-anchor="middle" font-family="sans-serif" font-size="64" font-weight="600" fill="context-fill">Kyber Fox</text>
-</svg>
-SVG
+  sed 's/fill="#FFFFFF"/fill="context-fill"/' "$src/wordmark.svg" > "$content/$name"
+done
+
+# Theme foxes for the Kyber new tab and private pages (themes/kyber/foxes/).
+# Crimson and Azure map the logo's brightness onto a ramp of the theme's
+# colors and keep its transparency, so the shading survives.
+foxes=themes/kyber/foxes
+mkdir -p "$foxes"
+
+# clean_alpha SRC OUT: drops the faint speckles around the edge (alpha < 8%).
+clean_alpha() {
+  magick "$1" -channel A -fx 'a < 0.08 ? 0 : a' +channel "$2"
+}
+
+# gradient_map SRC OUT C1 C2 C3 C4: the ramp C1 -> C2 -> C3 -> C4, dark to light.
+gradient_map() {
+  magick -size 256x1 "gradient:$3-$4" \( -size 256x1 "gradient:$4-$5" \) \
+    \( -size 256x1 "gradient:$5-$6" \) +append -resize 256x1! "$tmp/ramp.png"
+  magick "$1" \( +clone -alpha extract \) \
+    \( -clone 0 -alpha off -colorspace gray -sigmoidal-contrast 3,50% "$tmp/ramp.png" -clut \) \
+    -delete 0 +swap -compose copy-opacity -composite "$2"
+}
+
+magick "$src/logo.png" -resize 1024x1024 "$tmp/fox.png"
+clean_alpha "$src/private-browsing/logo.png" "$tmp/private-full.png"
+magick "$tmp/private-full.png" -resize 1024x1024 "$tmp/private.png"
+for kind in fox private; do
+  magick "$tmp/$kind.png" -strip "PNG32:$foxes/$kind-crystal.png"
+  gradient_map "$tmp/$kind.png" "$tmp/$kind-crimson.png" "#120006" "#7A0012" "#FF1A3C" "#FFD6DE"
+  magick "$tmp/$kind-crimson.png" -strip "PNG32:$foxes/$kind-crimson.png"
+  gradient_map "$tmp/$kind.png" "$tmp/$kind-azure.png" "#020B2A" "#0B3FD6" "#3AA0F5" "#EEF3FA"
+  magick "$tmp/$kind-azure.png" -strip "PNG32:$foxes/$kind-azure.png"
 done

@@ -1,0 +1,31 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Crimson: the Kyber look in its colors. The shared sheets in themes/kyber/
+ * read these variables. */
+
+@-moz-document url-prefix("chrome://"), url("about:newtab"), url("about:home"), url("about:privatebrowsing") {
+  :root {
+    --kf-bg: #050102;
+    --kf-bg-toolbar: #0f0306;
+    --kf-bg-tab-active: #22060c;
+    --kf-bg-urlbar: #140408;
+    --kf-fg: #fdfefd;
+    --kf-fg-muted: #e0a9b6;
+    --kf-accent: #fa0226;
+    --kf-border: #3d0a14;
+    --kf-radius: 10px;
+    --kf-font: inherit;
+    --kf-bg-image: none;
+    --kyber-glow-a: #fa0226;
+    --kyber-glow-b: #f994ae;
+    --kyber-bg-deep: #030001;
+    --kyber-fox: url("chrome://kyberfox/content/themes/kyber/foxes/fox-crimson.png");
+    --kyber-fox-private: url("chrome://kyberfox/content/themes/kyber/foxes/private-crimson.png");
+    --kyber-waves: url("chrome://kyberfox/content/themes/kyber/waves-crimson.svg");
+    --kyber-wordmark-a: #fa0226;
+    --kyber-wordmark-b: #f994ae;
+    --kyber-glow-strength: 1;
+  }
+}

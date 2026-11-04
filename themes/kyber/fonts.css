@@ -1,0 +1,35 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Sora and Inter for the Kyber pages, under their own family names so they
+ * never clash with fonts installed on the system. The fonts are under the
+ * SIL Open Font License 1.1; see themes/NOTICES.md. */
+
+@-moz-document url("about:newtab"), url("about:home"), url("about:privatebrowsing"), url-prefix("chrome://") {
+  @font-face {
+    font-family: "Kyber Sora";
+    font-weight: 600;
+    src: url("chrome://kyberfox/content/fonts/sora-latin-600-normal.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Kyber Sora";
+    font-weight: 700;
+    src: url("chrome://kyberfox/content/fonts/sora-latin-700-normal.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Kyber Inter";
+    font-weight: 400;
+    src: url("chrome://kyberfox/content/fonts/inter-latin-400-normal.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Kyber Inter";
+    font-weight: 500;
+    src: url("chrome://kyberfox/content/fonts/inter-latin-500-normal.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Kyber Inter";
+    font-weight: 600;
+    src: url("chrome://kyberfox/content/fonts/inter-latin-600-normal.woff2") format("woff2");
+  }
+}

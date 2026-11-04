@@ -102,7 +102,8 @@ survives a Firefox major update without code changes or ships disabled.
 
 - [ ] Glass theme, an original remake (planned)
 - [ ] Neon or cyberpunk palette with optional glow, built on the existing theme engine (planned)
-- [ ] A palette inspired by the owner's Jedi mockups (planned; the name and wording need the trademark check in [docs/licensing.md](docs/licensing.md))
+- [ ] Kyber themes, skin, new tab and private page (in review)
+- [ ] Crimson and Azure themes, from the owner's concept sheet (in review)
 - [ ] The masked fox illustration on the private window page (planned; needs a larger render, see [docs/branding.md](docs/branding.md))
 
 ## Research tracks

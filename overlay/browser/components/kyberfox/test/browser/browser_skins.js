@@ -42,8 +42,11 @@ function visibleSize(selector) {
   return { found: !!el, w: r?.width ?? 0, h: r?.height ?? 0 };
 }
 
+// The vendored skins; the Kyber skins have their own browser_kyber_look.js.
 add_task(async function test_skins_are_listed() {
-  let skins = KyberThemes.available().filter(t => t.kind == "skin");
+  let skins = KyberThemes.available().filter(
+    t => t.kind == "skin" && !KyberThemes.isKyber(t.id)
+  );
   Assert.deepEqual(
     skins.map(t => t.id),
     ["gx", "one"],

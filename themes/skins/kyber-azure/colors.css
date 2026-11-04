@@ -1,0 +1,31 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Azure: the Kyber look in its colors. The shared sheets in themes/kyber/
+ * read these variables. */
+
+@-moz-document url-prefix("chrome://"), url("about:newtab"), url("about:home"), url("about:privatebrowsing") {
+  :root {
+    --kf-bg: #00133d;
+    --kf-bg-toolbar: #03194a;
+    --kf-bg-tab-active: #0b2a68;
+    --kf-bg-urlbar: #041c50;
+    --kf-fg: #fefefe;
+    --kf-fg-muted: #ccd1d8;
+    --kf-accent: #31a2f2;
+    --kf-border: #1d3c7a;
+    --kf-radius: 10px;
+    --kf-font: inherit;
+    --kf-bg-image: none;
+    --kyber-glow-a: #31a2f2;
+    --kyber-glow-b: #ccd1d8;
+    --kyber-bg-deep: #000a24;
+    --kyber-fox: url("chrome://kyberfox/content/themes/kyber/foxes/fox-azure.png");
+    --kyber-fox-private: url("chrome://kyberfox/content/themes/kyber/foxes/private-azure.png");
+    --kyber-waves: url("chrome://kyberfox/content/themes/kyber/waves-azure.svg");
+    --kyber-wordmark-a: #31a2f2;
+    --kyber-wordmark-b: #ccd1d8;
+    --kyber-glow-strength: 1;
+  }
+}

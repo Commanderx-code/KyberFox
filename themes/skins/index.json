@@ -1,3 +1,9 @@
 {
-  "skins": ["gx", "one"]
+  "skins": [
+    "gx",
+    "one",
+    "kyber-crystal",
+    "kyber-crimson",
+    "kyber-azure"
+  ]
 }

@@ -1,0 +1,29 @@
+{
+  "id": "kyber-azure",
+  "name": "Azure",
+  "kind": "skin",
+  "scheme": "dark",
+  "sheets": [
+    "colors.css"
+  ],
+  "shared": [
+    "base.css",
+    "kyber/fonts.css",
+    "kyber/chrome.css",
+    "kyber/pages.css"
+  ],
+  "prefs": {},
+  "vars": {
+    "--kf-bg": "#00133d",
+    "--kf-bg-toolbar": "#03194a",
+    "--kf-bg-tab-active": "#0b2a68",
+    "--kf-bg-urlbar": "#041c50",
+    "--kf-fg": "#fefefe",
+    "--kf-fg-muted": "#ccd1d8",
+    "--kf-accent": "#31a2f2",
+    "--kf-border": "#1d3c7a",
+    "--kf-radius": "10px",
+    "--kf-font": "inherit",
+    "--kf-bg-image": "none"
+  }
+}

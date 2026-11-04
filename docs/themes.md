@@ -4,7 +4,9 @@ The theme engine (`KyberThemes.sys.mjs`) restyles the browser window with two
 user style sheets registered through `nsIStyleSheetService`: `themes/base.css`,
 which maps Kyber variables onto Firefox's own, and a generated palette sheet
 that sets the variables for the chosen theme. Both are limited to
-`chrome://browser/content/browser.xhtml`, so web pages are unaffected.
+`chrome://browser/content/browser.xhtml`, so web pages are unaffected. The
+Kyber themes also style the new tab, private window and welcome pages (see
+below); no theme styles web pages.
 
 The theme is stored in `kyberfox.theme.id`. `themes/palettes.json` holds the
 palettes and `themes/status.json` lists disabled ids. Every palette defines
@@ -64,13 +66,67 @@ To update a skin: change its pin in `pins.toml`, run
 `python -m tools.vendor_skins <gx|one>`, commit the diff, and run
 `browser_skins.js`.
 
+## Kyber themes
+
+Kyber Crystal (`kyber-crystal`, cyan and violet on midnight blue), Crimson
+(`kyber-crimson`, red on black) and Azure (`kyber-azure`, blue and silver on
+navy) are skins under `themes/skins/kyber-*/`. Each has its own `colors.css`
+with the `--kf-*` variables and the Kyber ones (`--kyber-glow-a`,
+`--kyber-glow-b`, `--kyber-bg-deep`, the fox, private fox and wave images and
+the wordmark colors). Everything else is shared by the three and lives in
+`themes/kyber/`, listed in each `skin.json` under `"shared"` (paths relative
+to `themes/`, registered after the skin's own sheets):
+
+- `base.css`, the same variable mapping the color themes use.
+- `kyber/fonts.css`: Sora and Inter, bundled (see `themes/NOTICES.md`), under
+  the family names "Kyber Sora" and "Kyber Inter".
+- `kyber/chrome.css`: the window. A gradient outline and glow on the address
+  bar, rounded tabs with the selected one outlined, the logo and name at the
+  start of the tab strip, and Firefox's labeled private browsing indicator
+  shown as a PRIVATE BROWSING pill in private windows.
+- `kyber/pages.css`: about:newtab and about:home (waves behind the page, the
+  big fox with the wordmark, a glowing search pill, glass top site cards; a
+  wallpaper the user picked still wins), about:privatebrowsing (the private
+  fox, a PRIVATE WINDOW heading, the search pill, a short note and Firefox's
+  info box as a glass card), and the welcome page (the theme's colors and
+  fonts).
+
+The shared sheets are scoped with `@-moz-document` to `chrome://` URLs and
+those three `about:` pages, and register only while a Kyber theme is applied,
+so every other theme leaves these pages as Firefox draws them. The private
+page's heading and note come from `patches/kyber/private-window-page.patch`,
+hidden in the page itself, and only `pages.css` shows them. The new tab's CSP
+gets `font-src chrome:` from `patches/kyber/newtab-fonts.patch` so the bundled
+fonts load there; no package is made reachable from web pages.
+
+The fox images in `themes/kyber/foxes/` are the logo recolored per theme by
+`tools/make-logos.sh` (a gradient map from luminance to the theme's ramp,
+alpha kept). The waves are drawn by `tools/make_waves.py` and the wordmark
+mask by `tools/make_wordmark.py`.
+
+**Reduce glow.** Settings > Appearance has a Reduce glow checkbox under the
+theme cards, stored in `kyberfox.theme.reduceGlow`. When it is on, a small
+sheet sets `--kyber-glow-strength` to 0.25, which scales every glow. High
+contrast and forced colors drop the glow and the pictures behind text.
+
+**Default, fallback and the one-time move.** New profiles start on Kyber
+Crystal. Ember stays the fallback: a theme that fails to load or is disabled
+in `status.json`, a skin sheet that fails, and Reset all go to Ember. A theme
+that is only disabled keeps its place in `kyberfox.theme.id`, so it comes
+back when a later release turns it on again. On the first start of this
+version a profile whose stored theme is empty or `ember` moves to Kyber
+Crystal once, and `kyberfox.theme.movedToKyber` records it, so choosing Ember
+again later sticks. If Kyber Crystal cannot be applied on that start, the
+move is tried again on the next one. Any other stored theme is kept.
+
 ## Known limits
 
 - `@media (prefers-color-scheme: ...)` blocks in Firefox's own CSS follow the
   operating system's scheme, not `color-scheme`. A light palette on a dark OS
   can show a few dark-styled details.
-- In-content pages such as about:preferences and about:newtab follow the OS or
-  the default theme, not the palette.
+- In-content pages such as about:preferences follow the OS or the default
+  theme, not the palette. Only the Kyber themes style the new tab, private
+  window and welcome pages.
 - User style sheets are sent to and parsed in every content process. The cost
   is small and accepted.
 - If `palettes.json` cannot be read, the engine runs on a built-in Ember
