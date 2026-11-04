@@ -4,7 +4,7 @@
 
 // The Kyber Fox theme group at the top of the Appearance pane of
 // about:preferences: a card grid of every theme in KyberThemes.available(),
-// an Import custom CSS button and a Reset button.
+// a Reduce glow checkbox, an Import custom CSS button and a Reset button.
 // patches/kyber/theme-pane.patch imports this module from
 // config/appearance.mjs and adds the group to the pane.
 
@@ -19,6 +19,7 @@ const { KyberThemes } = ChromeUtils.importESModule(
 
 const ID_PREF = "kyberfox.theme.id";
 const CUSTOM_PREF = "kyberfox.theme.custom";
+const GLOW_PREF = "kyberfox.theme.reduceGlow";
 
 /**
  * One card per theme. `value` is the current theme id; choosing a card sets
@@ -200,6 +201,22 @@ Preferences.addSetting({
 });
 
 Preferences.addSetting({
+  id: "kyberfoxThemeReduceGlow",
+  // The pref, not reduceGlow(): the observer below runs before the sheet
+  // that reduceGlow() reports is registered.
+  get: () => Services.prefs.getBoolPref(GLOW_PREF, false),
+  set: checked => {
+    KyberThemes.setReduceGlow(checked);
+    return checked;
+  },
+  setup: emitChange => {
+    let observer = { observe: () => emitChange() };
+    Services.prefs.addObserver(GLOW_PREF, observer);
+    return () => Services.prefs.removeObserver(GLOW_PREF, observer);
+  },
+});
+
+Preferences.addSetting({
   id: "kyberfoxThemeImport",
   onUserClick: () => {
     chooseAndImport();
@@ -250,6 +267,10 @@ SettingGroupManager.registerGroups({
       {
         id: "kyberfoxTheme",
         control: "kyberfox-theme-picker",
+      },
+      {
+        id: "kyberfoxThemeReduceGlow",
+        l10nId: "kyberfox-theme-reduce-glow",
       },
       {
         id: "kyberfoxThemeImport",
