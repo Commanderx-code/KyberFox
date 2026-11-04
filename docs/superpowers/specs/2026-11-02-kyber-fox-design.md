@@ -42,7 +42,7 @@ These would make the project a failure even if it technically works:
 
 ## Constraints
 
-- **Base:** a Firefox fork. Firefox ships a major release every 4 weeks, with urgent security fixes in between.
+- **Base:** a Firefox fork. Firefox ships a major release every 4 weeks, with urgent security fixes in between. (Every 2 weeks since Firefox 155 on 2026-09-01; noted 2026-11-04.)
 - **Maintainers:** the owner, with no wider team, so automation must carry routine work.
 - **Budget:** free services for the first release, and no more than $25/month through the friends phase. See Costs.
 - **Build hardware:** full builds and releases run on hosted automation, not on the owner's laptop.

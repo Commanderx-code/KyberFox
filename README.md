@@ -11,6 +11,10 @@ interface, the defaults and the services.
 It is for the maintainer and close friends first. A wider public release may
 come later.
 
+**Status: alpha.** Release 159.0-1 is installed by the maintainer and a few
+friends on Windows and Arch Linux. It is not called stable until updates have
+been checked on real machines; see [ROADMAP.md](ROADMAP.md).
+
 ## What is in release 1
 
 - Workspaces: named sets of tabs in a window, switched from the dropdown at the
@@ -63,6 +67,17 @@ uBlock Origin is in [docs/shield-ublock-control.md](docs/shield-ublock-control.m
 
 ## Other documents
 
+- [ROADMAP.md](ROADMAP.md): what is done, what is next, and what is only an idea
+- [docs/vision.md](docs/vision.md): who it is for and the principles behind it
+- [docs/architecture.md](docs/architecture.md): how the source is assembled, and why Firefox's release channel
+- [docs/build-linux.md](docs/build-linux.md): the three ways to build on Linux, with measured costs
+- [docs/privacy-defaults.md](docs/privacy-defaults.md): every privacy default, why, what it can break, and how it is checked
+- [docs/upstream-updates.md](docs/upstream-updates.md): how Firefox security releases reach users
+- [docs/testing.md](docs/testing.md): automated tests and the manual release checklist
+- [docs/content-blocking-research.md](docs/content-blocking-research.md): could a built-in blocker replace uBlock Origin
+- [docs/licensing.md](docs/licensing.md): license and trademark obligations, and open questions
+- [docs/branding.md](docs/branding.md): the logo and assets, and what is still needed
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to make a change
 - [docs/themes.md](docs/themes.md): the theme engine, skins and custom CSS
 - [docs/arch-repo.md](docs/arch-repo.md): the Arch package repository
 - [docs/update-signing.md](docs/update-signing.md): how Windows updates are signed
