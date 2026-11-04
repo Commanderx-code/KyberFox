@@ -143,7 +143,7 @@ class WorkspaceButton {
       this.footerButton("delete")
     );
 
-    panel.append(list, this.doc.createXULElement("toolbarseparator"), footer);
+    panel.append(list, footer);
     panel.addEventListener("popupshowing", () => this.renderRows());
     panel.addEventListener("popuphidden", () => {
       this.editing = false;
