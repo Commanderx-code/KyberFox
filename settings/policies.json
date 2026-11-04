@@ -41,6 +41,10 @@
         "DisableRemoteImprovements": true,
         "DisableSetDesktopBackground": false,
         "DisableTelemetry": true,
+        "PasswordManagerEnabled": false,
+        "OfferToSaveLogins": false,
+        "AutofillAddressEnabled": false,
+        "AutofillCreditCardEnabled": false,
         "DontCheckDefaultBrowser": true,
         "WebsiteFilter": {
             "Block": [
