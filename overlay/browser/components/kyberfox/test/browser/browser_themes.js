@@ -146,9 +146,15 @@ add_task(async function test_status_disabled_skin_falls_back_to_ember() {
     KyberThemes.available().find(t => t.id == "starry").disabled,
     "starry is listed as disabled"
   );
+  // A profile that saved starry before it was switched off.
+  Services.prefs.setStringPref("kyberfox.theme.id", "starry");
   KyberThemes.apply("starry");
   Assert.equal(KyberThemes.current(), "ember", "disabled id gives ember");
-  Assert.equal(Services.prefs.getStringPref("kyberfox.theme.id"), "ember");
+  Assert.equal(
+    Services.prefs.getStringPref("kyberfox.theme.id"),
+    "starry",
+    "the choice is kept for when the theme is on again"
+  );
   Services.prefs.clearUserPref("kyberfox.theme.disabled");
   KyberThemes.apply("starry");
   Assert.equal(KyberThemes.current(), "starry", "enabled again");

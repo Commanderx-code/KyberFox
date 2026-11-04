@@ -425,3 +425,112 @@ add_task(async function test_private_fox_follows_theme() {
     Assert.stringContains(state.logoImage, "private-azure.png");
   });
 });
+
+// Fixes from the branch review.
+
+add_task(async function test_disabled_kyber_keeps_choice() {
+  KyberThemes.apply("kyber-crystal");
+  Services.prefs.setStringPref(DISABLED_PREF, "kyber-crystal");
+  KyberThemes.apply("kyber-crystal");
+  Assert.equal(KyberThemes.current(), "ember", "ember while it is off");
+  Assert.equal(
+    Services.prefs.getStringPref(ID_PREF),
+    "kyber-crystal",
+    "the choice is kept"
+  );
+  Services.prefs.clearUserPref(DISABLED_PREF);
+  restart({ id: Services.prefs.getStringPref(ID_PREF), moved: true });
+  Assert.equal(KyberThemes.current(), "kyber-crystal", "back when it is on");
+});
+
+add_task(function test_first_run_move_waits_for_kyber() {
+  Services.prefs.setStringPref(DISABLED_PREF, "kyber-crystal");
+  restart({});
+  Assert.equal(KyberThemes.current(), "ember");
+  Assert.ok(
+    !Services.prefs.getBoolPref(MOVED_PREF, false),
+    "the move is not recorded"
+  );
+  Services.prefs.clearUserPref(DISABLED_PREF);
+  KyberThemes._resetForTests();
+  KyberThemes.init();
+  Assert.equal(KyberThemes.current(), "kyber-crystal", "moved next start");
+  Assert.ok(Services.prefs.getBoolPref(MOVED_PREF));
+});
+
+add_task(async function test_newtab_dark_on_light_os() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["layout.css.prefers-color-scheme.content-override", 1]],
+  });
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    let scheme = await SpecialPowers.spawn(
+      browser,
+      [],
+      () =>
+        content.getComputedStyle(content.document.documentElement).colorScheme
+    );
+    Assert.equal(scheme, "dark", "the page draws dark under a Kyber theme");
+  });
+  await SpecialPowers.popPrefEnv();
+});
+
+add_task(async function test_light_wallpaper_keeps_dark_text() {
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    let [text, wordmark] = await SpecialPowers.spawn(browser, [], () => {
+      let doc = content.document;
+      doc.body.classList.add("lightWallpaper");
+      let style = content.getComputedStyle(doc.body);
+      let mark = doc.querySelector(".logo-and-wordmark .wordmark");
+      return [
+        style.getPropertyValue("--newtab-text-primary-color").trim(),
+        content.getComputedStyle(mark).backgroundImage,
+      ];
+    });
+    Assert.notEqual(text, "#ffffff", "no forced white text");
+    Assert.ok(
+      !wordmark.includes("rgb(255, 255, 255)"),
+      "no forced white wordmark"
+    );
+  });
+});
+
+async function systemColors(browser) {
+  return SpecialPowers.spawn(browser, [], () => {
+    let probe = content.document.createElement("span");
+    probe.style.color = "CanvasText";
+    content.document.body.append(probe);
+    let canvasText = content.getComputedStyle(probe).color;
+    probe.remove();
+    return canvasText;
+  });
+}
+
+add_task(async function test_high_contrast_text_readable() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.display.document_color_use", 2]],
+  });
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    let canvasText = await systemColors(browser);
+    let fg = await SpecialPowers.spawn(browser, [], () =>
+      content
+        .getComputedStyle(content.document.documentElement)
+        .getPropertyValue("--kf-fg")
+        .trim()
+    );
+    Assert.equal(fg, "CanvasText", "new tab text follows the system colors");
+    Assert.ok(canvasText, "probe ran");
+  });
+  await withPrivatePage(async browser => {
+    let fg = await SpecialPowers.spawn(browser, [], () =>
+      content
+        .getComputedStyle(content.document.documentElement)
+        .getPropertyValue("--kf-fg")
+        .trim()
+    );
+    Assert.equal(fg, "CanvasText", "private page text too");
+  });
+  await SpecialPowers.popPrefEnv();
+});

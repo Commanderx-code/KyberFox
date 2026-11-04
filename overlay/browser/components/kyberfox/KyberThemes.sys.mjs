@@ -499,8 +499,9 @@ export const KyberThemes = {
   },
 
   /**
-   * Applies a theme and stores it. An unknown or disabled id applies Ember
-   * (FALLBACK_ID) and stores that, so the pref and current() agree.
+   * Applies a theme and stores it. An unknown id applies Ember (FALLBACK_ID)
+   * and stores that. A known but disabled id applies Ember and keeps the
+   * stored choice, so the theme comes back once it is on again.
    *
    * @param {string} id
    */
@@ -508,7 +509,11 @@ export const KyberThemes = {
     load();
     // On the built-in fallback every other id looks unknown. That may be a
     // temporary read error, so keep the stored choice.
-    let keepPref = gOnFallback && id != FALLBACK_ID;
+    let keepPref =
+      (gOnFallback && id != FALLBACK_ID) ||
+      (typeof id == "string" &&
+        Object.hasOwn(gPalettes, id) &&
+        disabledIds().has(id));
     if (!usable(id)) {
       id = FALLBACK_ID;
     }
@@ -613,11 +618,14 @@ export const KyberThemes = {
     } catch (e) {
       console.error(`KyberThemes: ${MOVED_PREF} is not a bool pref`, e);
     }
-    if (!moved && (!stored || stored == FALLBACK_ID)) {
+    let moving = !moved && (!stored || stored == FALLBACK_ID);
+    if (moving) {
       stored = DEFAULT_ID;
     }
     this.apply(stored || DEFAULT_ID);
-    if (!moved) {
+    // A move that ended on Ember (Kyber Crystal off or unreadable) is tried
+    // again on the next start.
+    if (!moved && (!moving || gCurrent == DEFAULT_ID)) {
       Services.prefs.setBoolPref(MOVED_PREF, true);
     }
     observeGlow();

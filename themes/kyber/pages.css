@@ -14,9 +14,6 @@
     --kyber-outline: linear-gradient(90deg, var(--kyber-glow-a), var(--kyber-glow-b));
     --kyber-glow-color: color-mix(in srgb, var(--kyber-glow-a) 55%, transparent);
     --newtab-background-color: var(--kyber-bg-deep) !important;
-    --newtab-text-primary-color: var(--kf-fg) !important;
-    --newtab-text-secondary-color: var(--kf-fg-muted) !important;
-    --newtab-wordmark-color: var(--kf-fg) !important;
     --newtab-primary-action-background: var(--kf-accent) !important;
     --color-accent-primary: var(--kf-accent) !important;
     --color-accent-primary-hover: color-mix(in srgb, var(--kf-accent) 85%, white) !important;
@@ -25,6 +22,16 @@
     --button-background-color-primary-hover: color-mix(in srgb, var(--kf-accent) 85%, white) !important;
     --button-background-color-primary-active: color-mix(in srgb, var(--kf-accent) 70%, white) !important;
     --button-text-color-primary: var(--kyber-bg-deep) !important;
+    /* The page is dark under a Kyber theme, whatever the system's scheme. */
+    color-scheme: dark !important;
+  }
+
+  /* Light text, except over a light wallpaper, where the page's own dark
+   * text stays. */
+  body:not(.lightWallpaper) {
+    --newtab-text-primary-color: var(--kf-fg) !important;
+    --newtab-text-secondary-color: var(--kf-fg-muted) !important;
+    --newtab-wordmark-color: var(--kf-fg) !important;
   }
 
   /* A wallpaper the user picked sets one of these classes and wins. */
@@ -56,7 +63,7 @@
     background: var(--kyber-fox) center / contain no-repeat !important;
   }
 
-  /* The wordmark is a mask over a gradient: "KYBER" white, "FOX" in the
+  /* The wordmark is a mask over a gradient: "KYBER" in the text color, "FOX" in the
    * theme's colors. FOX starts at 63.8% of the mask's width and KYBER ends at
    * 58.6% (tools/make_wordmark.py), so the colors split in the gap. */
   .logo-and-wordmark .wordmark {
@@ -64,7 +71,7 @@
     width: 420px !important;
     height: 48px !important;
     margin: 0 !important;
-    background: linear-gradient(90deg, #fff 0 61%, var(--kyber-wordmark-a) 61%, var(--kyber-wordmark-b)) !important;
+    background: linear-gradient(90deg, var(--newtab-wordmark-color) 0 61%, var(--kyber-wordmark-a) 61%, var(--kyber-wordmark-b)) !important;
     mask: url("chrome://kyberfox/content/themes/kyber/wordmark-mask.svg") center / contain no-repeat;
   }
 
@@ -112,11 +119,24 @@
 
   .top-site-outer .title {
     font-family: "Kyber Inter", sans-serif;
+  }
+
+  body:not(.lightWallpaper) .top-site-outer .title {
     color: var(--kf-fg) !important;
   }
 
-  /* High contrast: plain outlines, no glow, no picture behind the text. */
+  /* High contrast: system colors for text and fields, plain outlines, no
+   * glow, no picture behind the text. */
   @media (forced-colors: active), (prefers-contrast: more) {
+    :root {
+      --kf-fg: CanvasText !important;
+      --kf-fg-muted: CanvasText !important;
+      --kf-bg-urlbar: Field !important;
+      --kyber-bg-deep: Canvas !important;
+      --kyber-wordmark-a: CanvasText !important;
+      --kyber-wordmark-b: CanvasText !important;
+    }
+
     body:not(.lightWallpaper, .darkWallpaper) {
       background: Canvas !important;
     }
@@ -273,6 +293,19 @@
   }
 
   @media (forced-colors: active), (prefers-contrast: more) {
+    :root {
+      --kf-fg: CanvasText !important;
+      --kf-fg-muted: CanvasText !important;
+      --kf-bg-urlbar: Field !important;
+      --kyber-bg-deep: Canvas !important;
+    }
+
+    html.private {
+      --link-color: LinkText !important;
+      --link-color-hover: LinkText !important;
+      --link-color-active: ActiveText !important;
+    }
+
     html.private,
     html.private body::before {
       background: Canvas !important;

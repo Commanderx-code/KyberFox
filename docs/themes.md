@@ -111,10 +111,13 @@ contrast and forced colors drop the glow and the pictures behind text.
 
 **Default, fallback and the one-time move.** New profiles start on Kyber
 Crystal. Ember stays the fallback: a theme that fails to load or is disabled
-in `status.json`, a skin sheet that fails, and Reset all go to Ember. On the
-first start of this version a profile whose stored theme is empty or `ember`
-moves to Kyber Crystal once, and `kyberfox.theme.movedToKyber` records it, so
-choosing Ember again later sticks. Any other stored theme is kept.
+in `status.json`, a skin sheet that fails, and Reset all go to Ember. A theme
+that is only disabled keeps its place in `kyberfox.theme.id`, so it comes
+back when a later release turns it on again. On the first start of this
+version a profile whose stored theme is empty or `ember` moves to Kyber
+Crystal once, and `kyberfox.theme.movedToKyber` records it, so choosing Ember
+again later sticks. If Kyber Crystal cannot be applied on that start, the
+move is tried again on the next one. Any other stored theme is kept.
 
 ## Known limits
 
