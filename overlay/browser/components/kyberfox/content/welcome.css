@@ -31,8 +31,8 @@ h2 {
   grid-template-columns: auto 1fr auto;
   align-items: start;
   column-gap: var(--space-medium);
-  padding-block: var(--space-small);
-  border-block-end: var(--border-width) solid var(--border-color);
+  /* Rows are told apart by spacing, not divider lines. */
+  padding-block: var(--space-medium);
 }
 
 .choice input {
@@ -75,7 +75,6 @@ footer {
   gap: var(--space-small);
   padding: var(--space-medium) var(--space-xlarge);
   background-color: var(--background-color-canvas);
-  border-block-start: var(--border-width) solid var(--border-color);
 }
 
 #status {

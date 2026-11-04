@@ -60,6 +60,11 @@
   }
 }
 
+/* Space, not a separator line, between the workspace list and its buttons. */
+.kyber-workspace-footer {
+  margin-block-start: 8px;
+}
+
 .kyber-workspace-rename-input {
   flex: 1;
   min-width: 0;
