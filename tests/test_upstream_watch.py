@@ -12,6 +12,7 @@ from tools.sources import HashMismatch, LibreWolfMismatch, load_pins
 
 FIXTURES = Path(__file__).parent / "fixtures"
 REAL_PINS = Path(__file__).resolve().parent.parent / "pins.toml"
+REAL_PKGBUILD = REAL_PINS.parent / "packaging/arch/PKGBUILD"
 
 PINS_TEXT = """\
 # Pinned inputs.
@@ -81,14 +82,56 @@ def test_bump_rewrites_version_and_hash_only(tmp_path):
 H = "b" * 64
 
 
+# Newer than anything pins.toml will hold, so the real-file tests survive every real bump.
+FUTURE = "999.0.1"
+
+
 def test_bump_real_pins_file_changes_two_values(tmp_path):
     path = tmp_path / "pins.toml"
     path.write_bytes(REAL_PINS.read_bytes())
-    uw.bump_pins(path, "159.0.1", H)
+    uw.bump_pins(path, FUTURE, H)
     old, new = REAL_PINS.read_text().splitlines(), path.read_text().splitlines()
     changed = [(a, b) for a, b in zip(old, new) if a != b]
     assert len(old) == len(new) and len(changed) == 2
-    assert changed[0][1] == 'version = "159.0.1"' and changed[1][1] == f'sha256 = "{H}"'
+    assert changed[0][1] == f'version = "{FUTURE}"' and changed[1][1] == f'sha256 = "{H}"'
+
+
+def test_bump_real_pkgbuild_changes_only_pkgver(tmp_path):
+    path = tmp_path / "PKGBUILD"
+    path.write_bytes(REAL_PKGBUILD.read_bytes())
+    uw.bump_pkgbuild(path, FUTURE)
+    old, new = REAL_PKGBUILD.read_text().splitlines(), path.read_text().splitlines()
+    changed = [(a, b) for a, b in zip(old, new) if a != b]
+    assert len(old) == len(new) and changed == [(changed[0][0], f"pkgver={FUTURE}")]
+    with pytest.raises(ValueError):
+        uw.bump_pkgbuild(path, "159.0\npkgrel=9")
+
+
+def test_verify_pkgbuild(tmp_path, capsys):
+    base, branch = tmp_path / "base", tmp_path / "branch"
+    base.write_bytes(REAL_PKGBUILD.read_bytes())
+    branch.write_bytes(REAL_PKGBUILD.read_bytes())
+    uw.bump_pkgbuild(branch, FUTURE)
+    assert uw.main(["--verify-pkgbuild", str(base), str(branch), FUTURE]) == 0
+    branch.write_text(branch.read_text().replace("pkgrel=", "pkgrel=9\n#"))
+    assert uw.main(["--verify-pkgbuild", str(base), str(branch), FUTURE]) == 1
+    assert "not the base bumped" in capsys.readouterr().err
+
+
+def test_bump_also_sets_the_pkgbuild_version(tmp_path, monkeypatch):
+    pins = _bump_setup(tmp_path, monkeypatch)
+    pkgbuild = tmp_path / "PKGBUILD"
+    pkgbuild.write_text("pkgname=kyberfox\npkgver=159.0\npkgrel=1\n")
+    monkeypatch.setattr(assemble_mod, "assemble",
+                        lambda *a, **k: type("R", (), {"failed": []})())
+    uw.bump(pins, tmp_path, "159.0.1", pkgbuild)
+    assert pkgbuild.read_text() == "pkgname=kyberfox\npkgver=159.0.1\npkgrel=1\n"
+
+
+def test_workflow_commits_and_verifies_the_pkgbuild():
+    text = (REAL_PINS.parent / ".github/workflows/upstream-watch.yml").read_text(encoding="utf-8")
+    assert "git add pins.toml packaging/arch/PKGBUILD" in text
+    assert "--verify-pkgbuild" in text and "--verify-branch" in text
 
 
 def test_bump_keeps_crlf_and_skips_comment_mention(tmp_path):
