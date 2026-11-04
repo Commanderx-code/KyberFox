@@ -32,7 +32,8 @@ jobs:
           python-version: "3.12"
 
       - name: Install test dependencies
-        run: pip install --require-hashes -r requirements-dev.txt
+        # The release list brings cryptography, which test_committed_certs.py needs.
+        run: pip install --require-hashes -r requirements-release.txt -r requirements-dev.txt
 
       - name: Run the tests
         run: python -m pytest tests -q

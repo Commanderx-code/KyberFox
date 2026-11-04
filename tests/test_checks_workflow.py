@@ -12,5 +12,5 @@ def test_pull_requests_run_the_python_tests():
     assert triggers["push"]["branches"] == ["main"]
     steps = workflow["jobs"]["pytest"]["steps"]
     runs = [step.get("run", "") for step in steps]
-    assert "pip install --require-hashes -r requirements-dev.txt" in runs
+    assert "pip install --require-hashes -r requirements-release.txt -r requirements-dev.txt" in runs
     assert "python -m pytest tests -q" in runs
