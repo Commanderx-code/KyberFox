@@ -147,3 +147,22 @@ Settings listens for `kyberfox-theme-changed`, emitted by `KyberThemes.apply()`
 after applying a palette. This also handles a disabled or unreadable skin falling
 back while the stored theme choice remains unchanged. The observer and media
 query listeners are removed when the Settings document unloads.
+
+## Settings page details
+
+Appearance lists the three Kyber themes first while keeping `available()` in
+its original order for other callers. Each theme card contains a decorative
+browser preview driven by its actual palette; the preview is hidden from
+assistive technology and the card remains the only control. The gallery has
+one tab stop, arrow-key selection, Home/End navigation and disabled-theme
+skipping. Selecting a theme still uses the existing settings binding and
+applies immediately. Preview images use the existing local PNG app icon.
+
+Search retains native engine selection, private-window engine selection,
+reordering, editing and visibility controls. Settings tokens provide rounded rectangular
+fields and outlined rows, with a violet marker for the separate private engine.
+Permissions retains the native list and per-site dialogs. Rows have cyan icons,
+hover/focus feedback and individual outlines. `sitePermissions.xhtml` and `addEngine.xhtml` receive
+the Kyber surface and control colors while retaining all native warnings and
+permission behavior. Narrow Settings dialogs are constrained to the viewport;
+Save and Cancel remain reachable. High contrast keeps system colors.

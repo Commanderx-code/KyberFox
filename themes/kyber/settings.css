@@ -6,6 +6,7 @@
   @media (not (forced-colors: active)) and (not (prefers-contrast: more)) {
     :root {
       color-scheme: dark !important;
+      --kyber-theme-card-border: var(--kf-border);
       --kyber-settings-surface: color-mix(in srgb, var(--kf-bg-toolbar) 70%, var(--kyber-bg-deep));
       --background-color-canvas: var(--kf-bg) !important;
       --background-color-box: var(--kyber-settings-surface) !important;
@@ -172,6 +173,48 @@
       fill: var(--kf-accent) !important;
     }
 
+    :is(#defaultEngineNormal, #defaultPrivateEngine) {
+      --select-min-width: min(18rem, 100%) !important;
+      --select-max-width: 100% !important;
+      --select-border-radius: 8px !important;
+      --select-background-color: var(--kf-bg-urlbar) !important;
+      --select-text-color: var(--kf-fg) !important;
+      --select-border: 1px solid var(--kf-border) !important;
+      --select-border-color-hover: var(--kf-accent) !important;
+    }
+
+    #setting-control-defaultPrivateEngine {
+      padding-inline-start: 12px;
+      border-inline-start: 2px solid var(--kyber-glow-b);
+    }
+
+    #engineList {
+      --box-group-max-height: 28rem !important;
+    }
+
+    :is(#engineList moz-box-item, #permissionBox moz-box-button) {
+      margin-block: 5px;
+      --box-border-inline-start: 1px solid var(--kf-border) !important;
+      --box-border-inline-end: 1px solid var(--kf-border) !important;
+      --box-border-block-start: 1px solid var(--kf-border) !important;
+      --box-border-block-end: 1px solid var(--kf-border) !important;
+      --box-border-radius-start: 8px !important;
+      --box-border-radius-end: 8px !important;
+      --box-padding: 12px !important;
+      --box-icon-start-fill: var(--kf-accent) !important;
+      background: var(--kf-bg-toolbar);
+    }
+
+    #permissionBox moz-box-button {
+      --box-button-background-color: var(--kf-bg-toolbar) !important;
+      --box-button-background-color-hover: color-mix(in srgb, var(--kf-accent) 8%, var(--kf-bg-toolbar)) !important;
+      --box-button-background-color-active: color-mix(in srgb, var(--kyber-glow-b) 14%, var(--kf-bg-toolbar)) !important;
+    }
+
+    :is(#engineList moz-box-item, #permissionBox moz-box-button):focus-within {
+      border-color: var(--kf-accent) !important;
+    }
+
     @media (min-width: 951px) {
       #kyberfoxPrivacyPreset > moz-radio {
         flex: 1 1 180px !important;
@@ -184,6 +227,24 @@
     }
 
     @media (max-width: 950px) {
+      #dialogStack, .dialogOverlay {
+        min-width: 0 !important;
+        max-width: 100vw !important;
+      }
+
+      .dialogBox {
+        width: min(45rem, calc(100vw - 24px)) !important;
+        min-width: 0 !important;
+        max-width: calc(100vw - 24px) !important;
+        box-sizing: border-box;
+      }
+
+      .dialogFrame {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+      }
+
       .main-content {
         padding: 20px 16px !important;
       }
@@ -204,6 +265,48 @@
       transition: none !important;
       animation: none !important;
       scroll-behavior: auto !important;
+    }
+  }
+}
+
+@-moz-document url("chrome://browser/content/preferences/dialogs/sitePermissions.xhtml"), url("chrome://browser/content/search/addEngine.xhtml") {
+  @media (not (forced-colors: active)) and (not (prefers-contrast: more)) {
+    :root {
+      min-width: 0 !important;
+      color-scheme: dark !important;
+      background-color: var(--kf-bg) !important;
+      color: var(--kf-fg) !important;
+      font-family: "Kyber Inter", sans-serif !important;
+      --background-color-canvas: var(--kf-bg) !important;
+      --background-color-box: var(--kf-bg-urlbar) !important;
+      --text-color: var(--kf-fg) !important;
+      --text-color-deemphasized: var(--kf-fg-muted) !important;
+      --border-color: var(--kf-border) !important;
+      --color-accent-primary: var(--kf-accent) !important;
+      --focus-outline-color: var(--kf-accent) !important;
+      --button-background-color-primary: var(--kf-accent) !important;
+      --button-text-color-primary: var(--kf-bg) !important;
+    }
+
+    dialog {
+      background: var(--kf-bg) !important;
+    }
+
+    richlistbox, listheader {
+      min-width: 0;
+      background: var(--kf-bg-urlbar) !important;
+      color: var(--kf-fg) !important;
+      border-color: var(--kf-border) !important;
+    }
+
+    richlistitem[selected] {
+      background: color-mix(in srgb, var(--kf-accent) 12%, var(--kf-bg-toolbar)) !important;
+      color: var(--kf-fg) !important;
+    }
+
+    .actionButtons {
+      flex-wrap: wrap;
+      gap: 8px;
     }
   }
 }
