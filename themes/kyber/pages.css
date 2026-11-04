@@ -55,27 +55,49 @@
     justify-content: center !important;
     gap: 18px;
     width: auto !important;
+    margin-block: 0 32px !important;
   }
 
+  .search-wrapper {
+    margin-block-end: 28px !important;
+  }
+
+  /* 280px, smaller in short windows so the shortcuts stay in view. */
   .logo-and-wordmark .logo {
-    width: 280px !important;
-    height: 280px !important;
+    width: clamp(160px, 30vh, 280px) !important;
+    height: clamp(160px, 30vh, 280px) !important;
     background: var(--kyber-fox) center / contain no-repeat !important;
   }
 
-  /* The wordmark is a mask over a gradient: "KYBER" in the text color, "FOX" in the
-   * theme's colors. FOX starts at 63.8% of the mask's width and KYBER ends at
-   * 58.6% (tools/make_wordmark.py), so the colors split in the gap. */
+  /* Keep the outlined wordmark in a single paint layer. */
   .logo-and-wordmark .wordmark {
+    position: relative;
+    z-index: 1;
     display: block !important;
     width: 420px !important;
     height: 48px !important;
     margin: 0 !important;
-    background: linear-gradient(90deg, var(--newtab-wordmark-color) 0 61%, var(--kyber-wordmark-a) 61%, var(--kyber-wordmark-b)) !important;
-    mask: url("chrome://kyberfox/content/themes/kyber/wordmark-mask.svg") center / contain no-repeat;
+    background: url("chrome://branding/content/firefox-wordmark.svg") center / contain no-repeat !important;
+    mask: none !important;
+    -moz-context-properties: fill;
+    fill: var(--newtab-wordmark-color);
   }
 
   @media (max-width: 699px) {
+    .container.nova-enabled {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 334px) minmax(0, 1fr) !important;
+    }
+
+    .outer-wrapper {
+      padding-inline: 24px !important;
+    }
+
+    main, .non-collapsible-section, .search-wrapper {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+    }
+
     .logo-and-wordmark .logo {
       width: 160px !important;
       height: 160px !important;
@@ -108,12 +130,35 @@
     box-shadow: 0 0 calc(18px * var(--kyber-glow-strength)) var(--kyber-glow-color) !important;
   }
 
-  /* Top sites: glass cards. */
-  .top-site-outer .tile {
+  /* Top sites: a centered row of glass cards holding the icon and the name. */
+  .top-sites-list {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px !important;
+    margin-inline: 0 !important;
+  }
+
+  .top-sites-list > .top-site-outer {
+    width: auto !important;
+  }
+
+  .top-site-outer:not(.add-button-tile) .top-site-inner {
+    box-sizing: border-box;
+    width: 96px !important;
+    padding: 12px 6px 8px !important;
     background: rgb(255 255 255 / 0.04) !important;
     border: 1px solid rgb(255 255 255 / 0.08) !important;
     border-radius: 14px !important;
     backdrop-filter: blur(8px);
+  }
+
+  .top-site-outer:not(.add-button-tile) .top-site-inner:hover {
+    border-color: color-mix(in srgb, var(--kf-accent) 50%, transparent) !important;
+  }
+
+  .top-site-outer .tile {
+    background: transparent !important;
     box-shadow: none !important;
   }
 
@@ -142,7 +187,7 @@
     }
 
     .search-handoff-button,
-    .top-site-outer .tile {
+    .top-site-outer:not(.add-button-tile) .top-site-inner {
       border: 1px solid CanvasText !important;
       background: Field !important;
       box-shadow: none !important;
@@ -208,11 +253,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: clamp(8px, 3vw, 20px);
     margin: 0 0 8px;
     font-family: "Kyber Sora", sans-serif;
     font-weight: 600;
-    font-size: 1.6em;
+    font-size: clamp(1rem, 4vw, 1.6em);
     text-transform: uppercase;
     letter-spacing: 0.18em;
     color: var(--kf-fg);
@@ -221,7 +266,8 @@
   .kyber-private-heading h1::before,
   .kyber-private-heading h1::after {
     content: "";
-    width: 90px;
+    width: clamp(16px, 8vw, 90px);
+    flex-shrink: 1;
     height: 2px;
     border-radius: 1px;
     background: var(--kyber-outline);
@@ -259,6 +305,17 @@
       linear-gradient(var(--kf-bg-urlbar), var(--kf-bg-urlbar)) padding-box,
       var(--kyber-outline) border-box !important;
     box-shadow: 0 0 calc(18px * var(--kyber-glow-strength)) var(--kyber-glow-color) !important;
+  }
+
+  html.private .container {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  html.private .search-inner-wrapper {
+    min-width: 0 !important;
+    width: 100%;
   }
 
   .kyber-private-note {
@@ -351,5 +408,50 @@
   h1,
   h2 {
     font-family: "Kyber Sora", sans-serif !important;
+  }
+}
+
+/* Shared accessibility rules stay inside the browser's own pages. */
+@-moz-document url("about:newtab"), url("about:home"), url("about:privatebrowsing") {
+  .fake-textbox {
+    position: relative;
+    z-index: 1;
+    opacity: 1 !important;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--kf-accent) !important;
+    outline-offset: 4px !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --kyber-glow-strength: 0 !important;
+    }
+
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Firefox owns the settings and permissions; only their tokens change. */
+@-moz-document url-prefix("about:preferences") {
+  @media (not (forced-colors: active)) and (not (prefers-contrast: more)) {
+    :root {
+      color-scheme: dark !important;
+      --background-color-canvas: var(--kf-bg) !important;
+      --background-color-box: var(--kf-bg-toolbar) !important;
+      --background-color-card: var(--kf-bg-toolbar) !important;
+      --text-color: var(--kf-fg) !important;
+      --text-color-deemphasized: var(--kf-fg-muted) !important;
+      --color-accent-primary: var(--kf-accent) !important;
+      --button-background-color-primary: var(--kf-accent) !important;
+      --button-text-color-primary: var(--kf-bg) !important;
+      --focus-outline-color: var(--kf-accent) !important;
+      accent-color: var(--kf-accent);
+    }
   }
 }

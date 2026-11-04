@@ -83,7 +83,7 @@ to `themes/`, registered after the skin's own sheets):
 - `kyber/chrome.css`: the window. A gradient outline and glow on the address
   bar, rounded tabs with the selected one outlined, the logo and name at the
   start of the tab strip, and Firefox's labeled private browsing indicator
-  shown as a PRIVATE BROWSING pill in private windows.
+  shown as a PRIVATE pill in private windows.
 - `kyber/pages.css`: about:newtab and about:home (waves behind the page, the
   big fox with the wordmark, a glowing search pill, glass top site cards; a
   wallpaper the user picked still wins), about:privatebrowsing (the private
@@ -92,14 +92,14 @@ to `themes/`, registered after the skin's own sheets):
   fonts).
 
 The shared sheets are scoped with `@-moz-document` to `chrome://` URLs and
-those three `about:` pages, and register only while a Kyber theme is applied,
+the new-tab, private and preferences `about:` pages, and register only while a Kyber theme is applied,
 so every other theme leaves these pages as Firefox draws them. The private
 page's heading and note come from `patches/kyber/private-window-page.patch`,
 hidden in the page itself, and only `pages.css` shows them. The new tab's CSP
 gets `font-src chrome:` from `patches/kyber/newtab-fonts.patch` so the bundled
 fonts load there; no package is made reachable from web pages.
 
-The fox images in `themes/kyber/foxes/` are the logo recolored per theme by
+The generated fox images in `themes/kyber/foxes/` are the logo recolored per theme by
 `tools/make-logos.sh` (a gradient map from luminance to the theme's ramp,
 alpha kept). The waves are drawn by `tools/make_waves.py` and the wordmark
 mask by `tools/make_wordmark.py`.
@@ -124,10 +124,14 @@ move is tried again on the next one. Any other stored theme is kept.
 - `@media (prefers-color-scheme: ...)` blocks in Firefox's own CSS follow the
   operating system's scheme, not `color-scheme`. A light palette on a dark OS
   can show a few dark-styled details.
-- In-content pages such as about:preferences follow the OS or the default
-  theme, not the palette. Only the Kyber themes style the new tab, private
-  window and welcome pages.
+- Kyber themes color about:preferences through native settings tokens. Other
+  in-content pages still follow Firefox defaults.
 - User style sheets are sent to and parsed in every content process. The cost
   is small and accepted.
 - If `palettes.json` cannot be read, the engine runs on a built-in Ember
   palette and leaves the stored theme id alone.
+
+The private pages use the owner-supplied `foxes/masked-fox.png` unchanged.
+See [ui-implementation.md](ui-implementation.md) for the current implementation,
+preview instructions and remaining mockup work. Reduced-motion preferences
+remove glow and page transitions.

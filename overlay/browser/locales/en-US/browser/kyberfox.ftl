@@ -138,4 +138,4 @@ kyberfox-privacy-recommended-addons-link =
 
 kyberfox-private-heading = Private window
 kyberfox-private-subheading = Search privately
-kyberfox-private-note = Your local browsing history is not saved in this window.
+kyberfox-private-note = History is not saved after you close all private windows. Downloads and bookmarks are kept. Private browsing does not make you anonymous: websites, your employer, and your internet provider may still see your activity.

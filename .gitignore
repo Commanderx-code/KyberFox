@@ -33,3 +33,6 @@ __pycache__/
 .pytest_cache/
 .venv/
 upstream-watch-report.md
+
+# Local UI previews and validation logs
+/artifacts/

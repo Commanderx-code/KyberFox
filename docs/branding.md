@@ -35,9 +35,9 @@ as they are; other sizes are scaled down from the 1254 px original.
 | Asset | Why | Notes |
 |---|---|---|
 | Vector (SVG) master of the logo | Only for large print, such as banners | Not needed for the browser: the SVG logos wrap the 512 px PNG, and the 1254 px original covers the web. Auto-traced versions lost the gradients and a redraw changed the design, so the raster logo stays (decided 2026-11-04). A vector would have to be the current design redrawn by hand |
-| Larger render of the masked fox illustration (the fox wearing a mask, without the badge) | Still planned for the private window page, which shows the badge logo for now | One 1254 px version exists outside the repo; a clean, transparent export at 1024 px or more is enough |
+| Masked fox illustration | Supplied and implemented on private new tabs | Original owner-supplied PNG at `themes/kyber/foxes/masked-fox.png`; small window icons retain the badge |
 | Theme mockups: light, cyberpunk-style | Needed to build those palettes | Not in the repo; share the images or the color values |
-| Privacy settings mockups | To match the planned Settings work | The new tab and private window mockups were received and are kept outside the repo |
+| Privacy settings mockups | Received in the owner's Downloads folder | Colors applied to real Settings; bespoke layout remains planned |
 
 ## Theme direction
 
