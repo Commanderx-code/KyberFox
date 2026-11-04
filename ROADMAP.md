@@ -1,7 +1,8 @@
 # Roadmap
 
-Kyber Fox is a Firefox fork in **alpha**. Releases 159.0-1 and 159.0.1-1 went
-to the owner and close friends on Windows and Arch Linux on 2026-11-04. This file tracks what is
+Kyber Fox is a Firefox fork in **alpha**. Releases 159.0-1, 159.0.1-1 and
+159.0.1-2 went to the owner and close friends on Windows and Arch Linux on
+2026-11-04. This file tracks what is
 done, what is next, and what is only an idea. The design behind release 1 is
 [docs/superpowers/specs/2026-11-02-kyber-fox-design.md](docs/superpowers/specs/2026-11-02-kyber-fox-design.md).
 
@@ -43,11 +44,11 @@ checklist in [docs/testing.md](docs/testing.md) has been run once by hand; the
 signing keys have an offline backup.
 
 - [x] Release 159.0.1-1, with the signed update from 159.0-1 applied in CI (complete; 2026-11-04)
-- [ ] Release 159.0.1-2 with the Kyber look and the new Settings layout (in progress)
+- [x] Release 159.0.1-2 with the Kyber look and the new Settings layout (complete; 2026-11-04, the signed update from 159.0.1-1 applied in CI)
 - [x] Final logo and private-browsing logo (complete; PR #12, [docs/branding.md](docs/branding.md))
 - [x] Python tests on every pull request (complete; PR #11, the Checks workflow)
 - [ ] Update from one release to the next on a real Windows PC (blocked: needs the owner's machine)
-- [ ] Install and update on a real Garuda machine (in progress; the update to 159.0.1-2 is the check)
+- [x] Install and update on a real Garuda machine (complete; the owner updated from 159.0.1-1 to 159.0.1-2 with pacman on 2026-11-04 and the new look loaded)
 - [ ] Offline backup of `kyber-fox-private/keys/` (blocked: owner task)
 - [ ] KDE Plasma checks: file picker through the XDG portal, notifications, fractional scaling, Wayland and X11 sessions (planned; [docs/testing.md](docs/testing.md))
 - [ ] About dialog shows the Kyber Fox version and the Firefox version it is built from (planned; check the current dialog first)
