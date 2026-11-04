@@ -10,7 +10,8 @@
     "base.css",
     "kyber/fonts.css",
     "kyber/chrome.css",
-    "kyber/pages.css"
+    "kyber/pages.css",
+    "kyber/settings.css"
   ],
   "prefs": {},
   "vars": {

@@ -12,7 +12,7 @@ SKINS = THEMES / "skins"
 JAR = ROOT / "overlay/browser/components/kyberfox/jar.mn"
 KYBER = ("kyber-crystal", "kyber-crimson", "kyber-azure")
 NAMES = {"kyber-crystal": "Kyber Crystal", "kyber-crimson": "Crimson", "kyber-azure": "Azure"}
-SHARED = ["base.css", "kyber/fonts.css", "kyber/chrome.css", "kyber/pages.css"]
+SHARED = ["base.css", "kyber/fonts.css", "kyber/chrome.css", "kyber/pages.css", "kyber/settings.css"]
 
 
 def manifest(i):

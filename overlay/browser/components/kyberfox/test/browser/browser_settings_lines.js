@@ -17,6 +17,13 @@ PromiseTestUtils.allowMatchingRejectionsGlobally(
   /No Setting with id "kyberfoxWebGLPrompt(Hide)?"/
 );
 
+const { KyberThemes } = ChromeUtils.importESModule(
+  "resource:///modules/KyberThemes.sys.mjs"
+);
+const savedTheme = KyberThemes.current();
+registerCleanupFunction(() => KyberThemes.apply(savedTheme));
+add_setup(() => KyberThemes.apply("ember"));
+
 const TRANSPARENT = "rgba(0, 0, 0, 0)";
 
 // A border shows only with a style, a width and a visible color; the computed
@@ -53,7 +60,11 @@ add_task(async function test_cards_sidebar_and_boxes_have_no_lines() {
   Assert.ok(!hasLine(win.getComputedStyle(separator)), "sidebar line");
   let navHr = doc.querySelector("moz-page-nav").shadowRoot.querySelector("hr");
   if (navHr) {
-    Assert.equal(win.getComputedStyle(navHr).backgroundColor, TRANSPARENT, "sidebar line above the secondary items");
+    Assert.equal(
+      win.getComputedStyle(navHr).backgroundColor,
+      TRANSPARENT,
+      "sidebar line above the secondary items"
+    );
   }
 
   // moz-box-common draws the outline on the element itself; the fill is on its button.
@@ -66,7 +77,9 @@ add_task(async function test_cards_sidebar_and_boxes_have_no_lines() {
 });
 
 add_task(async function test_buttons_are_filled_not_outlined() {
-  let { el, win } = await openPane("appearance", d => d.getElementById("kyberfoxTheme"));
+  let { el, win } = await openPane("appearance", d =>
+    d.getElementById("kyberfoxTheme")
+  );
   let doc = el.ownerDocument;
   let button = await TestUtils.waitForCondition(
     () => doc.getElementById("kyberfoxThemeImport"),
@@ -74,7 +87,9 @@ add_task(async function test_buttons_are_filled_not_outlined() {
   );
   await button.updateComplete;
   // The visible part of a moz-button; its <button> is always transparent.
-  let style = win.getComputedStyle(button.shadowRoot.querySelector(".button-background"));
+  let style = win.getComputedStyle(
+    button.shadowRoot.querySelector(".button-background")
+  );
   // moz-button's own stylesheet loads after the first render.
   await TestUtils.waitForCondition(
     () => style.backgroundColor != TRANSPARENT,
@@ -85,5 +100,9 @@ add_task(async function test_buttons_are_filled_not_outlined() {
   // The sidebar items read the same tokens and must stay unfilled.
   let navButton = doc.querySelector("moz-page-nav-button:not([selected])");
   let inner = navButton.shadowRoot.querySelector("button, a");
-  Assert.equal(win.getComputedStyle(inner).backgroundColor, TRANSPARENT, "sidebar item fill");
+  Assert.equal(
+    win.getComputedStyle(inner).backgroundColor,
+    TRANSPARENT,
+    "sidebar item fill"
+  );
 });

@@ -436,22 +436,3 @@
     }
   }
 }
-
-/* Firefox owns the settings and permissions; only their tokens change. */
-@-moz-document url-prefix("about:preferences") {
-  @media (not (forced-colors: active)) and (not (prefers-contrast: more)) {
-    :root {
-      color-scheme: dark !important;
-      --background-color-canvas: var(--kf-bg) !important;
-      --background-color-box: var(--kf-bg-toolbar) !important;
-      --background-color-card: var(--kf-bg-toolbar) !important;
-      --text-color: var(--kf-fg) !important;
-      --text-color-deemphasized: var(--kf-fg-muted) !important;
-      --color-accent-primary: var(--kf-accent) !important;
-      --button-background-color-primary: var(--kf-accent) !important;
-      --button-text-color-primary: var(--kf-bg) !important;
-      --focus-outline-color: var(--kf-accent) !important;
-      accent-color: var(--kf-accent);
-    }
-  }
-}

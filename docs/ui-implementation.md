@@ -22,7 +22,9 @@ replacement new-tab or settings applications. Relevant source locations:
 | Assembly and pinned inputs | `tools/assemble.py`, `pins.toml` |
 | Theme registration and picker | `overlay/browser/components/kyberfox/KyberThemes.sys.mjs`, `content/theme-pane.mjs` |
 | Toolbar, tabs and private indicator | `themes/base.css`, `themes/kyber/chrome.css` |
-| Normal/private new tabs and settings colors | `themes/kyber/pages.css` |
+| Normal/private new tabs | `themes/kyber/pages.css` |
+| Settings presentation and colors | `themes/kyber/settings.css` |
+| Responsive native search/preset layout | `overlay/browser/components/kyberfox/content/settings-layout.mjs`, `patches/kyber/preferences-style.patch` |
 | Theme tokens | `themes/skins/kyber-*/colors.css` and `skin.json` |
 | Private heading and explanation | `patches/kyber/private-window-page.patch`, `overlay/browser/locales/en-US/browser/kyberfox.ftl` |
 | Actual privacy controls | `KyberPrivacyPresets.sys.mjs`, `KyberShield.sys.mjs`, `content/privacy-presets.mjs` in the component |
@@ -56,13 +58,17 @@ MPL code and SIL OFL font notices remain intact. No auto-traced fox SVG is used.
 
 ## Remaining design work
 
-The privacy mockup's bespoke arrangement and illustrations are not reproduced.
+Settings now follows the reference's branded sidebar, sidebar search, outlined
+cards, accent colors and wave details. Its precise grouping and illustrations
+are not reproduced.
 Its tracker count, Kyber Search, Sync and hypothetical privacy switches are not
 added. Firefox's real settings and permission dialogs are retained. Crimson and
 Azure already implement the red/black and blue/silver directions using the shared
 UI; additional Dark Side/Jedi Order theme names or duplicate implementations are
 not introduced. Exact mockup wave shapes, bespoke icons and full platform/native
-menu matching remain polish work. New strings currently have only en-US coverage.
+menu matching remain polish work. The application menu and context menus retain
+their previous appearance and placement. New strings currently have only en-US
+coverage.
 
 ## Run and preview
 
@@ -118,3 +124,70 @@ validate patched C++, Windows/native menus or real-machine update delivery.
   wordmark/search paint and the narrow Nova grid alignment found during preview.
   Screenshots are local artifacts, not embedded UI.
 - No release, push, system-wide setting change or real-profile migration.
+
+## Settings design pass
+
+The shared Kyber skin manifests now load `kyber/settings.css`, so Crystal,
+Crimson and Azure share the presentation and supply their own colors. Settings
+styles moved out of `pages.css`; Firefox's controls, navigation, permission
+dialogs and search remain the implementation.
+
+Settings adds a larger existing PNG fox, a shaded sidebar, a cyan selection
+marker and violet selection fill, readable muted navigation text, softly edged
+cards, and a subtle background gradient. The narrow layout keeps the native
+icon navigation with its labels/tooltips. System high contrast bypasses these
+colors, and reduced motion removes control transitions.
+
+The experimental menu stylesheet and decorative menu header were removed at
+the owner's request. The menu keeps its previous appearance and its existing
+right-hand toolbar button and placement. Existing theme colors from `base.css`
+are unchanged.
+
+Restart the preview browser to load the updated shared sheets, then open
+`about:preferences#privacy` and the top-right application menu. Local Settings
+screenshots are `artifacts/settings-after-1280.png` and
+`artifacts/settings-after-600.png`.
+
+After restoring the previous menu appearance, the artifact rebuild, 222 Python
+tests and 207 browser checks passed. The menu checks cover a usable width,
+window bounds, absence of the added fox header, keyboard navigation and Escape
+dismissal. Settings previews were inspected at 1280×900 and 600×700. Windows
+and macOS native menus still need platform validation.
+
+## Reference layout refinement
+
+The wider Settings layout now includes a 112 px PNG fox, the existing outlined
+wordmark, the real native search field under the branding, compact navigation,
+and subtle theme-colored waves. The content column grows to 1100 px, with thin
+cyan outlines, a larger native page heading and native Standard/Strict/Custom
+preset controls arranged side by side. Custom remains a disabled status option;
+no additional protection level or counter is fabricated. Cards stack when the
+window is narrower than 951 px.
+
+`settings-layout.mjs` moves the existing search element into the navigation's
+supported subheading slot rather than copying it. It restores the element and
+vertical radio orientation on narrow windows, high contrast, safe mode and
+non-Kyber themes. Search value, focus and native event handlers are preserved.
+An observer handles panes loaded after startup; all listeners are removed on
+unload. Security/organization notices stay in the main pane and remain visible.
+The Settings stylesheet also applies to the existing permissions and search
+pages; their real grouping and controls remain native.
+
+Previews: `artifacts/settings-reference-1460.png`,
+`artifacts/settings-reference-1280.png`, `artifacts/settings-reference-600.png`,
+and `artifacts/settings-reference-vertical-1460.png`. Vertical tabs in the latter
+are enabled only in its disposable preview profile; both tab layouts remain
+available and no user preference is forced by the theme.
+
+Reference refinement validation: 222 Python tests and 255 browser checks passed.
+The checks include working native Settings search after relocation, focus
+preservation on resize, horizontal/vertical preset orientation, disabled-skin
+fallback, high contrast and the restored menu. The artifact rebuild and patch
+application dry run passed. Previews were inspected at 1460×960, 1280×900 and
+600×700, with both horizontal and vertical tabs. Neither the main pane nor the
+page overflows horizontally at these sizes.
+
+ESLint passes for the layout module and Settings tests. A broader lint run also
+found three existing errors in `KyberThemes.sys.mjs` (a missing parameter doc and
+two preference try/catch warnings); those unrelated sections were left unchanged.
+This UI pass does not install a package or publish a release.

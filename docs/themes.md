@@ -84,6 +84,13 @@ to `themes/`, registered after the skin's own sheets):
   bar, rounded tabs with the selected one outlined, the logo and name at the
   start of the tab strip, and Firefox's labeled private browsing indicator
   shown as a PRIVATE pill in private windows.
+- `kyber/settings.css`: native Settings, with a PNG fox and outlined wordmark,
+  cyan-edged cards, violet navigation selection, subtle waves and a wider content
+  column. Native radio presets are arranged horizontally at wider sizes.
+  `content/settings-layout.mjs` places the real Settings search control in the
+  sidebar above 950 px and restores it below that width or outside a Kyber skin.
+  It preserves focus and restores native positioning in high contrast and safe
+  mode. Navigation still collapses at Firefox's breakpoint.
 - `kyber/pages.css`: about:newtab and about:home (waves behind the page, the
   big fox with the wordmark, a glowing search pill, glass top site cards; a
   wallpaper the user picked still wins), about:privatebrowsing (the private
@@ -135,3 +142,8 @@ The private pages use the owner-supplied `foxes/masked-fox.png` unchanged.
 See [ui-implementation.md](ui-implementation.md) for the current implementation,
 preview instructions and remaining mockup work. Reduced-motion preferences
 remove glow and page transitions.
+
+Settings listens for `kyberfox-theme-changed`, emitted by `KyberThemes.apply()`
+after applying a palette. This also handles a disabled or unreadable skin falling
+back while the stored theme choice remains unchanged. The observer and media
+query listeners are removed when the Settings document unloads.

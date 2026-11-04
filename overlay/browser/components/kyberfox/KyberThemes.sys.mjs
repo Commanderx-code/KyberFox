@@ -594,6 +594,8 @@ export const KyberThemes = {
         Services.prefs.setStringPref(ID_PREF, id);
       }
     }
+    // A fallback can change the active skin while keeping the stored choice.
+    Services.obs.notifyObservers(null, "kyberfox-theme-changed");
   },
 
   /**

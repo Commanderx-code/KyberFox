@@ -1,0 +1,209 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+@-moz-document url-prefix("about:preferences") {
+  @media (not (forced-colors: active)) and (not (prefers-contrast: more)) {
+    :root {
+      color-scheme: dark !important;
+      --kyber-settings-surface: color-mix(in srgb, var(--kf-bg-toolbar) 70%, var(--kyber-bg-deep));
+      --background-color-canvas: var(--kf-bg) !important;
+      --background-color-box: var(--kyber-settings-surface) !important;
+      --background-color-card: var(--kyber-settings-surface) !important;
+      --text-color: var(--kf-fg) !important;
+      --text-color-deemphasized: var(--kf-fg-muted) !important;
+      --color-accent-primary: var(--kf-accent) !important;
+      --button-background-color-primary: var(--kf-accent) !important;
+      --button-text-color-primary: var(--kf-bg) !important;
+      --focus-outline-color: var(--kf-accent) !important;
+      --link-color: var(--kf-accent) !important;
+      --link-color-hover: color-mix(in srgb, var(--kf-accent) 75%, white) !important;
+      accent-color: var(--kf-accent);
+      scrollbar-color: var(--kf-border) var(--kf-bg);
+    }
+
+    body {
+      font-family: "Kyber Inter", sans-serif !important;
+      background: radial-gradient(ellipse at 100% 0, color-mix(in srgb, var(--kyber-glow-b) 8%, transparent), transparent 55%), var(--kyber-bg-deep) !important;
+    }
+
+    #categories {
+      margin-inline-start: 0 !important;
+      padding-inline: 16px !important;
+      background: linear-gradient(color-mix(in srgb, var(--kyber-bg-deep) 65%, transparent), color-mix(in srgb, var(--kyber-bg-deep) 65%, transparent)),
+        var(--kyber-waves) center bottom / auto 550px no-repeat,
+        linear-gradient(180deg, var(--kf-bg-toolbar), var(--kyber-bg-deep)) !important;
+      font-size: 13px !important;
+      --page-nav-heading-logo-size: 112px !important;
+      --page-nav-margin-block-start: 24px !important;
+      --page-nav-gap: 16px !important;
+      --page-nav-border-color: var(--kf-border) !important;
+      --page-nav-button-gap: 2px !important;
+      --page-nav-button-padding: 9px 12px !important;
+      --page-nav-button-border-radius: 8px !important;
+      --page-nav-button-border-radius-focused: 8px !important;
+      --page-nav-button-indicator-width: 3px !important;
+      --page-nav-button-indicator-background-color: var(--kf-accent) !important;
+    }
+
+    .page-nav-heading-wrapper {
+      flex-direction: column !important;
+      gap: 10px !important;
+    }
+
+    .page-nav-heading-wrapper > .logo {
+      margin-inline-start: 0 !important;
+    }
+
+    .page-nav-heading {
+      font-family: "Kyber Inter", sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 400 !important;
+      color: var(--kf-fg-muted) !important;
+      text-align: center;
+    }
+
+    .page-nav-heading::before {
+      content: "";
+      display: block;
+      width: 180px;
+      height: 24px;
+      margin-block-end: 10px;
+      background: url("chrome://branding/content/firefox-wordmark.svg") center / contain no-repeat;
+      -moz-context-properties: fill;
+      fill: var(--kf-fg);
+    }
+
+    #categories > #searchInput {
+      width: 100%;
+      min-width: 0;
+      --input-border-radius: 10px;
+    }
+
+    moz-page-nav-button {
+      --page-nav-button-text-color: var(--kf-fg-muted) !important;
+      --page-nav-button-text-color-hover: var(--kf-fg) !important;
+      --page-nav-button-text-color-selected: var(--kf-fg) !important;
+      --page-nav-button-background-color-hover: color-mix(in srgb, var(--kf-accent) 8%, transparent) !important;
+      --page-nav-button-background-color-selected: color-mix(in srgb, var(--kyber-glow-b) 18%, var(--kf-bg-toolbar)) !important;
+    }
+
+    .main-content {
+      padding: 28px 32px !important;
+    }
+
+    .pane-container {
+      width: auto !important;
+      align-self: stretch !important;
+      box-sizing: border-box;
+      max-width: 1100px !important;
+      min-width: 0 !important;
+      padding-block-end: 32px !important;
+    }
+
+    setting-pane > section {
+      gap: 18px !important;
+    }
+
+    moz-page-header {
+      min-height: 64px;
+      padding-block: 8px 12px;
+      background: var(--kyber-fox) right center / 64px no-repeat;
+    }
+
+    moz-card {
+      --card-background-color: var(--kyber-settings-surface) !important;
+      --card-border: 1px solid color-mix(in srgb, var(--kf-accent) 22%, var(--kf-border)) !important;
+      --card-border-radius: 12px !important;
+      --card-padding: 18px !important;
+      --card-gap: 12px !important;
+      --card-box-shadow: 0 6px 20px rgb(0 0 0 / 0.1) !important;
+    }
+
+    moz-fieldset {
+      --fieldset-gap: 12px;
+    }
+
+    #kyberfoxPrivacyPreset::part(inputs) {
+      gap: 12px !important;
+    }
+
+    #kyberfoxPrivacyPreset > moz-radio {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid var(--kf-border);
+      border-radius: 8px;
+      background: var(--kf-bg-toolbar);
+    }
+
+    #kyberfoxPrivacyPreset > moz-radio[checked] {
+      border-color: var(--kf-accent);
+      background: color-mix(in srgb, var(--kf-accent) 6%, var(--kf-bg-toolbar));
+    }
+
+    #search-container {
+      margin-inline: 0 !important;
+      width: 100% !important;
+      box-sizing: border-box;
+      padding-block-end: 12px !important;
+    }
+
+    :root.kyber-settings-sidebar-search #search-container:not(:has(> :not([hidden]))) {
+      display: none !important;
+    }
+
+    :focus-visible {
+      outline-color: var(--kf-accent) !important;
+    }
+
+    .page-header-container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-header-container #heading {
+      font-family: "Kyber Sora", sans-serif !important;
+      font-size: clamp(22px, 2vw, 30px) !important;
+    }
+
+    .page-header-container .icon {
+      width: 28px !important;
+      height: 28px !important;
+      fill: var(--kf-accent) !important;
+    }
+
+    @media (min-width: 951px) {
+      #kyberfoxPrivacyPreset > moz-radio {
+        flex: 1 1 180px !important;
+      }
+
+      #categories {
+        width: 240px !important;
+        box-sizing: border-box;
+      }
+    }
+
+    @media (max-width: 950px) {
+      .main-content {
+        padding: 20px 16px !important;
+      }
+
+      #categories {
+        padding-inline: 12px 8px !important;
+        --page-nav-heading-logo-size: 32px !important;
+      }
+
+      moz-page-header {
+        background: none;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition: none !important;
+      animation: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
