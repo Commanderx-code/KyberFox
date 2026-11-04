@@ -2,7 +2,8 @@
 # Writes every image in the Kyber Fox branding directory from the logo in
 # branding/. logo.png is the large original; logo-<size>.png are the owner's
 # own renders at those sizes and are used as they are, so small icons stay
-# sharp. Other sizes are scaled down from logo.png.
+# sharp. Other sizes are scaled down from logo.png. branding/private-browsing/ holds
+# the private browsing logo in the same layout.
 # Needs ImageMagick 7 (magick) and python3. Run from the repository root.
 set -eu
 
@@ -10,12 +11,14 @@ src=branding
 dir=overlay/browser/branding/kyberfox
 backdrop="#1b1530"
 
-# square FILE SIZE: the logo filling a SIZE x SIZE transparent square.
+# square FILE SIZE [SOURCE]: the logo filling a SIZE x SIZE transparent
+# square. SOURCE is the logo directory, branding/ by default.
 square() {
-  if [ -f "$src/logo-$2.png" ]; then
-    magick "$src/logo-$2.png" -strip "$1"
+  from=${3:-$src}
+  if [ -f "$from/logo-$2.png" ]; then
+    magick "$from/logo-$2.png" -strip "$1"
   else
-    magick "$src/logo.png" -resize "$2x$2" -strip "$1"
+    magick "$from/logo.png" -resize "$2x$2" -strip "$1"
   fi
 }
 
@@ -27,13 +30,13 @@ banner() {
     -gravity center -compose over -composite -strip "$1"
 }
 
-# ico FILE SIZE...
+# ico FILE SOURCE SIZE...
 ico() {
-  out=$1
-  shift
+  out=$1 from=$2
+  shift 2
   frames=""
   for size in "$@"; do
-    square "PNG32:$tmp/ico-$size.png" "$size"
+    square "PNG32:$tmp/ico-$size.png" "$size" "$from"
     frames="$frames $tmp/ico-$size.png"
   done
   # shellcheck disable=SC2086
@@ -63,10 +66,10 @@ trap 'rm -rf "$tmp"' EXIT
 for size in 16 22 24 32 48 64 128 256; do
   square "PNG32:$dir/default$size.png" "$size"
 done
-for name in VisualElements PrivateBrowsing; do
-  square "PNG32:$dir/${name}_150.png" 300
-  square "PNG32:$dir/${name}_70.png" 142
-done
+square "PNG32:$dir/VisualElements_150.png" 300
+square "PNG32:$dir/VisualElements_70.png" 142
+square "PNG32:$dir/PrivateBrowsing_150.png" 300 "$src/private-browsing"
+square "PNG32:$dir/PrivateBrowsing_70.png" 142 "$src/private-browsing"
 banner "PNG32:$dir/background.png" 1440 880 "$backdrop"
 
 for asset in Document44x44:44x44 LargeTile.scale-200:620x620 MedTile.scale-200:300x300 \
@@ -83,13 +86,13 @@ for asset in Document44x44:44x44 LargeTile.scale-200:620x620 MedTile.scale-200:3
   fi
 done
 
-ico "$dir/firefox.ico" 16 32 48 256
-ico "$dir/firefox64.ico" 16 32 48 64
-ico "$dir/document.ico" 16 32 48 256
-ico "$dir/document_pdf.ico" 256
-ico "$dir/newtab.ico" 16 32
-ico "$dir/newwindow.ico" 16 32
-ico "$dir/pbmode.ico" 16 32 48 256
+ico "$dir/firefox.ico" "$src" 16 32 48 256
+ico "$dir/firefox64.ico" "$src" 16 32 48 64
+ico "$dir/document.ico" "$src" 16 32 48 256
+ico "$dir/document_pdf.ico" "$src" 256
+ico "$dir/newtab.ico" "$src" 16 32
+ico "$dir/newwindow.ico" "$src" 16 32
+ico "$dir/pbmode.ico" "$src/private-browsing" 16 32 48 256
 
 icns "$dir/firefox.icns"
 icns "$dir/document.icns"
@@ -105,8 +108,10 @@ content=$dir/content
 banner "PNG32:$content/about.png" 300 236
 square "PNG32:$content/about-logo.png" 192
 square "PNG32:$content/about-logo@2x.png" 384
-square "PNG32:$content/about-logo-private.png" 192
-square "PNG32:$content/about-logo-private@2x.png" 384
+square "PNG32:$content/about-logo-private.png" 192 "$src/private-browsing"
+square "PNG32:$content/about-logo-private@2x.png" 384 "$src/private-browsing"
+square "PNG32:$content/icon-private16.png" 16 "$src/private-browsing"
+square "PNG32:$content/icon-private32.png" 32 "$src/private-browsing"
 
 svg_header='<!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this

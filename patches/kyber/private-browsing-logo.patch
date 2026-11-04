@@ -1,0 +1,64 @@
+--- a/browser/themes/shared/privatebrowsing/aboutPrivateBrowsing.css
++++ b/browser/themes/shared/privatebrowsing/aboutPrivateBrowsing.css
+@@ -509,7 +509,7 @@
+   }
+ 
+   .logo {
+-    background: url("chrome://browser/skin/privatebrowsing/pbm-logo.svg") no-repeat center center;
++    background: image-set(url("chrome://branding/content/about-logo-private.png"), url("chrome://branding/content/about-logo-private@2x.png") 2x) no-repeat center center;
+     background-size: var(--icon-size-xxlarge);
+     height: var(--icon-size-xxlarge);
+     width: var(--icon-size-xxlarge);
+--- a/browser/themes/shared/browser-shared.css
++++ b/browser/themes/shared/browser-shared.css
+@@ -854,7 +854,7 @@
+ }
+ 
+ .private-browsing-indicator-icon {
+-  list-style-image: url("chrome://global/skin/icons/indicator-private-browsing.svg");
++  list-style-image: url("chrome://branding/content/icon-private32.png");
+   width: var(--icon-size);
+   height: var(--icon-size);
+ }
+@@ -862,7 +862,7 @@
+ /* The icon-only indicator button opens an info panel; it replaces the labeled
+    indicator when the design-refresh pref is enabled. */
+ .private-browsing-indicator-button {
+-  list-style-image: url("chrome://browser/skin/privatebrowsing/pbm-logo.svg");
++  list-style-image: url("chrome://branding/content/icon-private32.png");
+   border-radius: var(--border-radius-medium);
+   /* Because --toolbarbutton-outline is set on :root, we have to override the
+      whole shorthand here, not just --toolbarbutton-outline-color. */
+--- a/browser/base/content/browser.js
++++ b/browser/base/content/browser.js
+@@ -776,7 +776,7 @@
+   "about:newtab": "chrome://branding/content/icon32.png",
+   "about:opentabs": "chrome://branding/content/icon32.png",
+   "about:welcome": "chrome://branding/content/icon32.png",
+-  "about:privatebrowsing": "chrome://browser/skin/privatebrowsing/favicon.svg",
++  "about:privatebrowsing": "chrome://branding/content/icon-private32.png",
+ };
+ 
+ var gInitialPages = [
+--- a/browser/components/privatebrowsing/content/aboutPrivateBrowsing.html
++++ b/browser/components/privatebrowsing/content/aboutPrivateBrowsing.html
+@@ -13,7 +13,7 @@
+       content="default-src chrome:; img-src chrome: blob:; object-src 'none';"
+     />
+     <meta name="color-scheme" content="light dark" />
+-    <link rel="icon" href="chrome://browser/skin/privatebrowsing/favicon.svg" />
++    <link rel="icon" href="chrome://branding/content/icon-private32.png" />
+     <link
+       rel="stylesheet"
+       href="chrome://browser/content/aboutPrivateBrowsing.css"
+--- a/browser/components/tabbrowser/Tabbrowser.sys.mjs
++++ b/browser/components/tabbrowser/Tabbrowser.sys.mjs
+@@ -92,7 +92,7 @@
+   "about:newtab": "chrome://branding/content/icon32.png",
+   "about:home": "chrome://branding/content/icon32.png",
+   "about:welcome": "chrome://branding/content/icon32.png",
+-  "about:privatebrowsing": "chrome://browser/skin/privatebrowsing/favicon.svg",
++  "about:privatebrowsing": "chrome://branding/content/icon-private32.png",
+   "chrome://browser/content/aiwindow/aiWindow.html":
+     "chrome://browser/skin/smart-window-simplified.svg",
+ };
