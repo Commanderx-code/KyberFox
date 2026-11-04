@@ -194,15 +194,22 @@ add_task(async function test_settings_search_and_responsive_layout() {
       );
       search.value = "";
       search.dispatchEvent(new win.Event("input", { bubbles: true }));
+      await TestUtils.waitForCondition(
+        () => doc.getElementById("header-searchResults").hidden,
+        "native search results have cleared before resizing"
+      );
       search.focus();
+      await TestUtils.waitForCondition(
+        () => doc.activeElement == search,
+        "the search field is focused before resizing"
+      );
       window.resizeTo(600, 700);
       await TestUtils.waitForCondition(
         () => search.parentElement.id == "search-container",
         "narrow windows restore the search field to the main pane"
       );
-      Assert.equal(
-        doc.activeElement,
-        search,
+      await TestUtils.waitForCondition(
+        () => doc.activeElement == search,
         "focused search survives the layout change"
       );
       Assert.equal(

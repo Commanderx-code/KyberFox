@@ -24,6 +24,8 @@ prefs = [
 
 ["browser_settings_menu.js"]
 
+["browser_settings_pages.js"]
+
 ["browser_shield.js"]
 support-files = [
   "shield_ad.js",

@@ -124,8 +124,11 @@ add_task(async function test_picker_shows_all_with_previews() {
   let available = KyberThemes.available();
   Assert.deepEqual(
     shown.map(c => c.dataset.themeId),
-    available.map(t => t.id),
-    "one card per available() entry, in order"
+    [
+      ...available.filter(t => KyberThemes.isKyber(t.id)),
+      ...available.filter(t => !KyberThemes.isKyber(t.id)),
+    ].map(t => t.id),
+    "every theme appears once, with the Kyber themes first"
   );
   for (let card of shown) {
     let vars = KyberThemes.palette(card.dataset.themeId).vars;

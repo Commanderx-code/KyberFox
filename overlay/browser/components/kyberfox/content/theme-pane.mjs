@@ -45,7 +45,49 @@ class KyberfoxThemePicker extends MozLitElement {
     this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
   }
 
-  cardTemplate(theme) {
+  onCardKeyDown(event) {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+      return;
+    }
+    let keys = [
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
+      "Home",
+      "End",
+    ];
+    if (!keys.includes(event.key)) {
+      return;
+    }
+    let cards = [
+      ...this.shadowRoot.querySelectorAll("button.card:not(:disabled)"),
+    ];
+    let index = cards.indexOf(event.target.closest("button.card"));
+    if (index < 0) {
+      return;
+    }
+    event.preventDefault();
+    let backwards =
+      event.key == "ArrowUp" ||
+      (event.key == "ArrowLeft" && !this.matches(":dir(rtl)")) ||
+      (event.key == "ArrowRight" && this.matches(":dir(rtl)"));
+    let next = (index + (backwards ? -1 : 1) + cards.length) % cards.length;
+    if (event.key == "Home") {
+      next = 0;
+    } else if (event.key == "End") {
+      next = cards.length - 1;
+    }
+    let id = cards[next].dataset.themeId;
+    this.choose(id);
+    this.updateComplete.then(() => {
+      [...this.shadowRoot.querySelectorAll("button.card")]
+        .find(card => card.dataset.themeId == id)
+        ?.focus();
+    });
+  }
+
+  cardTemplate(theme, focusId) {
     let vars = KyberThemes.palette(theme.id)?.vars ?? {};
     let current = theme.id == this.value;
     return html`<button
@@ -54,24 +96,35 @@ class KyberfoxThemePicker extends MozLitElement {
       role="radio"
       data-theme-id=${theme.id}
       aria-checked=${current}
+      tabindex=${theme.id == focusId && !this.disabled ? 0 : -1}
       ?disabled=${theme.disabled || this.disabled}
       @click=${() => this.choose(theme.id)}
     >
       <span
         class="preview"
+        aria-hidden="true"
         style="background: ${vars["--kf-bg"]}; color: ${vars[
           "--kf-fg"
-        ]}; font-family: ${vars["--kf-font"]}"
+        ]}; font-family: ${vars["--kf-font"]}; --preview-accent: ${vars[
+          "--kf-accent"
+        ]}; --preview-field: ${vars["--kf-bg-urlbar"]}"
       >
-        <span
-          class="band toolbar"
-          style="background: ${vars["--kf-bg-toolbar"]}"
-          >${theme.name}</span
-        >
-        <span
-          class="band accent"
-          style="background: ${vars["--kf-accent"]}"
-        ></span>
+        <span class="toolbar" style="background: ${vars["--kf-bg-toolbar"]}">
+          <span
+            class="preview-tab"
+            style="background: ${vars["--kf-bg-tab-active"]}"
+          ></span>
+        </span>
+        <span class="preview-address"></span>
+        <span class="preview-page">
+          <img
+            class="preview-logo"
+            src="chrome://branding/content/icon32.png"
+            alt=""
+          />
+          <span class="preview-search"></span>
+        </span>
+        <span class="accent" style="background: ${vars["--kf-accent"]}"></span>
       </span>
       <span class="name">${theme.name}</span>
       ${current
@@ -90,26 +143,43 @@ class KyberfoxThemePicker extends MozLitElement {
   }
 
   render() {
+    let available = KyberThemes.available();
+    let themes = [
+      ...available.filter(theme => KyberThemes.isKyber(theme.id)),
+      ...available.filter(theme => !KyberThemes.isKyber(theme.id)),
+    ];
+    let focusId =
+      themes.find(theme => theme.id == this.value && !theme.disabled)?.id ??
+      themes.find(theme => !theme.disabled)?.id;
     return html`
       <style>
         .grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
-          gap: var(--space-medium);
+          grid-template-columns: repeat(
+            auto-fill,
+            minmax(min(100%, 11.5rem), 1fr)
+          );
+          gap: 14px;
         }
         .card {
           display: flex;
           flex-direction: column;
-          gap: var(--space-xsmall);
-          padding: var(--space-small);
-          border: 2px solid transparent;
-          border-radius: var(--border-radius-medium);
+          gap: 8px;
+          min-width: 0;
+          padding: 10px;
+          border: 2px solid
+            var(
+              --kyber-theme-card-border,
+              var(--border-color-interactive, transparent)
+            );
+          border-radius: 12px;
           background: var(--background-color-box);
           color: var(--text-color);
           font: inherit;
           text-align: start;
           cursor: pointer;
         }
+        .card:not(:disabled):hover,
         .card[aria-checked="true"] {
           border-color: var(--color-accent-primary);
         }
@@ -119,35 +189,76 @@ class KyberfoxThemePicker extends MozLitElement {
         }
         .card:focus-visible {
           outline: 2px solid var(--focus-outline-color);
-          outline-offset: 2px;
+          outline-offset: 3px;
         }
         .preview {
           display: flex;
           flex-direction: column;
-          justify-content: flex-end;
-          min-height: 4.5rem;
-          border-radius: var(--border-radius-small);
+          min-height: 108px;
+          border-radius: 6px;
           overflow: hidden;
         }
-        .band {
-          display: block;
-          padding: var(--space-xxsmall) var(--space-small);
-          font-size: 0.85em;
+        .toolbar {
+          display: flex;
+          padding: 6px 8px 0;
+        }
+        .preview-tab {
+          width: 44%;
+          height: 10px;
+          border-radius: 4px 4px 0 0;
+          border-block-start: 2px solid var(--preview-accent);
+        }
+        .preview-address {
+          height: 8px;
+          margin: 6px 10px;
+          border-radius: 4px;
+          background: var(--preview-field);
+          border: 1px solid currentColor;
+          opacity: 0.6;
+        }
+        .preview-page {
+          display: flex;
+          flex: 1;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 6px;
+        }
+        .preview-logo {
+          width: 24px;
+          height: 24px;
+        }
+        .preview-search {
+          width: 65%;
+          height: 8px;
+          border-radius: 10px;
+          border: 1px solid var(--preview-accent);
+          background: var(--preview-field);
         }
         .accent {
-          height: 0.5rem;
-          padding: 0;
+          height: 3px;
         }
         .name {
           font-weight: 600;
         }
         .note {
-          font-size: 0.85em;
+          font-size: 0.8em;
           color: var(--text-color-deemphasized);
         }
+        @media (forced-colors: active) {
+          .card[aria-checked="true"] {
+            border-color: Highlight;
+          }
+        }
       </style>
-      <div class="grid" role="radiogroup" data-l10n-id="kyberfox-theme-grid">
-        ${KyberThemes.available().map(theme => this.cardTemplate(theme))}
+      <div
+        class="grid"
+        role="radiogroup"
+        data-l10n-id="kyberfox-theme-grid"
+        @keydown=${this.onCardKeyDown}
+      >
+        ${themes.map(theme => this.cardTemplate(theme, focusId))}
       </div>
     `;
   }

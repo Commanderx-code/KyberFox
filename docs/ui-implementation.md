@@ -191,3 +191,48 @@ ESLint passes for the layout module and Settings tests. A broader lint run also
 found three existing errors in `KyberThemes.sys.mjs` (a missing parameter doc and
 two preference try/catch warnings); those unrelated sections were left unchanged.
 This UI pass does not install a package or publish a release.
+
+## Appearance, Search and Permissions refinement
+
+The shared Settings stylesheet now gives search-engine fields and rows the
+same navy surfaces and restrained outlines as the privacy page. Private-engine
+selection has a violet marker; its value still reaches Firefox's real search
+service. Permission rows use native icons with cyan accents and retain the
+native per-site dialog. The permission dialog and search-engine editor use Kyber colors and fit a
+600 px window, including Save/Add and Cancel. Their native validation and
+permission warnings remain unchanged.
+
+Appearance's theme gallery now shows schematic browser previews using each
+palette's actual toolbar, selected-tab, address-field and accent colors. The
+Kyber themes are listed first in the UI; no theme API order is changed.
+Previews are decorative and do not contain pretend controls. The existing
+PNG logo is reused. The gallery uses one tab stop, arrow keys, Home and End,
+and skips disabled themes. Existing custom CSS import, warnings, Reset and
+Reduce glow controls remain in place.
+
+Preview in the rebuilt artifact browser:
+
+- `about:preferences#appearance`
+- `about:preferences#search`
+- `about:preferences#permissionsData` (or click Permissions and data)
+
+Local screenshots: `artifacts/appearance-after-1280.png`,
+`artifacts/search-after-1280.png`, `artifacts/permissions-data-after-1280.png`
+and their `-600.png` counterparts. The native dialog previews are
+`artifacts/camera-dialog-after.png` and `artifacts/camera-dialog-after-600.png`.
+Native settings grouping and functionality are retained; the mockup's synthetic
+tracker counts, Kyber Search, Sync and hypothetical switches are still absent.
+The previous right-hand browser menu remains unchanged. No package is installed
+and no release is published by this UI pass.
+
+Validation for this refinement: 222 Python tests and 273 browser checks passed
+across six UI suites. These cover keyboard theme selection and disabled entries,
+passing browser shortcuts through, regular/private search provider changes,
+Cancel preserving a real test-site permission, search-editor Cancel preserving
+the engine list, and narrow-page/dialog bounds including the Save button. The
+resize-focus check now waits for native search results to clear before resizing.
+The artifact rebuild, changed JavaScript ESLint checks and `git diff --check`
+also passed. Page previews were inspected at 1280×900 and 600×700, along with
+wide and narrow native permission dialogs and the narrow search-engine editor.
+Full compiled-engine and Windows/macOS native UI validation remain outside the
+artifact build. All state changes made by the tests use temporary browser profiles.
