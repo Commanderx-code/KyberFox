@@ -1,0 +1,102 @@
+diff --git a/browser/base/content/aboutDialog.js b/browser/base/content/aboutDialog.js
+--- a/browser/base/content/aboutDialog.js
++++ b/browser/base/content/aboutDialog.js
+@@ -55,6 +55,7 @@ function init() {
+   let versionIdKey = "base";
+   let versionAttributes = {
+     version: AppConstants.MOZ_APP_VERSION_DISPLAY,
++    firefox: AppConstants.MOZ_APP_VERSION,
+   };
+ 
+   let arch = Services.sysinfo.get("arch");
+diff --git a/browser/locales/en-US/browser/aboutDialog.ftl b/browser/locales/en-US/browser/aboutDialog.ftl
+--- a/browser/locales/en-US/browser/aboutDialog.ftl
++++ b/browser/locales/en-US/browser/aboutDialog.ftl
+@@ -92,27 +92,29 @@ bottom-links-privacy = Privacy Notice
+ # Variables:
+ #   $version (String): version of Firefox, e.g. 66.0.1
+ #   $bits (Number): bits of the architecture (32 or 64)
+-aboutDialog-version = { $version } ({ $bits }-bit)
++#   $firefox (String): the Firefox version Kyber Fox is built from, e.g. 159.0.1
++aboutDialog-version = { $version } ({ $bits }-bit), based on Firefox { $firefox }
+ 
+ # Example of resulting string: 66.0a1 (2019-01-16) (64-bit)
+ # Variables:
+ #   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+ #   $isodate (String): date in ISO format, e.g. 2019-01-16
+ #   $bits (Number): bits of the architecture (32 or 64)
+-aboutDialog-version-nightly = { $version } ({ $isodate }) ({ $bits }-bit)
++aboutDialog-version-nightly = { $version } ({ $isodate }) ({ $bits }-bit), based on Firefox { $firefox }
+ 
+ # Example of resulting string: 131.0a1 (aarch64)
+ # Variables:
+ #   $version (String): version of Firefox, e.g. 66.0.1
+ #   $arch (String): name of the architecture (arm, aarch64, etc.)
+-aboutdialog-version-arch = { $version } ({ $arch })
++#   $firefox (String): the Firefox version Kyber Fox is built from, e.g. 159.0.1
++aboutdialog-version-arch = { $version } ({ $arch }), based on Firefox { $firefox }
+ 
+ # Example of resulting string: 131.0a1 (2024-08-27) (aarch64)
+ # Variables:
+ #   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+ #   $isodate (String): date in ISO format, e.g. 2019-01-16
+ #   $arch (String): name of the architecture (arm, aarch64, etc.)
+-aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch })
++aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch }), based on Firefox { $firefox }
+ 
+ 
+ about-kyberfox = Kyber Fox is a custom version of Firefox, with the primary goals of privacy, security and user freedom.
+diff --git a/browser/components/preferences/config/about-firefox.mjs b/browser/components/preferences/config/about-firefox.mjs
+--- a/browser/components/preferences/config/about-firefox.mjs
++++ b/browser/components/preferences/config/about-firefox.mjs
+@@ -267,6 +267,7 @@ Preferences.addSetting({
+ 
+     config.controlAttrs = {
+       ".version": version,
++      ".firefoxVersion": AppConstants.MOZ_APP_VERSION,
+       ".distribution": distribution,
+       ".distributionId": distributionId,
+       ".releaseNotesURL": releaseNotesURL,
+diff --git a/browser/components/preferences/widgets/update-information/update-information.mjs b/browser/components/preferences/widgets/update-information/update-information.mjs
+--- a/browser/components/preferences/widgets/update-information/update-information.mjs
++++ b/browser/components/preferences/widgets/update-information/update-information.mjs
+@@ -8,6 +8,7 @@ import { html } from "chrome://global/content/vendor/lit.all.mjs";
+ class UpdateInformation extends MozLitElement {
+   static properties = {
+     version: { type: String },
++    firefoxVersion: { type: String },
+     distribution: { type: String },
+     distributionId: { type: String },
+     releaseNotesURL: { type: String },
+@@ -18,6 +19,7 @@ class UpdateInformation extends MozLitElement {
+ 
+     /** @type {string} */
+     this.version = "";
++    this.firefoxVersion = "";
+ 
+     /** @type {string} */
+     this.distribution = "";
+@@ -38,7 +40,10 @@ class UpdateInformation extends MozLitElement {
+         class="label"
+         id="label"
+         data-l10n-id="update-application-version"
+-        data-l10n-args=${JSON.stringify({ version: this.version })}
++        data-l10n-args=${JSON.stringify({
++          version: this.version,
++          firefox: this.firefoxVersion,
++        })}
+       >
+         <a
+           id="releasenotes"
+diff --git a/browser/locales/en-US/browser/preferences/preferences.ftl b/browser/locales/en-US/browser/preferences/preferences.ftl
+--- a/browser/locales/en-US/browser/preferences/preferences.ftl
++++ b/browser/locales/en-US/browser/preferences/preferences.ftl
+@@ -764,7 +764,7 @@ update-application-updates-managed-by-os =
+ 
+ # Variables:
+ # $version (string) - Firefox version
+-update-application-version = Version { $version } <a data-l10n-name="learn-more">Visit the repositories</a>
++update-application-version = Version { $version }, based on Firefox { $firefox } <a data-l10n-name="learn-more">Visit the repositories</a>
+ 
+ update-history-2 =
+     .label = Show update history

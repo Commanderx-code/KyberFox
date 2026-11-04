@@ -51,7 +51,7 @@ signing keys have an offline backup.
 - [x] Install and update on a real Garuda machine (complete; the owner updated from 159.0.1-1 to 159.0.1-2 with pacman on 2026-11-04 and the new look loaded)
 - [ ] Offline backup of `kyber-fox-private/keys/` (blocked: owner task)
 - [ ] KDE Plasma checks: file picker through the XDG portal, notifications, fractional scaling, Wayland and X11 sessions (planned; [docs/testing.md](docs/testing.md))
-- [ ] About dialog shows the Kyber Fox version and the Firefox version it is built from (planned; check the current dialog first)
+- [ ] About dialog shows the Kyber Fox version and the Firefox version it is built from (in review; the About dialog and the About section of Settings read "159.0.1-3 (64-bit), based on Firefox 159.0.1"; the wording waits on question 3 in [docs/licensing.md](docs/licensing.md#open-questions-for-a-lawyer))
 - [x] Project documents: roadmap, vision, architecture, privacy defaults, testing, branding, licensing (complete; PRs #13 and #17)
 
 ## Phase 2: Transparent privacy
