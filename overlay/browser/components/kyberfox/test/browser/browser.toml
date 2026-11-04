@@ -8,6 +8,8 @@ prefs = [
   "kyberfox.welcome.shown=true",
 ]
 
+["browser_about_version.js"]
+
 ["browser_defaults.js"]
 
 ["browser_identity.js"]

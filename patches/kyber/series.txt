@@ -25,3 +25,4 @@ private-browsing-logo.patch
 newtab-fonts.patch
 private-window-page.patch
 password-manager-off.patch
+about-firefox-version.patch
