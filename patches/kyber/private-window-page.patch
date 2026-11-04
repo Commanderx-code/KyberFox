@@ -1,0 +1,33 @@
+--- a/browser/components/privatebrowsing/content/aboutPrivateBrowsing.html
++++ b/browser/components/privatebrowsing/content/aboutPrivateBrowsing.html
+@@ -28,6 +28,7 @@
+     <link rel="localization" href="toolkit/branding/brandings.ftl" />
+     <link rel="localization" href="toolkit/global/mozPromo.ftl" />
+     <link rel="localization" href="browser/aboutPrivateBrowsing.ftl" />
++    <link rel="localization" href="browser/kyberfox.ftl" />
+     <script src="chrome://browser/content/aboutPrivateBrowsing.js"></script>
+     <script
+       type="module"
+@@ -92,6 +93,10 @@
+         ></private-browsing-mask-intro>
+         <div class="wordmark"></div>
+       </div>
++      <div class="kyber-private-heading" hidden="">
++        <h1 data-l10n-id="kyberfox-private-heading"></h1>
++        <p data-l10n-id="kyberfox-private-subheading"></p>
++      </div>
+       <p
+         class="nova-tagline"
+         data-l10n-id="about-private-browsing-nova-info-header"
+@@ -103,6 +108,11 @@
+       <div class="search-inner-wrapper">
+         <content-search-handoff-ui></content-search-handoff-ui>
+       </div>
++      <p
++        class="kyber-private-note"
++        data-l10n-id="kyberfox-private-note"
++        hidden=""
++      ></p>
+       <div class="info-border">
+         <div class="info">
+           <h1

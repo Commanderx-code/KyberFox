@@ -124,6 +124,163 @@
   }
 }
 
+/* The private window page: the private fox, a PRIVATE WINDOW heading with a
+ * glowing line on each side, the search pill, a short note, and Firefox's
+ * own info box as a glass card. The heading and note are hidden in the page
+ * itself, so they show only under a Kyber theme. */
+@-moz-document url("about:privatebrowsing") {
+  :root {
+    --kyber-outline: linear-gradient(90deg, var(--kyber-glow-a), var(--kyber-glow-b));
+    --kyber-glow-color: color-mix(in srgb, var(--kyber-glow-a) 55%, transparent);
+  }
+
+  html.private {
+    --background-color-canvas: var(--kyber-bg-deep) !important;
+    --link-color: var(--kf-fg) !important;
+    --link-color-hover: var(--kf-accent) !important;
+    --link-color-active: var(--kf-accent) !important;
+    background: var(--kyber-bg-deep) !important;
+    color: var(--kf-fg) !important;
+    font-family: "Kyber Inter", sans-serif;
+  }
+
+  /* The waves take the place of Firefox's fox tail. */
+  html.private body::before {
+    content: "" !important;
+    position: fixed;
+    inset: 0;
+    background: var(--kyber-waves) center / cover no-repeat !important;
+    pointer-events: none;
+    z-index: -1;
+    transform: none !important;
+  }
+
+  .logo-and-wordmark {
+    margin-block: clamp(24px, 6vh, 72px) 8px !important;
+  }
+
+  .logo-and-wordmark .logo {
+    width: 300px !important;
+    height: 300px !important;
+    background: var(--kyber-fox-private) center / contain no-repeat !important;
+  }
+
+  .logo-and-wordmark .wordmark,
+  .nova-tagline,
+  .nova-subheader {
+    display: none !important;
+  }
+
+  .kyber-private-heading {
+    display: block !important;
+    text-align: center;
+    margin-block-end: 28px;
+  }
+
+  .kyber-private-heading h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin: 0 0 8px;
+    font-family: "Kyber Sora", sans-serif;
+    font-weight: 600;
+    font-size: 1.6em;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--kf-fg);
+  }
+
+  .kyber-private-heading h1::before,
+  .kyber-private-heading h1::after {
+    content: "";
+    width: 90px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--kyber-outline);
+    box-shadow: 0 0 calc(8px * var(--kyber-glow-strength)) var(--kyber-glow-color);
+  }
+
+  .kyber-private-heading h1::before {
+    background: linear-gradient(90deg, transparent, var(--kyber-glow-a));
+  }
+
+  .kyber-private-heading h1::after {
+    background: linear-gradient(90deg, var(--kyber-glow-b), transparent);
+  }
+
+  .kyber-private-heading p {
+    margin: 0;
+    color: var(--kf-fg-muted);
+  }
+
+  content-search-handoff-ui {
+    --content-search-handoff-ui-border-radius: 999px !important;
+    --content-search-handoff-ui-border-width: 1.5px !important;
+    --content-search-handoff-ui-background-color: var(--kf-bg-urlbar) !important;
+    --content-search-handoff-ui-color: var(--kf-fg) !important;
+    --content-search-handoff-ui-fill: var(--kf-fg-muted) !important;
+    --content-search-handoff-ui-caret-color: var(--kf-accent) !important;
+    --content-search-handoff-ui-fakefocus-border-color: var(--kf-accent) !important;
+    font-family: "Kyber Inter", sans-serif;
+  }
+
+  .search-handoff-button {
+    border: 1.5px solid transparent !important;
+    background:
+      var(--content-search-handoff-ui-engine-icon) 16px center / 24px no-repeat padding-box,
+      linear-gradient(var(--kf-bg-urlbar), var(--kf-bg-urlbar)) padding-box,
+      var(--kyber-outline) border-box !important;
+    box-shadow: 0 0 calc(18px * var(--kyber-glow-strength)) var(--kyber-glow-color) !important;
+  }
+
+  .kyber-private-note {
+    display: block !important;
+    margin-block: 20px 0;
+    text-align: center;
+    color: var(--kf-fg-muted);
+  }
+
+  html.private .info-border {
+    margin-block-start: 40px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Dark glass, so the waves behind never weaken the text. */
+  html.private .info {
+    background: color-mix(in srgb, var(--kyber-bg-deep) 80%, transparent) !important;
+    border: 1px solid rgb(255 255 255 / 0.08) !important;
+    border-radius: 14px !important;
+    backdrop-filter: blur(8px);
+    box-shadow: none !important;
+    color: var(--kf-fg);
+  }
+
+  @media (max-width: 699px) {
+    .logo-and-wordmark .logo {
+      width: 180px !important;
+      height: 180px !important;
+    }
+  }
+
+  @media (forced-colors: active), (prefers-contrast: more) {
+    html.private,
+    html.private body::before {
+      background: Canvas !important;
+    }
+
+    .search-handoff-button,
+    html.private .info {
+      border: 1px solid CanvasText !important;
+      background: Field !important;
+      box-shadow: none !important;
+      backdrop-filter: none;
+    }
+  }
+}
+
 /* The first-run welcome page: the theme's colors and the Kyber fonts. Under
  * Kyber Crystal, the default, that is a #0A0F2D page with #00E5FF accents. */
 @-moz-document url-prefix("chrome://kyberfox/content/welcome") {

@@ -347,3 +347,81 @@ add_task(async function test_welcome_fonts() {
     Services.prefs.setBoolPref("kyberfox.welcome.shown", true);
   }
 });
+
+// The private window page (themes/kyber/pages.css, private-window-page.patch).
+
+async function withPrivatePage(task) {
+  let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
+  try {
+    let browser = win.gBrowser.selectedBrowser;
+    BrowserTestUtils.startLoadingURIString(browser, "about:privatebrowsing");
+    await BrowserTestUtils.browserLoaded(browser, false, "about:privatebrowsing");
+    await SpecialPowers.spawn(browser, [], async () => {
+      await content.document.l10n.ready;
+      await content.document.l10n.translateRoots();
+    });
+    await task(browser);
+  } finally {
+    await BrowserTestUtils.closeWindow(win);
+  }
+}
+
+function privatePageState(browser) {
+  return SpecialPowers.spawn(browser, [], () => {
+    let doc = content.document;
+    let heading = doc.querySelector(".kyber-private-heading");
+    let note = doc.querySelector(".kyber-private-note");
+    let info = doc.querySelector(".info-border");
+    return {
+      headingShown: !!heading && heading.offsetHeight > 0,
+      headingText: heading?.querySelector("h1")?.textContent ?? "",
+      noteShown: !!note && note.offsetHeight > 0,
+      noteText: note?.textContent ?? "",
+      infoShown: !!info && info.offsetHeight > 0,
+      infoLinks: info ? info.querySelectorAll("a").length : 0,
+      logoImage: content.getComputedStyle(doc.querySelector(".logo"))
+        .backgroundImage,
+    };
+  });
+}
+
+add_task(async function test_private_page_kyber_lines() {
+  KyberThemes.apply("kyber-crystal");
+  await withPrivatePage(async browser => {
+    let state = await privatePageState(browser);
+    Assert.ok(state.headingShown, "the heading shows");
+    Assert.equal(state.headingText, "Private window");
+    Assert.ok(state.noteShown, "the note shows");
+    Assert.equal(
+      state.noteText,
+      "Your local browsing history is not saved in this window."
+    );
+  });
+});
+
+add_task(async function test_private_page_hidden_under_ember() {
+  KyberThemes.apply("ember");
+  await withPrivatePage(async browser => {
+    let state = await privatePageState(browser);
+    Assert.ok(!state.headingShown, "no Kyber heading under ember");
+    Assert.ok(!state.noteShown, "no Kyber note under ember");
+    Assert.ok(state.infoShown, "Firefox's info box shows");
+  });
+});
+
+add_task(async function test_private_info_still_reachable() {
+  KyberThemes.apply("kyber-crystal");
+  await withPrivatePage(async browser => {
+    let state = await privatePageState(browser);
+    Assert.ok(state.infoShown, "the info box shows");
+    Assert.greaterOrEqual(state.infoLinks, 1, "with its links");
+  });
+});
+
+add_task(async function test_private_fox_follows_theme() {
+  KyberThemes.apply("kyber-azure");
+  await withPrivatePage(async browser => {
+    let state = await privatePageState(browser);
+    Assert.stringContains(state.logoImage, "private-azure.png");
+  });
+});

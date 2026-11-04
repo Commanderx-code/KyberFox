@@ -23,3 +23,4 @@ fix-bool-settings.patch
 preferences-style.patch
 private-browsing-logo.patch
 newtab-fonts.patch
+private-window-page.patch
