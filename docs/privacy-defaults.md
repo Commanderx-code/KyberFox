@@ -55,6 +55,7 @@ file never forces a preset value back on startup.
 | Mozilla account and Firefox Sync | Off and locked (`identity.fxaccounts.enabled`) | On | Sync will be the project's own | No sync until word-code sync ships | test |
 | Web push (`dom.push.enabled`) | Off | On | It keeps a connection to Mozilla's push servers | Sites cannot send push notifications | test |
 | Sponsored content, stories, highlights, weather on the new tab | Off | On | Project goal | None | test |
+| Mozilla's own services: the built-in VPN, Firefox Relay, the Firefox Monitor card, "More from Mozilla" in Settings, the new tab promo card | Off and locked; their Remote Settings lists are not downloaded (PR #14) | Offered | Project goal | None | test |
 | Search suggestions (`browser.search.suggest.enabled`) | Off | On | Every keystroke would go to the search engine | No suggestions while typing; turn it on in Settings, Search | cfg only |
 | Saved passwords (`signon.rememberSignons`) | Off | On | LibreWolf default; a password manager add-on is offered on the welcome page | The browser does not offer to save passwords; turn it on in Settings | cfg only |
 | Malware and phishing protection | On, local lists only; remote download checks off | On, with remote download checks | Keeps protection without sending file details to Google | Unknown or rare downloads are not checked against Google's servers | test (malware); cfg only (remote checks) |
