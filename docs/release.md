@@ -35,7 +35,7 @@ A release is one workflow run, `.github/workflows/release.yml`, plus one approva
   3. builds the Arch package in an `archlinux` container from the Linux tarball (renamed to the PKGBUILD's source name, checksum filled by `updpkgsums`);
   4. tags the release (a commit with the shipped `themes/status.json`, only when it differs from the dispatched commit) and creates the GitHub Release with the installer, tarball, signed MAR, package and `SHA256SUMS`;
   5. writes the manifest to `gh-pages` under `update/<channel>/WINNT_x86_64-msvc-x64/` and `.../WINNT_x86_64-msvc-aarch64/` (the updater reports the CPU it runs on, so x64 builds under Arm emulation need the second path);
-  6. signs the package and updates the pacman repo in `arch/x86_64/` on `gh-pages` (release channel, not a dry run).
+  6. signs the package and updates the pacman repo, the assets of the Release tagged `arch-repo` (release channel, not a dry run; `docs/arch-repo.md`). It is not on `gh-pages` because git refuses the package, which is over 100 MB.
 
   The order matters: the Release assets exist before the manifest names them.
 - **apply-update**: runs after publish when `update-from-run-id` is set. It installs the older build and applies the signed MAR (`smoke-update.yml`, `apply`).
@@ -44,7 +44,7 @@ A release is one workflow run, `.github/workflows/release.yml`, plus one approva
 
 Shipped browsers always ask for `update/release/...` (`%CHANNEL%` is fixed by the build) and every MAR carries the channel id `kyberfox-release`. The `channel` input only chooses where the manifest is written: `test` writes `update/test/WINNT_x86_64-msvc-x64/update.xml`, which no shipped browser reads. Do not stamp another channel id on a test MAR; the apply smoke would reject it.
 
-A dry run publishes to `update/test/...`, creates the pre-release `v<version>-<build>-test`, and signs the package into a scratch repo to prove the key works. It never writes `update/release/...` or `arch/`. The test tag has a `-test` suffix, so it never collides with the real tag; delete the pre-release and tag afterwards if you want a clean list.
+A dry run publishes to `update/test/...`, creates the pre-release `v<version>-<build>-test`, and signs the package into a scratch repo to prove the key works. It never writes `update/release/...` or the `arch-repo` Release. The test tag has a `-test` suffix, so it never collides with the real tag; delete the pre-release and tag afterwards if you want a clean list.
 
 ```
 gh workflow run release.yml -f version=159.0 -f channel=test -f dry-run=true
@@ -67,17 +67,19 @@ The builds ship `themes/status.json` with `{"disabled": ["gx"]}`, so the browser
 Publish can fail partway (a bad secret, a push race). Re-running the failed job from the Actions page is safe: the tag step keeps a tag that is already on the remote, and the Release step uploads the assets again with `--clobber` when the Release exists. A new dispatch fails in `prepare` while the tag exists. To start over:
 
 1. Delete the Release and its tag: `gh release delete <tag> --cleanup-tag --yes` (for example `v159.0-1-test`).
-2. If the manifest or pacman commit reached `gh-pages`, revert it: clone `gh-pages`, `git revert <commit>` (the commits are named "Update manifest for ..." and "Pacman repo: ..."), push.
+2. If the manifest commit reached `gh-pages`, revert it: clone `gh-pages`, `git revert <commit>` (the commit is named "Update manifest for ..."), push.
 3. Dispatch the workflow again.
+
+If only the last step, the pacman repo, failed, the Release and the manifest are already live; do not start over. Fix the cause and run `gh workflow run publish-arch.yml -f tag=<tag>`, which publishes the Arch package of that Release (and waits for approval).
 
 ## Updating the Arch image
 
-`release.yml` runs `makepkg` and the signing steps in `archlinux:base-devel`, pinned by digest in `ARCH_IMAGE` because the signing steps hand that image the pacman key. To update it, look up the digest of the tag (`docker pull archlinux:base-devel`, then `docker inspect --format '{{index .RepoDigests 0}}' archlinux:base-devel`), put it in `ARCH_IMAGE` and update the date in the comment above it.
+`release.yml` runs `makepkg` and the signing steps in `archlinux:base-devel`, pinned by digest in `ARCH_IMAGE` because the signing steps hand that image the pacman key. To update it, look up the digest of the tag (`docker pull archlinux:base-devel`, then `docker inspect --format '{{index .RepoDigests 0}}' archlinux:base-devel`), put it in `ARCH_IMAGE` in both `release.yml` and `publish-arch.yml` (a test checks they match) and update the date in the comment above it.
 
 ## Roll back
 
 - **Windows**: publish the previous manifest again. On `gh-pages`, revert the commit "Update manifest for v...", or write the old release's manifest with `python -m tools.update_manifest` (its `--mar` is the signed MAR attached to the old Release), for both `WINNT_x86_64-msvc-x64` and `...-aarch64`. To stop updates entirely, write `python -m tools.update_manifest --empty --out update.xml`. Browsers that already updated do not go back; ship a new build number with the fix.
-- **Arch**: the repo keeps the newest two packages and its database lists the newest. Users downgrade with `sudo pacman -U` on the previous package (from `arch/x86_64/` while it is kept, or from the old GitHub Release). To roll the repo back, remove the new package from `arch/x86_64/` on `gh-pages` and re-run `repo-add` for the old one, or publish a new build number with the fix. `publish-repo.sh` refuses to add a version older than the two newest.
+- **Arch**: the repo keeps the newest two packages and its database lists the newest. Users downgrade with `sudo pacman -U` on the previous package (from the `arch-repo` Release while it is kept, or from the old GitHub Release). To roll the repo back, download the `arch-repo` assets, run `repo-remove --sign --key <fingerprint> kyberfox.db.tar.gz kyberfox` and `repo-add` for the old package, copy the database files over their `kyberfox.db` and `kyberfox.files` names, and upload them with `gh release upload arch-repo --clobber`; or publish a new build number with the fix. `publish-repo.sh` refuses to add a version older than the two newest.
 
 ## Owner setup
 

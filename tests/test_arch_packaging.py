@@ -100,7 +100,8 @@ def _fake_package(path, version):
         subprocess.run(["bsdtar", "-c", "--zstd", "-f", str(path), "-C", d, ".PKGINFO"], check=True)
 
 
-def test_publish_refuses_a_version_that_would_be_pruned(tmp_path):
+def _signing_env(tmp_path):
+    """A scratch keyring with a fresh signing key; skips when the pacman tools are missing."""
     for tool in ("gpg", "repo-add", "vercmp", "bsdtar"):
         if not shutil.which(tool):
             pytest.skip(f"{tool} not installed")
@@ -114,6 +115,11 @@ def test_publish_refuses_a_version_that_would_be_pruned(tmp_path):
                              capture_output=True, text=True).stdout
     env["KYBERFOX_PACMAN_KEY_ID"] = next(
         line.split(":")[9] for line in listing.splitlines() if line.startswith("fpr"))
+    return env
+
+
+def test_publish_refuses_a_version_that_would_be_pruned(tmp_path):
+    env = _signing_env(tmp_path)
     repo = tmp_path / "repo"
 
     def publish(version):
@@ -130,9 +136,90 @@ def test_publish_refuses_a_version_that_would_be_pruned(tmp_path):
     assert "refusing" in publish("1-1").stderr
 
 
+# Stands in for gh: a Release is a directory of assets, and every call is logged.
+FAKE_GH = r"""#!/usr/bin/env bash
+set -euo pipefail
+echo "$*" >> "$FAKE_GH_LOG"
+[[ $1 == release ]] || exit 2
+sub=$2
+shift 2
+case $sub in
+  view)
+    [[ -d $FAKE_GH_REMOTE ]] || exit 1
+    if [[ " $* " == *" --json "* ]]; then find "$FAKE_GH_REMOTE" -type f -printf '%f\n'; fi ;;
+  create) mkdir -p "$FAKE_GH_REMOTE" ;;
+  download)
+    while (($#)); do [[ $1 == --dir ]] && dir=$2; shift; done
+    cp "$FAKE_GH_REMOTE"/* "$dir"/ ;;
+  upload) for a in "$@"; do if [[ -f $a ]]; then cp "$a" "$FAKE_GH_REMOTE"/; fi; done ;;
+  delete-asset) rm -f -- "$FAKE_GH_REMOTE/$2" ;;
+  *) exit 2 ;;
+esac
+"""
+
+
+def test_publish_to_release_keeps_two_versions_and_uploads_packages_first(tmp_path):
+    env = _signing_env(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "gh").write_text(FAKE_GH, encoding="utf-8")
+    (bin_dir / "gh").chmod(0o755)
+    remote, log = tmp_path / "remote", tmp_path / "gh.log"
+    env.update(PATH=f"{bin_dir}:{env['PATH']}", FAKE_GH_REMOTE=str(remote), FAKE_GH_LOG=str(log),
+               GITHUB_REPOSITORY="owner/name", KYBERFOX_LOCAL_SIGN="1")
+    env.pop("KYBERFOX_REPO_RELEASE", None)
+
+    def publish(version):
+        pkg = tmp_path / "in" / f"kyberfox-{version}-x86_64.pkg.tar.zst"
+        pkg.parent.mkdir(exist_ok=True)
+        _fake_package(pkg, version)
+        log.write_text("", encoding="utf-8")
+        result = subprocess.run([str(ARCH / "publish-to-release.sh"), str(pkg), str(tmp_path / "work")],
+                                env=env, capture_output=True, text=True)
+        assert result.returncode == 0, result.stderr
+        return log.read_text(encoding="utf-8").splitlines()
+
+    first = publish("2-1")
+    assert any(line.startswith("release create arch-repo ") and "--prerelease" in line for line in first)
+    publish("3-1")
+    calls = publish("4-1")
+    assert not any(line.startswith("release create") for line in calls)
+    names = sorted(p.name for p in remote.iterdir())
+    assert names == sorted([
+        "kyberfox-3-1-x86_64.pkg.tar.zst", "kyberfox-3-1-x86_64.pkg.tar.zst.sig",
+        "kyberfox-4-1-x86_64.pkg.tar.zst", "kyberfox-4-1-x86_64.pkg.tar.zst.sig",
+        *(f"kyberfox.{ext}{suffix}" for ext in ("db", "files")
+          for suffix in ("", ".sig", ".tar.gz", ".tar.gz.sig")),
+    ])
+    assert all(not (remote / n).is_symlink() for n in names)
+    uploads = [line for line in calls if line.startswith("release upload")]
+    assert len(uploads) == 2
+    assert "kyberfox-4-1-x86_64.pkg.tar.zst" in uploads[0] and "kyberfox.db" not in uploads[0]
+    assert "kyberfox.db" in uploads[1] and ".pkg.tar.zst" not in uploads[1]
+    # The pruned version is removed only after the new database is up.
+    deletes = [i for i, line in enumerate(calls) if line.startswith("release delete-asset")]
+    assert sorted(calls[i].split()[3] for i in deletes) == [
+        "kyberfox-2-1-x86_64.pkg.tar.zst", "kyberfox-2-1-x86_64.pkg.tar.zst.sig"]
+    assert min(deletes) > calls.index(uploads[1])
+    # The database lists only the newest version.
+    listing = subprocess.run(["bsdtar", "-tf", str(remote / "kyberfox.db")], check=True,
+                             capture_output=True, text=True).stdout
+    assert "kyberfox-4-1/" in listing and "kyberfox-3-1/" not in listing
+
+
+def test_install_docs_point_pacman_at_the_release_repo():
+    server = "Server = https://github.com/Commanderx-code/KyberFox/releases/download/arch-repo"
+    for doc in (ROOT / "docs/install.md", ARCH / "README.md"):
+        text = doc.read_text(encoding="utf-8")
+        assert server in text, doc
+        assert "github.io/KyberFox/arch" not in text, doc
+
+
 def test_publish_script_shellcheck():
     script = ARCH / "publish-repo.sh"
     assert script.stat().st_mode & 0o111
     if not shutil.which("shellcheck"):
         pytest.skip("shellcheck not installed")
-    subprocess.run(["shellcheck", str(script), str(ARCH / "release-package.sh"), str(ARCH / "sign-and-publish.sh")], check=True)
+    others = [ARCH / n for n in ("release-package.sh", "sign-and-publish.sh", "publish-to-release.sh")]
+    assert all(p.stat().st_mode & 0o111 for p in others)
+    subprocess.run(["shellcheck", str(script), *map(str, others)], check=True)

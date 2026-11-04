@@ -13,7 +13,7 @@ Add to `/etc/pacman.conf`:
 ```
 [kyberfox]
 SigLevel = Required DatabaseOptional
-Server = https://commanderx-code.github.io/KyberFox/arch/$arch
+Server = https://github.com/Commanderx-code/KyberFox/releases/download/arch-repo
 ```
 
 Then import the project key (`kyberfox-signing.pub` in this folder). `gpg --show-keys` must print the fingerprint `83A5 C867 BD30 96DE 6A8B 5D61 5502 5392 8022 8E76`:
