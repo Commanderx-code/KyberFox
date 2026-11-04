@@ -1,7 +1,7 @@
 # Roadmap
 
-Kyber Fox is a Firefox fork in **alpha**. Release 159.0-1 went to the owner and
-close friends on Windows and Arch Linux on 2026-11-04. This file tracks what is
+Kyber Fox is a Firefox fork in **alpha**. Releases 159.0-1 and 159.0.1-1 went
+to the owner and close friends on Windows and Arch Linux on 2026-11-04. This file tracks what is
 done, what is next, and what is only an idea. The design behind release 1 is
 [docs/superpowers/specs/2026-11-02-kyber-fox-design.md](docs/superpowers/specs/2026-11-02-kyber-fox-design.md).
 
@@ -42,15 +42,16 @@ installed on a real Windows PC and a real Arch or Garuda machine; the release
 checklist in [docs/testing.md](docs/testing.md) has been run once by hand; the
 signing keys have an offline backup.
 
-- [ ] Release 159.0.1 (planned; waits on the owner's go)
-- [ ] Final logo and private-browsing logo (in review, PR #12)
-- [ ] Python tests on every pull request (in review, PR #11)
-- [ ] Update from 159.0-1 to 159.0.1 on a real Windows PC (blocked: needs the owner's machine)
-- [ ] Install and update on a real Garuda machine (blocked: needs the owner's machine)
+- [x] Release 159.0.1-1, with the signed update from 159.0-1 applied in CI (complete; 2026-11-04)
+- [ ] Release 159.0.1-2 with the Kyber look and the new Settings layout (in progress)
+- [x] Final logo and private-browsing logo (complete; PR #12, [docs/branding.md](docs/branding.md))
+- [x] Python tests on every pull request (complete; PR #11, the Checks workflow)
+- [ ] Update from one release to the next on a real Windows PC (blocked: needs the owner's machine)
+- [ ] Install and update on a real Garuda machine (in progress; the update to 159.0.1-2 is the check)
 - [ ] Offline backup of `kyber-fox-private/keys/` (blocked: owner task)
 - [ ] KDE Plasma checks: file picker through the XDG portal, notifications, fractional scaling, Wayland and X11 sessions (planned; [docs/testing.md](docs/testing.md))
 - [ ] About dialog shows the Kyber Fox version and the Firefox version it is built from (planned; check the current dialog first)
-- [ ] Project documents: roadmap, vision, architecture, privacy defaults, testing, branding, licensing (in progress, this pull request)
+- [x] Project documents: roadmap, vision, architecture, privacy defaults, testing, branding, licensing (complete; PRs #13 and #17)
 
 ## Phase 2: Transparent privacy
 
@@ -102,9 +103,10 @@ survives a Firefox major update without code changes or ships disabled.
 
 - [ ] Glass theme, an original remake (planned)
 - [ ] Neon or cyberpunk palette with optional glow, built on the existing theme engine (planned)
-- [ ] Kyber themes, skin, new tab and private page (in review)
-- [ ] Crimson and Azure themes, from the owner's concept sheet (in review)
-- [ ] The masked fox illustration on the private window page (planned; needs a larger render, see [docs/branding.md](docs/branding.md))
+- [x] Kyber themes, skin, new tab and private page (complete; PRs #16 and #18, browser tests)
+- [x] Crimson and Azure themes, from the owner's concept sheet (complete; PR #16, browser tests)
+- [x] The masked fox illustration on the private window page (complete; PR #18)
+- [x] Branded Settings layout and restyled Settings pages (complete; PRs #19 and #20, [docs/ui-implementation.md](docs/ui-implementation.md))
 
 ## Research tracks
 
