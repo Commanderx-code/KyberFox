@@ -129,3 +129,80 @@ add_task(async function test_kyber_fonts_load() {
   let none = await document.fonts.load('700 16px "Kyber Sora"');
   Assert.equal(none.length, 0, "the fonts are gone with a non-Kyber theme");
 });
+
+// The window skin (themes/kyber/chrome.css).
+
+function urlbarShadow(win = window) {
+  return win.getComputedStyle(
+    win.document.querySelector("#urlbar .urlbar-background")
+  ).boxShadow;
+}
+
+function blurRadius(shadow) {
+  // "rgba(…) 0px 0px 12px" or "0px 0px 12px rgba(…)": the third length.
+  let lengths = shadow.match(/-?[\d.]+px/g) ?? [];
+  return parseFloat(lengths[2] ?? "0");
+}
+
+add_task(async function test_urlbar_has_glow() {
+  KyberThemes.apply("ember");
+  let stock = urlbarShadow();
+  KyberThemes.apply("kyber-crystal");
+  Assert.notEqual(urlbarShadow(), "none", "the address bar glows");
+  Assert.notEqual(urlbarShadow(), stock, "the glow is the skin's");
+  Assert.greaterOrEqual(blurRadius(urlbarShadow()), 10, "a full glow");
+  KyberThemes.apply("ember");
+  Assert.equal(urlbarShadow(), stock, "no glow under ember");
+});
+
+add_task(function test_reduce_glow_shrinks_shadow() {
+  KyberThemes.apply("kyber-crystal");
+  KyberThemes.setReduceGlow(true);
+  Assert.greater(blurRadius(urlbarShadow()), 0, "still a glow");
+  Assert.lessOrEqual(blurRadius(urlbarShadow()), 3, "reduced glow");
+  KyberThemes.setReduceGlow(false);
+});
+
+add_task(function test_selected_tab_rounded() {
+  let bg = gBrowser.selectedTab.querySelector(".tab-background");
+  KyberThemes.apply("ember");
+  let stock = getComputedStyle(bg).boxShadow;
+  KyberThemes.apply("kyber-crystal");
+  Assert.equal(getComputedStyle(bg).borderTopLeftRadius, "10px");
+  Assert.notEqual(getComputedStyle(bg).boxShadow, stock, "outlined glow");
+  Assert.greater(blurRadius(getComputedStyle(bg).boxShadow), 0, "it glows");
+});
+
+add_task(function test_tabstrip_logo() {
+  KyberThemes.apply("kyber-crystal");
+  let items = document.querySelector("#TabsToolbar .toolbar-items");
+  let before = getComputedStyle(items, "::before");
+  Assert.ok(before.content.includes("Kyber Fox"), "name at the tab strip");
+  Assert.ok(before.backgroundImage.includes("icon32.png"), "the real logo");
+  KyberThemes.apply("ember");
+  Assert.equal(
+    getComputedStyle(items, "::before").content,
+    "none",
+    "gone under ember"
+  );
+});
+
+add_task(async function test_private_pill() {
+  KyberThemes.apply("kyber-crystal");
+  let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
+  let pill = win.document.querySelector(
+    "#nav-bar > .private-browsing-indicator-with-label"
+  );
+  Assert.notEqual(win.getComputedStyle(pill).display, "none", "pill shown");
+  Assert.equal(
+    win.getComputedStyle(pill.querySelector("label")).textTransform,
+    "uppercase"
+  );
+  let button = win.document.querySelector(
+    "#nav-bar > .private-browsing-indicator-button"
+  );
+  if (button) {
+    Assert.equal(win.getComputedStyle(button).display, "none", "no second mask");
+  }
+  await BrowserTestUtils.closeWindow(win);
+});
