@@ -473,28 +473,17 @@ jobs:
             "$ARCH_IMAGE" \
             /work/packaging/arch/sign-and-publish.sh "/in/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" /repo
 
+      # The repo lives in the assets of the Release tagged arch-repo: the package is
+      # over git's 100 MB file limit, so it cannot go on gh-pages.
+      # publish-arch.yml runs the same script for an existing release.
       - name: Publish the pacman repo
         if: ${{ !inputs.dry-run && inputs.channel == 'release' }}
         env:
           PACMAN_GPG_KEY: ${{ secrets.PACMAN_GPG_KEY }}
           KYBERFOX_PACMAN_KEY_ID: ${{ secrets.PACMAN_GPG_KEY_ID }}
         run: |
-          mkdir -p "$RUNNER_TEMP/site/arch/x86_64"
-          docker run --rm --user "$(id -u):$(id -g)" \
-            -e HOME=/tmp -e GNUPGHOME=/tmp/gnupg \
-            -e PACMAN_GPG_KEY -e KYBERFOX_PACMAN_KEY_ID \
-            -v "$GITHUB_WORKSPACE:/work:ro" \
-            -v "$RUNNER_TEMP/pkg:/in:ro" \
-            -v "$RUNNER_TEMP/site/arch/x86_64:/repo" \
-            "$ARCH_IMAGE" \
-            /work/packaging/arch/sign-and-publish.sh "/in/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" /repo
-          cd "$RUNNER_TEMP/site"
-          git add -A
-          git diff --cached --quiet || git commit -m "Pacman repo: kyberfox $DISPLAY_VERSION"
-          if git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
-            git pull --rebase origin gh-pages
-          fi
-          git push origin HEAD:gh-pages
+          packaging/arch/publish-to-release.sh \
+            "$RUNNER_TEMP/pkg/kyberfox-$DISPLAY_VERSION-x86_64.pkg.tar.zst" "$RUNNER_TEMP/arch-repo"
 
   # Applies the signed update to an older install. Needs the previous Release run's id; the first release has none, so it is skipped.
   apply-update:

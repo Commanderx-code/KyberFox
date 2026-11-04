@@ -176,15 +176,16 @@ def test_dry_run_never_touches_release_channel():
     assert "update/$MANIFEST_CHANNEL/WINNT_x86_64-msvc-$cpu/update.xml" in manifests["run"]
     assert "for cpu in x64 aarch64" in manifests["run"]
     # The real pacman repo is written only for a non-dry release-channel run.
-    repo_steps = [s for s in steps("publish") if "arch/x86_64" in s.get("run", "")]
+    repo_steps = [s for s in steps("publish") if "publish-to-release.sh" in s.get("run", "")]
     assert len(repo_steps) == 1
     assert repo_steps[0]["if"] == "${{ !inputs.dry-run && inputs.channel == 'release' }}"
     scratch = step_named("publish", "scratch repo")
     assert scratch["if"] == "${{ inputs.dry-run }}"
-    assert "arch/x86_64" not in scratch["run"]
-    # Every push to gh-pages comes from one of these two steps.
+    assert "publish-to-release.sh" not in scratch["run"]
+    # Only the manifests go to gh-pages; the pacman repo is a Release (git refuses files over 100 MB).
     pushers = [s["name"] for s in steps("publish") if "push origin HEAD:gh-pages" in s.get("run", "")]
-    assert pushers == ["Publish the update manifests", "Publish the pacman repo"]
+    assert pushers == ["Publish the update manifests"]
+    assert "arch/" not in "".join(s.get("run", "") for s in steps("publish") if "gh-pages" in s.get("run", ""))
     # Dry runs and test channels make pre-releases with a -test tag.
     release = step_named("publish", "Create the GitHub Release")
     assert "--prerelease" in release["run"]
@@ -214,16 +215,39 @@ def test_arch_image_is_pinned_by_digest():
     assert "archlinux:base-devel" not in re.sub(r"ARCH_IMAGE: \S+", "", TEXT.replace("# archlinux:base-devel as of", ""))
 
 
+def test_publish_arch_workflow_matches_the_release_publish():
+    wf = yaml.safe_load((WORKFLOWS / "publish-arch.yml").read_text(encoding="utf-8"))
+    on = wf.get("on") or wf.get(True)
+    assert set(on) == {"workflow_dispatch"}
+    assert on["workflow_dispatch"]["inputs"]["tag"]["required"] is True
+    job = wf["jobs"]["publish-arch"]
+    # The signing key is an environment secret, so this waits for the owner's approval too.
+    assert job["environment"] == "release"
+    assert job["env"]["ARCH_IMAGE"] == JOBS["publish"]["env"]["ARCH_IMAGE"]
+    assert wf["concurrency"]["group"] == "release-false"
+    assert WORKFLOW["concurrency"]["group"] == "release-${{ inputs.dry-run || inputs.channel == 'test' }}"
+    runs = [s.get("run", "") for s in job["steps"]]
+    check = next(r for r in runs if "SHA256SUMS" in r)
+    assert "sha256sum --check" in check and "^v[0-9][0-9.]*-[0-9]+$" in check
+    # SHA256SUMS is in the same Release, so the uploader and the package version are checked too.
+    assert "github-actions\\[bot\\]" in check and ".PKGINFO" in check
+    assert 'name="kyberfox-${TAG#v}-x86_64.pkg.tar.zst"' in check and "-p 'kyberfox-*" not in check
+    assert sum("publish-to-release.sh" in r for r in runs) == 1
+    assert runs.index(check) < next(i for i, r in enumerate(runs) if "publish-to-release.sh" in r)
+    # The tag reaches the shell through the environment, never by expression interpolation.
+    assert all("inputs.tag" not in r for r in runs)
+
+
 def test_every_commit_is_guarded_against_an_empty_commit():
     commits = [line.strip() for line in TEXT.splitlines() if "git commit" in line and "run:" not in line]
-    assert len(commits) == 3
+    assert len(commits) == 2
     for line in commits:
         if line.startswith("git diff --cached --quiet ||"):
             continue
         # The tag commit sits inside an explicit "files differ" check.
         assert "Ship release" in line
     gh_pages = [line for line in commits if "Ship release" not in line]
-    assert len(gh_pages) == 2 and all(l.startswith("git diff --cached --quiet || git commit") for l in gh_pages)
+    assert len(gh_pages) == 1 and all(l.startswith("git diff --cached --quiet || git commit") for l in gh_pages)
 
 
 def test_existing_tag_must_hold_the_same_tree():

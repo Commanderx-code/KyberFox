@@ -1,0 +1,78 @@
+name: Publish Arch repo
+
+# Adds the Arch package of an existing release to the pacman repo (the Release
+# tagged arch-repo). The release workflow does this itself; run this one when
+# that step failed, or to publish again:
+#   gh workflow run publish-arch.yml -f tag=v159.0-1
+# Like publish, it waits for the owner's approval in the `release` environment.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag whose kyberfox-*-x86_64.pkg.tar.zst to publish, for example v159.0-1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# Same group as a real release run, so the two never update the repo at once.
+concurrency:
+  group: release-false
+  cancel-in-progress: false
+
+jobs:
+  publish-arch:
+    name: Publish the pacman repo
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: release
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag }}
+      # Keep equal to ARCH_IMAGE in release.yml (a test checks it).
+      ARCH_IMAGE: archlinux:base-devel@sha256:767de6eaa40dcfeda5263a48737ea03a782caabdf3a403b6e6a203c7fd333681
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download the package and check its checksum
+        run: |
+          if [[ ! $TAG =~ ^v[0-9][0-9.]*-[0-9]+$ ]]; then
+            echo "::error::$TAG is not a release tag (v<version>-<build>; test tags are refused)"
+            exit 1
+          fi
+          name="kyberfox-${TAG#v}-x86_64.pkg.tar.zst"
+          # SHA256SUMS sits in the same Release, so it only catches a damaged download.
+          # Against a swapped asset: both files must have been uploaded by the release
+          # workflow (an edit by hand or with a personal token shows that user), and
+          # the package must carry the tag's version.
+          uploaders=$(NAME="$name" gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" \
+            --jq '.assets[] | select(.name == env.NAME or .name == "SHA256SUMS") | "\(.name) \(.uploader.login)"')
+          echo "$uploaders"
+          if [ "$(grep -c ' github-actions\[bot\]$' <<<"$uploaders")" != 2 ]; then
+            echo "::error::$name and SHA256SUMS must both exist and be uploaded by github-actions[bot]"
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/pkg"
+          cd "$RUNNER_TEMP/pkg"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -p "$name" -p SHA256SUMS
+          grep -q "  $name\$" SHA256SUMS
+          sha256sum --check --ignore-missing --strict SHA256SUMS
+          version=$(tar --zstd -xOf "$name" .PKGINFO | sed -n 's/^pkgver = //p')
+          if [ "$version" != "${TAG#v}" ]; then
+            echo "::error::$name says version $version, not ${TAG#v}"
+            exit 1
+          fi
+
+      - name: Publish the pacman repo
+        env:
+          PACMAN_GPG_KEY: ${{ secrets.PACMAN_GPG_KEY }}
+          KYBERFOX_PACMAN_KEY_ID: ${{ secrets.PACMAN_GPG_KEY_ID }}
+        run: |
+          packaging/arch/publish-to-release.sh "$RUNNER_TEMP"/pkg/kyberfox-*-x86_64.pkg.tar.zst "$RUNNER_TEMP/arch-repo"

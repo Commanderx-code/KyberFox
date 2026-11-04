@@ -30,7 +30,7 @@ Kyber Fox updates through pacman only; the browser's own updater is turned off.
    ```
    [kyberfox]
    SigLevel = Required DatabaseOptional
-   Server = https://commanderx-code.github.io/KyberFox/arch/$arch
+   Server = https://github.com/Commanderx-code/KyberFox/releases/download/arch-repo
    ```
 
 2. Download the project's public signing key,
