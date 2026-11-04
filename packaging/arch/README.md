@@ -16,11 +16,17 @@ SigLevel = Required DatabaseOptional
 Server = https://github.com/Commanderx-code/KyberFox/releases/download/arch-repo
 ```
 
-Then import the project key (`kyberfox-signing.pub` in this folder). `gpg --show-keys` must print the fingerprint `83A5 C867 BD30 96DE 6A8B 5D61 5502 5392 8022 8E76`:
+Then download the project key (`kyberfox-signing.pub` in this folder) and check it. `gpg --show-keys` must print the fingerprint `83A5C867BD3096DE6A8B5D615502539280228E76`; if it prints anything else, stop:
+
+```
+curl -fLO https://raw.githubusercontent.com/Commanderx-code/KyberFox/main/packaging/arch/kyberfox-signing.pub
+gpg --show-keys kyberfox-signing.pub
+```
+
+Import it from the same folder, and install:
 
 ```
 sudo pacman-key --add kyberfox-signing.pub
-gpg --show-keys kyberfox-signing.pub
 sudo pacman-key --lsign-key 83A5C867BD3096DE6A8B5D615502539280228E76
 sudo pacman -Syu kyberfox
 ```
