@@ -1,0 +1,5 @@
+<updates>
+  <update type="minor" displayVersion="159.0-1" appVersion="159.0" platformVersion="159.0" buildID="20261104001546" detailsURL="https://github.com/Commanderx-code/KyberFox/releases/tag/v159.0-1">
+    <patch type="complete" URL="https://github.com/Commanderx-code/KyberFox/releases/download/v159.0-1/kyberfox-159.0-1.complete.mar" hashFunction="sha512" hashValue="bb8be1aa2baf256b630126e987ef9d91f87c7631f72cb0fcd78bc4d9e1e9ec987021c9f00df7a374db37d62814d87746143fe28bfd252fac8059d28783374594" size="103241545" />
+  </update>
+</updates>
