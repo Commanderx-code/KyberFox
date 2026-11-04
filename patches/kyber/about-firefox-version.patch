@@ -12,7 +12,7 @@ diff --git a/browser/base/content/aboutDialog.js b/browser/base/content/aboutDia
 diff --git a/browser/locales/en-US/browser/aboutDialog.ftl b/browser/locales/en-US/browser/aboutDialog.ftl
 --- a/browser/locales/en-US/browser/aboutDialog.ftl
 +++ b/browser/locales/en-US/browser/aboutDialog.ftl
-@@ -92,27 +92,29 @@ bottom-links-privacy = Privacy Notice
+@@ -92,24 +92,26 @@ bottom-links-privacy = Privacy Notice
  # Variables:
  #   $version (String): version of Firefox, e.g. 66.0.1
  #   $bits (Number): bits of the architecture (32 or 64)
@@ -43,9 +43,6 @@ diff --git a/browser/locales/en-US/browser/aboutDialog.ftl b/browser/locales/en-
  #   $arch (String): name of the architecture (arm, aarch64, etc.)
 -aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch })
 +aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch }), based on Firefox { $firefox }
- 
- 
- about-kyberfox = Kyber Fox is a custom version of Firefox, with the primary goals of privacy, security and user freedom.
 diff --git a/browser/components/preferences/config/about-firefox.mjs b/browser/components/preferences/config/about-firefox.mjs
 --- a/browser/components/preferences/config/about-firefox.mjs
 +++ b/browser/components/preferences/config/about-firefox.mjs
