@@ -64,7 +64,7 @@ are not reproduced.
 Its tracker count, Kyber Search, Sync and hypothetical privacy switches are not
 added. Firefox's real settings and permission dialogs are retained. Crimson and
 Azure already implement the red/black and blue/silver directions using the shared
-UI; additional Dark Side/Jedi Order theme names or duplicate implementations are
+UI; additional theme names or duplicate implementations are
 not introduced. Exact mockup wave shapes, bespoke icons and full platform/native
 menu matching remain polish work. The application menu and context menus retain
 their previous appearance and placement. New strings currently have only en-US
