@@ -11,6 +11,7 @@ browser.jar:
   content/kyberfox/themes-init.mjs (content/themes-init.mjs)
   content/kyberfox/theme-pane.mjs (content/theme-pane.mjs)
   content/kyberfox/privacy-presets.mjs (content/privacy-presets.mjs)
+  content/kyberfox/preferences.css (content/preferences.css)
   content/kyberfox/shield-ublock-frame.js (content/shield-ublock-frame.js)
   content/kyberfox/shield-off.svg (content/shield-off.svg)
   content/kyberfox/shield.css (content/shield.css)
