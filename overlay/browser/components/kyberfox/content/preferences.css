@@ -1,0 +1,57 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Kyber Fox: Settings without divider lines. Sections and boxes keep their
+ * background, spacing separates rows, and outlined buttons become filled ones.
+ * The selected-theme outline in the theme picker is not touched.
+ * High-contrast and forced-colors modes keep Firefox's borders. */
+
+@media (not (prefers-contrast: more)) and (not (forced-colors: active)) {
+  :root {
+    /* Section cards (moz-card). */
+    --card-border: var(--card-border-width) solid transparent;
+    /* Buttons: the Nova design outlines them over a transparent fill. */
+    --button-border-color: transparent;
+  }
+
+  /* Filled, not outlined. Only moz-button: the sidebar items read the same
+   * tokens and stay transparent. */
+  moz-button {
+    --button-background-color: color-mix(in srgb, currentColor 10%, transparent);
+    --button-background-color-hover: color-mix(in srgb, currentColor 16%, transparent);
+    --button-background-color-active: color-mix(in srgb, currentColor 22%, transparent);
+  }
+
+  /* Sidebar: the line above Accessibility and the one moz-page-nav draws above
+   * its secondary items. Both keep their space. */
+  #nav-separator {
+    border-color: transparent;
+  }
+
+  moz-page-nav {
+    --page-nav-hr-background-color: transparent;
+  }
+
+  /* Boxes and the lines between rows in grouped lists. Their tokens are set on
+   * each element's own host, so they are overridden there. */
+  moz-box-item,
+  moz-box-button,
+  moz-box-link,
+  moz-box-group {
+    --box-border-color: transparent;
+  }
+
+  /* A clickable box needs a fill once its outline is gone. */
+  moz-box-button,
+  moz-box-link {
+    --box-button-background-color: color-mix(in srgb, currentColor 6%, transparent);
+    --box-button-background-color-hover: color-mix(in srgb, currentColor 10%, transparent);
+    --box-button-background-color-active: color-mix(in srgb, currentColor 14%, transparent);
+  }
+
+  /* Notices such as the custom CSS warning. */
+  moz-message-bar {
+    --message-bar-border-color: transparent;
+  }
+}
