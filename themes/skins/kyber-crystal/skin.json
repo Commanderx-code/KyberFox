@@ -1,0 +1,28 @@
+{
+  "id": "kyber-crystal",
+  "name": "Kyber Crystal",
+  "kind": "skin",
+  "scheme": "dark",
+  "sheets": [
+    "colors.css"
+  ],
+  "shared": [
+    "base.css",
+    "kyber/chrome.css",
+    "kyber/pages.css"
+  ],
+  "prefs": {},
+  "vars": {
+    "--kf-bg": "#0a0f2d",
+    "--kf-bg-toolbar": "#0e1438",
+    "--kf-bg-tab-active": "#18204f",
+    "--kf-bg-urlbar": "#0c1233",
+    "--kf-fg": "#ffffff",
+    "--kf-fg-muted": "#a9b4dc",
+    "--kf-accent": "#00e5ff",
+    "--kf-border": "#26306a",
+    "--kf-radius": "10px",
+    "--kf-font": "inherit",
+    "--kf-bg-image": "none"
+  }
+}

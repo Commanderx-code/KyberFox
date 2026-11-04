@@ -14,6 +14,8 @@ prefs = [
 
 ["browser_import_wizard.js"]
 
+["browser_kyber_look.js"]
+
 ["browser_sync_hidden.js"]
 
 ["browser_privacy_presets.js"]

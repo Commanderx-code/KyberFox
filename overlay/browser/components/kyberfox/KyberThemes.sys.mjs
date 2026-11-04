@@ -15,7 +15,17 @@ const ID_PREF = "kyberfox.theme.id";
 const DISABLED_PREF = "kyberfox.theme.disabled";
 const CUSTOM_PREF = "kyberfox.theme.custom";
 const SKIN_BACKUP_PREF = "kyberfox.theme.skinPrefBackup";
-const DEFAULT_ID = "ember";
+// Kyber Crystal is what a new profile gets; Ember is where every failure,
+// and the reset, lands, because it needs no skin sheets.
+const DEFAULT_ID = "kyber-crystal";
+const FALLBACK_ID = "ember";
+const KYBER_IDS = ["kyber-crystal", "kyber-crimson", "kyber-azure"];
+// Set once the one-time move from Ember to Kyber Crystal has run.
+const MOVED_PREF = "kyberfox.theme.movedToKyber";
+const GLOW_PREF = "kyberfox.theme.reduceGlow";
+// The documents the Kyber sheets style.
+const KYBER_SCOPE =
+  'url-prefix("chrome://"), url("about:newtab"), url("about:home"), url("about:privatebrowsing")';
 const CUSTOM_MAX_BYTES = 1024 * 1024;
 const CUSTOM_NAME = "kyberfox-custom.css";
 
@@ -50,7 +60,9 @@ let gStatus = null;
 let gInitialized = false;
 let gBaseUri = null;
 let gPaletteUri = null;
-let gCurrent = DEFAULT_ID;
+let gCurrent = FALLBACK_ID;
+let gGlowUri = null;
+let gGlowObserved = false;
 let gOnFallback = false;
 let gCustomUri = null;
 // Skins: id -> skin.json, and the sheets of the skin in effect.
@@ -108,6 +120,7 @@ function loadSkins() {
         skin.kind != "skin" ||
         !Array.isArray(skin.sheets) ||
         !skin.sheets.length ||
+        (skin.shared !== undefined && !sharedPathsValid(skin.shared)) ||
         Object.hasOwn(gPalettes, id)
       ) {
         throw new Error("skin.json has the wrong shape");
@@ -123,6 +136,49 @@ function loadSkins() {
       console.error(`KyberThemes: cannot read skin ${id}`, e);
     }
   }
+}
+
+/** "shared" lists paths under themes/: plain relative names, no "..". */
+function sharedPathsValid(paths) {
+  return (
+    Array.isArray(paths) &&
+    paths.every(
+      p =>
+        typeof p == "string" &&
+        /^[a-z0-9][a-z0-9/_.-]*\.css$/.test(p) &&
+        !p.split("/").includes("..")
+    )
+  );
+}
+
+/** Registers or drops the reduce-glow sheet to match the pref. */
+function syncGlow() {
+  let on = false;
+  try {
+    on = Services.prefs.getBoolPref(GLOW_PREF, false);
+  } catch (e) {
+    console.error(`KyberThemes: ${GLOW_PREF} is not a bool pref`, e);
+  }
+  if (on && !gGlowUri) {
+    gGlowUri = Services.io.newURI(
+      "data:text/css," +
+        encodeURIComponent(
+          `@-moz-document ${KYBER_SCOPE} { :root { --kyber-glow-strength: 0.25 !important; } }`
+        )
+    );
+    register(gGlowUri);
+  } else if (!on && gGlowUri) {
+    sss.unregisterSheet(gGlowUri, sss.USER_SHEET);
+    gGlowUri = null;
+  }
+}
+
+function observeGlow() {
+  if (!gGlowObserved) {
+    gGlowObserved = true;
+    Services.prefs.addObserver(GLOW_PREF, syncGlow);
+  }
+  syncGlow();
 }
 
 function stringPref(name, fallback) {
@@ -444,7 +500,7 @@ export const KyberThemes = {
 
   /**
    * Applies a theme and stores it. An unknown or disabled id applies Ember
-   * and stores that, so the pref and current() agree.
+   * (FALLBACK_ID) and stores that, so the pref and current() agree.
    *
    * @param {string} id
    */
@@ -452,9 +508,9 @@ export const KyberThemes = {
     load();
     // On the built-in fallback every other id looks unknown. That may be a
     // temporary read error, so keep the stored choice.
-    let keepPref = gOnFallback && id != DEFAULT_ID;
+    let keepPref = gOnFallback && id != FALLBACK_ID;
     if (!usable(id)) {
-      id = DEFAULT_ID;
+      id = FALLBACK_ID;
     }
     let palette = gPalettes[id];
     let skin = palette.kind == "skin" ? gSkins[id] : null;
@@ -495,13 +551,22 @@ export const KyberThemes = {
           register(uri);
           gSkinUris.push(uri);
         }
+        // Sheets several skins share, from themes/, after the skin's own.
+        for (let rel of skin.shared ?? []) {
+          if (this._skinSheetFailsForTests) {
+            throw new Error(`cannot load ${rel}`);
+          }
+          let uri = Services.io.newURI(THEMES_URI + rel);
+          register(uri);
+          gSkinUris.push(uri);
+        }
         applySkinPrefs(skin.prefs ?? {});
       } catch (e) {
         console.error(`KyberThemes: cannot apply skin ${id}`, e);
         unregisterSkinSheets();
         restoreSkinPrefs();
         gSkinId = null;
-        this.apply(DEFAULT_ID);
+        this.apply(FALLBACK_ID);
         return;
       }
     }
@@ -539,7 +604,23 @@ export const KyberThemes = {
       return gCustomLoading;
     }
     gInitialized = true;
-    this.apply(stringPref(ID_PREF, DEFAULT_ID));
+    // Once per profile: Ember, the old default, moves to Kyber Crystal. Any
+    // other stored theme is kept, and Ember picked again later stays.
+    let stored = stringPref(ID_PREF, "");
+    let moved = false;
+    try {
+      moved = Services.prefs.getBoolPref(MOVED_PREF, false);
+    } catch (e) {
+      console.error(`KyberThemes: ${MOVED_PREF} is not a bool pref`, e);
+    }
+    if (!moved && (!stored || stored == FALLBACK_ID)) {
+      stored = DEFAULT_ID;
+    }
+    this.apply(stored || DEFAULT_ID);
+    if (!moved) {
+      Services.prefs.setBoolPref(MOVED_PREF, true);
+    }
+    observeGlow();
     gCustomLoading = loadCustom();
     return gCustomLoading;
   },
@@ -610,7 +691,31 @@ export const KyberThemes = {
     gFileWork = gFileWork
       .then(() => IOUtils.remove(customPath(), { ignoreAbsent: true }))
       .catch(e => console.error("KyberThemes: cannot delete custom CSS", e));
-    this.apply(DEFAULT_ID);
+    this.apply(FALLBACK_ID);
+  },
+
+  /**
+   * Whether the id is one of the Kyber themes (Kyber Crystal, Crimson, Azure).
+   *
+   * @param {string} id
+   */
+  isKyber(id) {
+    return KYBER_IDS.includes(id);
+  },
+
+  /** Whether "Reduce glow" is on. */
+  reduceGlow() {
+    return gGlowUri !== null;
+  },
+
+  /**
+   * Turns "Reduce glow" on or off: a sheet that lowers --kyber-glow-strength.
+   *
+   * @param {boolean} on
+   */
+  setReduceGlow(on) {
+    Services.prefs.setBoolPref(GLOW_PREF, !!on);
+    syncGlow();
   },
 
   /** Resolves when a reset's file deletion has finished. */
@@ -645,14 +750,14 @@ export const KyberThemes = {
   _resetForTests() {
     unregisterSkinSheets();
     gSkinId = null;
-    for (let uri of [gBaseUri, gPaletteUri, gCustomUri]) {
+    for (let uri of [gBaseUri, gPaletteUri, gCustomUri, gGlowUri]) {
       if (uri) {
         sss.unregisterSheet(uri, sss.USER_SHEET);
       }
     }
-    gBaseUri = gPaletteUri = gCustomUri = null;
+    gBaseUri = gPaletteUri = gCustomUri = gGlowUri = null;
     gInitialized = false;
-    gCurrent = DEFAULT_ID;
+    gCurrent = FALLBACK_ID;
     gCustomLoading = Promise.resolve();
     this._safeModeForTests = undefined;
     this._skinSheetFailsForTests = false;

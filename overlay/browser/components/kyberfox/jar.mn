@@ -25,3 +25,7 @@ browser.jar:
   content/kyberfox/themes/skins/index.json (themes/skins/index.json)
   content/kyberfox/themes/skins/gx/ (themes/skins/gx/**)
   content/kyberfox/themes/skins/one/ (themes/skins/one/**)
+  content/kyberfox/themes/skins/kyber-crystal/ (themes/skins/kyber-crystal/**)
+  content/kyberfox/themes/skins/kyber-crimson/ (themes/skins/kyber-crimson/**)
+  content/kyberfox/themes/skins/kyber-azure/ (themes/skins/kyber-azure/**)
+  content/kyberfox/themes/kyber/ (themes/kyber/**)
