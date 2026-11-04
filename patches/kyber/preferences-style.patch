@@ -1,11 +1,12 @@
 --- a/browser/components/preferences/preferences.xhtml
 +++ b/browser/components/preferences/preferences.xhtml
-@@ -38,6 +38,8 @@
+@@ -38,6 +38,9 @@
    <link rel="stylesheet" href="chrome://browser/content/preferences/widgets/setting-group.css" />
    <link rel="stylesheet" href="chrome://browser/content/preferences/widgets/setting-pane.css" />
    <link rel="stylesheet" href="chrome://browser/content/preferences/widgets/setting-control.css" />
 +  <!-- Kyber Fox: Settings without divider lines (chrome://kyberfox/content/preferences.css). -->
 +  <link rel="stylesheet" href="chrome://kyberfox/content/preferences.css" />
++  <script type="module" src="chrome://kyberfox/content/settings-layout.mjs"></script>
  
    <link rel="localization" href="branding/brand.ftl"/>
    <link rel="localization" href="browser/browser.ftl"/>

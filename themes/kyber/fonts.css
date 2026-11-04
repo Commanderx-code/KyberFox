@@ -6,7 +6,7 @@
  * never clash with fonts installed on the system. The fonts are under the
  * SIL Open Font License 1.1; see themes/NOTICES.md. */
 
-@-moz-document url("about:newtab"), url("about:home"), url("about:privatebrowsing"), url-prefix("chrome://") {
+@-moz-document url("about:newtab"), url("about:home"), url("about:privatebrowsing"), url-prefix("about:preferences"), url-prefix("chrome://") {
   @font-face {
     font-family: "Kyber Sora";
     font-weight: 600;
