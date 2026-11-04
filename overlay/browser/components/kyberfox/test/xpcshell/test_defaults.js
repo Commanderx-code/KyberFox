@@ -103,19 +103,17 @@ add_task(async function test_shipped_policies() {
   Assert.equal((await SearchService.getDefault()).name, "DuckDuckGo");
   Assert.equal((await SearchService.getDefaultPrivate()).name, "DuckDuckGo");
   let visible = (await SearchService.getVisibleEngines()).map(e => e.name);
-  // The spec ships these six; the first-run page offers the first five as
-  // the default.
+  // The spec ships these five; the first-run page offers each as the default.
   for (let name of [
     "DuckDuckGo",
     "Google",
     "Brave Search",
     "Startpage",
     "Ecosia",
-    "Wikipedia (en)",
   ]) {
     Assert.ok(visible.includes(name), `${name} is offered`);
   }
-  for (let name of ["Bing"]) {
+  for (let name of ["Bing", "Wikipedia (en)"]) {
     Assert.ok(!visible.includes(name), `${name} is not offered by default`);
     Assert.ok(
       SearchService.getEngineByName(name)?.hidden,
