@@ -211,9 +211,28 @@ add_task(async function test_manual_change_reports_custom() {
     () => selected(doc) == "custom",
     "the radio follows to Custom"
   );
-  Assert.ok(radio(doc, "custom").disabled, "Custom cannot be picked");
+  await TestUtils.waitForCondition(
+    () => !radio(doc, "custom").hidden,
+    "Custom shows once it is the current state"
+  );
+  Assert.ok(radio(doc, "custom").checked, "Custom is the checked option");
+  Assert.ok(!radio(doc, "custom").disabled, "Custom is not greyed out");
   Assert.ok(warning(doc).hidden, "no Strict warning under Custom");
   closePane();
+});
+
+add_task(async function test_custom_hidden_under_a_preset() {
+  for (let preset of ["standard", "strict"]) {
+    freshProfile();
+    KyberPrivacyPresets.apply(preset);
+    let doc = await openPane();
+    Assert.equal(selected(doc), preset, `the pane selects ${preset}`);
+    Assert.ok(
+      radio(doc, "custom").hidden && !radio(doc, "custom").offsetParent,
+      `no Custom option under ${preset}`
+    );
+    closePane();
+  }
 });
 
 add_task(async function test_strict_warns_about_timezone() {

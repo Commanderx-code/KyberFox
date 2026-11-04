@@ -18,6 +18,8 @@ prefs = [
 
 ["browser_sync_hidden.js"]
 
+["browser_passwords_removed.js"]
+
 ["browser_privacy_presets.js"]
 
 ["browser_settings_lines.js"]
