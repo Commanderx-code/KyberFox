@@ -4,6 +4,8 @@ Can a built-in blocker in the style of Brave Shields replace or complement uBloc
 
 Status: **planned** on the [roadmap](../ROADMAP.md#built-in-blocking-in-the-style-of-brave-shields), as a second layer next to uBlock Origin. This page is the research behind it. Research date: 2026-11-04. Scope: Kyber Fox on Firefox 159 (release channel). Primary sources only; anything not verified is marked "unverified" and repeated in the last section.
 
+Experiment result (2026-11-04): [2026-11-04-content-classifier-experiment.md](research/2026-11-04-content-classifier-experiment.md).
+
 What Kyber Fox does today: uBlock Origin is bundled, unmodified, and the toolbar shield turns blocking, fingerprinting protection and cookie blocking on or off per site, driving both uBlock Origin and Firefox's Enhanced Tracking Protection. See [shield-ublock-control.md](shield-ublock-control.md).
 
 ## Summary
