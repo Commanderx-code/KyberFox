@@ -33,24 +33,31 @@ Kyber Fox updates through pacman only; the browser's own updater is turned off.
    Server = https://github.com/Commanderx-code/KyberFox/releases/download/arch-repo
    ```
 
-2. Download the project's public signing key,
-   `packaging/arch/kyberfox-signing.pub`, from the repository, and import it:
+2. Download the project's public signing key into the current folder, and
+   check it:
 
    ```
-   sudo pacman-key --add kyberfox-signing.pub
+   curl -fLO https://raw.githubusercontent.com/Commanderx-code/KyberFox/main/packaging/arch/kyberfox-signing.pub
    gpg --show-keys kyberfox-signing.pub
-   sudo pacman-key --lsign-key 83A5C867BD3096DE6A8B5D615502539280228E76
    ```
 
    `gpg --show-keys` must print this fingerprint; if it prints anything
-   else, stop and do not sign the key:
+   else, stop and do not import the key:
 
    ```
-   83A5 C867 BD30 96DE 6A8B 5D61 5502 5392 8022 8E76
+   83A5C867BD3096DE6A8B5D615502539280228E76
    ```
 
-   The `--lsign-key` command takes it without spaces:
-   `sudo pacman-key --lsign-key 83A5C867BD3096DE6A8B5D615502539280228E76`.
+   Then import and sign it, from the same folder:
+
+   ```
+   sudo pacman-key --add kyberfox-signing.pub
+   sudo pacman-key --lsign-key 83A5C867BD3096DE6A8B5D615502539280228E76
+   ```
+
+   The commands read `kyberfox-signing.pub` from the folder they run in.
+   "No such file or directory" means the key was downloaded somewhere
+   else; `cd` to that folder first.
 
 3. Install it:
 
