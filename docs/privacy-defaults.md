@@ -68,6 +68,7 @@ file never forces a preset value back on startup.
 | Startup | Restore the previous session | Home page | Owner's choice | None | test |
 | Search engine | DuckDuckGo; Brave Search, Startpage, Ecosia and Google offered; Bing hidden; Wikipedia removed | Google | Privacy-respecting default, user's pick on the welcome page | None | test |
 | Add-on blocklist | On | On | It is a security list | One request to Mozilla's Remote Settings | test |
+| System add-on updates (`extensions.systemAddon.update.enabled`) | Off and locked | On | The check to `aus5.mozilla.org` sends the OS version, and Kyber Fox updates its built-in add-ons with its own releases | None | cfg only |
 
 ## Connections that stay
 
@@ -78,8 +79,6 @@ full list, with what each host is for, is [network-audit.md](network-audit.md).
 
 ## Not decided yet
 
-- System add-on update checks to `aus5.mozilla.org` were listed as unexpected
-  in the network audit and need a decision (roadmap, Phase 1).
 - Mirroring the security lists on project hosting instead of Mozilla's: more
   private, but users' security would then depend on a project server. To be
   revisited before any public release.

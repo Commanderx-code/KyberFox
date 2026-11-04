@@ -28,7 +28,7 @@ itself, with no telemetry or AI code. **Met on 2026-11-04.**
 - [x] Version shows the Firefox base: `159.0-1` (complete; [ADR 0001](docs/adr/0001-version-tracks-firefox.md))
 - [x] Repeatable builds on GitHub Actions from pinned hashes (complete; [docs/build-gate.md](docs/build-gate.md))
 - [x] Telemetry, studies, crash reporting and AI features removed, with a release check that fails if they return (complete; `tools/check_forbidden.py`)
-- [x] First-run network audit (complete; [docs/network-audit.md](docs/network-audit.md))
+- [x] First-run network audit (complete; [docs/network-audit.md](docs/network-audit.md)); the one unexpected host it found, Mozilla's system add-on update service at `aus5.mozilla.org`, is turned off and locked in `settings/kyberfox.cfg`
 - [x] uBlock Origin bundled, per-site shield, Standard and Strict privacy presets (complete; browser tests)
 - [x] Workspaces, theme picker, color themes, GX-style and One-style skins (complete; browser tests)
 - [x] Welcome page: pick a search engine and optional add-ons, nothing pre-ticked (complete)
@@ -50,7 +50,6 @@ signing keys have an offline backup.
 - [ ] Offline backup of `kyber-fox-private/keys/` (blocked: owner task)
 - [ ] KDE Plasma checks: file picker through the XDG portal, notifications, fractional scaling, Wayland and X11 sessions (planned; [docs/testing.md](docs/testing.md))
 - [ ] About dialog shows the Kyber Fox version and the Firefox version it is built from (planned; check the current dialog first)
-- [ ] Decide on `aus5.mozilla.org` system add-on checks, listed as unexpected in the network audit (planned)
 - [ ] Project documents: roadmap, vision, architecture, privacy defaults, testing, branding, licensing (in progress, this pull request)
 
 ## Phase 2: Transparent privacy
