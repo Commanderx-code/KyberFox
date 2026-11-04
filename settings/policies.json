@@ -106,7 +106,7 @@
             ],
             "Default": "DuckDuckGo",
             "DefaultPrivate": "DuckDuckGo",
-            "Remove": ["Bing", "eBay", "Perplexity", "Reddit", "YouTube"]
+            "Remove": ["Bing", "eBay", "Perplexity", "Reddit", "Wikipedia (en)", "YouTube"]
         },
         "SkipTermsOfUse": true,
         "SupportMenu": {

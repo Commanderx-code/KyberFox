@@ -18,7 +18,7 @@ def test_default_engines():
 
 
 def test_removed_engines():
-    assert engines()["Remove"] == ["Bing", "eBay", "Perplexity", "Reddit", "YouTube"]
+    assert engines()["Remove"] == ["Bing", "eBay", "Perplexity", "Reddit", "Wikipedia (en)", "YouTube"]
 
 
 def test_ecosia():
