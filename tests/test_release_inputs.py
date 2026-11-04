@@ -229,6 +229,9 @@ def test_publish_arch_workflow_matches_the_release_publish():
     runs = [s.get("run", "") for s in job["steps"]]
     check = next(r for r in runs if "SHA256SUMS" in r)
     assert "sha256sum --check" in check and "^v[0-9][0-9.]*-[0-9]+$" in check
+    # SHA256SUMS is in the same Release, so the uploader and the package version are checked too.
+    assert "github-actions\\[bot\\]" in check and ".PKGINFO" in check
+    assert 'name="kyberfox-${TAG#v}-x86_64.pkg.tar.zst"' in check and "-p 'kyberfox-*" not in check
     assert sum("publish-to-release.sh" in r for r in runs) == 1
     assert runs.index(check) < next(i for i, r in enumerate(runs) if "publish-to-release.sh" in r)
     # The tag reaches the shell through the environment, never by expression interpolation.
