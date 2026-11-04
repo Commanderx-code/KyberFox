@@ -21,9 +21,9 @@
     --kyber-glow-a: #31a2f2;
     --kyber-glow-b: #ccd1d8;
     --kyber-bg-deep: #000a24;
-    --kyber-fox: none;
-    --kyber-fox-private: none;
-    --kyber-waves: none;
+    --kyber-fox: url("chrome://kyberfox/content/themes/kyber/foxes/fox-azure.png");
+    --kyber-fox-private: url("chrome://kyberfox/content/themes/kyber/foxes/private-azure.png");
+    --kyber-waves: url("chrome://kyberfox/content/themes/kyber/waves-azure.svg");
     --kyber-wordmark-a: #31a2f2;
     --kyber-wordmark-b: #ccd1d8;
     --kyber-glow-strength: 1;

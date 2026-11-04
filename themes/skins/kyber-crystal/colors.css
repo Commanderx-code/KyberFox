@@ -21,9 +21,9 @@
     --kyber-glow-a: #00e5ff;
     --kyber-glow-b: #b400ff;
     --kyber-bg-deep: #05081c;
-    --kyber-fox: none;
-    --kyber-fox-private: none;
-    --kyber-waves: none;
+    --kyber-fox: url("chrome://kyberfox/content/themes/kyber/foxes/fox-crystal.png");
+    --kyber-fox-private: url("chrome://kyberfox/content/themes/kyber/foxes/private-crystal.png");
+    --kyber-waves: url("chrome://kyberfox/content/themes/kyber/waves-crystal.svg");
     --kyber-wordmark-a: #00e5ff;
     --kyber-wordmark-b: #b400ff;
     --kyber-glow-strength: 1;

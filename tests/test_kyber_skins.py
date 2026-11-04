@@ -67,3 +67,56 @@ def test_colors_css_matches_manifest_vars():
         found = dict(re.findall(r"(--kf-[a-z-]+):\s*([^;]+);", css))
         assert found == manifest(i)["vars"], i
         assert re.search(r"--kyber-glow-strength:\s*1;", css), i
+
+
+BRANDING = ROOT / "overlay/browser/branding/kyberfox/content"
+WORDMARKS = [
+    ROOT / "branding/wordmark.svg",
+    THEMES / "kyber/wordmark-mask.svg",
+    BRANDING / "about-wordmark.svg",
+    BRANDING / "firefox-wordmark.svg",
+]
+FOXES = [f"{kind}-{theme}.png" for kind in ("fox", "private") for theme in ("crystal", "crimson", "azure")]
+WAVES = [THEMES / f"kyber/waves-{t}.svg" for t in ("crystal", "crimson", "azure")]
+
+
+def test_wordmarks_are_outlines():
+    for p in WORDMARKS:
+        svg = p.read_text(encoding="utf-8")
+        assert "viewBox=" in svg, p
+        assert svg.count("<path") >= 8, p
+        for tag in ("<text", "<image", "<script"):
+            assert tag not in svg, (p, tag)
+
+
+def test_theme_foxes_exist():
+    import shutil
+    import subprocess
+
+    import pytest
+
+    if not shutil.which("magick"):
+        pytest.skip("ImageMagick is not installed")
+    for name in FOXES:
+        p = THEMES / "kyber/foxes" / name
+        out = subprocess.run(["magick", "identify", "-format", "%w %h %A", str(p)],
+                             capture_output=True, text=True, check=True).stdout.split()
+        assert out[:2] == ["1024", "1024"], name
+        assert out[2].lower() in ("blend", "true"), name
+
+
+def test_waves_are_small_and_local():
+    for p in WAVES:
+        assert p.stat().st_size < 20_000, p
+        code = re.sub(r"<!--.*?-->", "", p.read_text(), flags=re.S)
+        code = re.sub(r'xmlns(:\w+)?="[^"]*"', "", code)
+        assert not re.search(r"(https?:)?//[a-z]", code), p
+
+
+def test_colors_css_points_at_existing_files():
+    for i in KYBER:
+        css = (SKINS / i / "colors.css").read_text(encoding="utf-8")
+        urls = re.findall(r'url\("chrome://kyberfox/content/themes/([^"]+)"\)', css)
+        assert len(urls) == 3, i
+        for rel in urls:
+            assert (THEMES / rel).is_file(), (i, rel)

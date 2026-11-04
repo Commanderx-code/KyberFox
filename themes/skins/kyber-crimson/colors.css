@@ -21,9 +21,9 @@
     --kyber-glow-a: #fa0226;
     --kyber-glow-b: #f994ae;
     --kyber-bg-deep: #030001;
-    --kyber-fox: none;
-    --kyber-fox-private: none;
-    --kyber-waves: none;
+    --kyber-fox: url("chrome://kyberfox/content/themes/kyber/foxes/fox-crimson.png");
+    --kyber-fox-private: url("chrome://kyberfox/content/themes/kyber/foxes/private-crimson.png");
+    --kyber-waves: url("chrome://kyberfox/content/themes/kyber/waves-crimson.svg");
     --kyber-wordmark-a: #fa0226;
     --kyber-wordmark-b: #f994ae;
     --kyber-glow-strength: 1;
