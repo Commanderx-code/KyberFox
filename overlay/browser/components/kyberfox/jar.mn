@@ -19,6 +19,7 @@ browser.jar:
   content/kyberfox/shield.svg (content/shield.svg)
   content/kyberfox/workspaces-ui.mjs (content/workspaces-ui.mjs)
   content/kyberfox/workspaces.css (content/workspaces.css)
+  content/kyberfox/fonts/ (content/fonts/**)
   content/kyberfox/themes/base.css (themes/base.css)
   content/kyberfox/themes/palettes.json (themes/palettes.json)
   content/kyberfox/themes/status.json (themes/status.json)

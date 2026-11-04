@@ -8,6 +8,7 @@
   ],
   "shared": [
     "base.css",
+    "kyber/fonts.css",
     "kyber/chrome.css",
     "kyber/pages.css"
   ],

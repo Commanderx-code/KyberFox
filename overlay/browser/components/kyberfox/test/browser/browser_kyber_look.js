@@ -118,3 +118,14 @@ add_task(async function test_reduce_glow() {
   Services.prefs.clearUserPref(GLOW_PREF);
   await TestUtils.waitForCondition(() => glowStrength() == "1");
 });
+
+add_task(async function test_kyber_fonts_load() {
+  KyberThemes.apply("kyber-crystal");
+  for (let face of ['700 16px "Kyber Sora"', '400 16px "Kyber Inter"']) {
+    let loaded = await document.fonts.load(face);
+    Assert.equal(loaded.length, 1, `${face} loads from the bundled file`);
+  }
+  KyberThemes.apply("ember");
+  let none = await document.fonts.load('700 16px "Kyber Sora"');
+  Assert.equal(none.length, 0, "the fonts are gone with a non-Kyber theme");
+});

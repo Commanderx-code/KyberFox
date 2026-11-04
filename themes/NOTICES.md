@@ -103,3 +103,15 @@ Modifications, all made by the vendor tool:
   CC-BY-NC-SA-3.0 per its listing); those add-ons are not bundled and their
   values are not copied. The accent colors `#fa1e4e` and `#4c4cff` are the
   skins' own `--fuchsia` and `--blue` constants from their MPL files.
+
+## Sora and Inter fonts
+
+Sora 5.3.0 (https://github.com/sora-xor/sora-font, Copyright 2019 The Sora
+Project Authors) and Inter 5.3.0 (https://github.com/rsms/inter, Copyright
+2016 The Inter Project Authors), taken from the `@fontsource/sora` and
+`@fontsource/inter` npm packages at the versions pinned in `pins.toml`.
+License: SIL Open Font License 1.1, shipped next to the fonts as
+`OFL-Sora.txt` and `OFL-Inter.txt`. Only the Latin subset is bundled, in
+the weights the Kyber pages use (Sora 600 and 700, Inter 400, 500 and 600),
+unmodified, in `overlay/browser/components/kyberfox/content/fonts/`.
+
