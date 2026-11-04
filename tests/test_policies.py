@@ -27,3 +27,18 @@ def test_ecosia():
     assert ecosia["Method"] == "GET"
     assert ecosia["Alias"] == "@ecosia"
     assert "SuggestURLTemplate" not in ecosia
+
+
+# The logos are embedded, so showing them contacts no server. Startpage and
+# Ecosia are Firefox's own icons (services/settings/dumps/main/search-config-icons);
+# Brave's is the SVG favicon of search.brave.com. To change one, replace the file
+# and paste the new data: URL (base64 of the file) into policies.json.
+ICONS = {"Startpage": "startpage", "Brave Search": "brave", "Ecosia": "ecosia"}
+
+
+def test_added_engines_carry_their_logo():
+    import base64
+    for engine in engines()["Add"]:
+        svg = (POLICIES.parent / "search-icons" / f"{ICONS[engine['Name']]}.svg").read_bytes()
+        assert b"<script" not in svg and b"http" not in svg.replace(b"http://www.w3.org/2000/svg", b"")
+        assert engine["IconURL"] == "data:image/svg+xml;base64," + base64.b64encode(svg).decode(), engine["Name"]
