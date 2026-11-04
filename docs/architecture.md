@@ -111,8 +111,9 @@ is the fallback, recorded in ADR 0003.
 - **Security-list hosting.** Security lists (certificate revocation, add-on
   blocklist) come from Mozilla's servers. Hosting copies is more private but
   adds a server users' security depends on. Revisit before any public release.
-- **Built-in content blocking.** Whether to use Firefox's in-tree adblock-rust
-  fork alongside uBlock Origin. Research only:
+- **Built-in content blocking.** Planned: Firefox's in-tree adblock-rust fork
+  as a second layer next to uBlock Origin. Still open: how lists reach users,
+  and element hiding. See
   [content-blocking-research.md](content-blocking-research.md).
 - **Sync.** Word-code sync on Firefox's sync code and `syncstorage-rs`, with the
   account login replaced. Designed, not started.

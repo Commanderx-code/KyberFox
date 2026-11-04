@@ -65,6 +65,23 @@ the compatibility cost of each Strict option.
 - [ ] Network audit rerun on every major Firefox update, compared with the last one (planned)
 - [ ] Mirror the security lists on project hosting instead of Mozilla's (research; the spec asks to revisit this before any public release)
 
+### Built-in blocking in the style of Brave Shields
+
+Firefox 159 already contains a fork of Brave's adblock-rust engine, off by
+default and limited to network requests. The plan builds on it as a second
+layer next to uBlock Origin, which stays bundled until the built-in blocker
+can do what it does. Background and sources:
+[docs/content-blocking-research.md](docs/content-blocking-research.md).
+
+Exit criteria: the built-in blocker can be turned on and off from the shield,
+blocks requests from the same lists uBlock Origin uses, has browser tests, and
+has been measured for speed and site breakage against uBlock Origin alone.
+
+- [ ] Experiment on a development profile: turn on the in-tree engine with a local list, measure blocking, speed and breakage (planned)
+- [ ] Decide how lists reach users: Mozilla's collection, a Kyber Fox signed list service, or download at runtime from the list hosts, and check each list's license (planned)
+- [ ] Connect the engine to the shield's per-site switch and blocked count (planned)
+- [ ] Element hiding and site fixes (cosmetic filters and scriptlets), which the in-tree engine lacks (planned; the largest piece, and the condition for ever dropping uBlock Origin)
+
 ## Phase 3: Power-user features
 
 Exit criteria per feature: it can be turned off, it has a browser test, and it
@@ -94,8 +111,7 @@ survives a Firefox major update without code changes or ships disabled.
 These have no ship date. Each ends in a written result, not necessarily a
 feature.
 
-- [ ] Built-in content blocking in the style of Brave Shields (research; [docs/content-blocking-research.md](docs/content-blocking-research.md)). Firefox 159 already contains a fork of Brave's adblock-rust engine, off by default. Proposal: keep uBlock Origin, and try the in-tree engine on a development profile only, as a possible second layer
-- [ ] Name check before any public release: Mozilla's trademark guidelines give "[Something]-fox" as an example of a name to avoid, and "Kyber" has other owners and meanings (research; [docs/licensing.md](docs/licensing.md))
+- [ ] Name check before any public release: Mozilla's trademark guidelines give "[Something]-fox" as an example of a name to avoid, and "Kyber" has other owners and meanings (research; the owner is looking into it; no rename for now; [docs/licensing.md](docs/licensing.md))
 - [ ] Windows installer code signing (research; needed before any public release)
 - [ ] Flatpak or AUR package in addition to the pacman repository (research)
 
