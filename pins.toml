@@ -17,7 +17,7 @@ sha256 = "b941eac9ac4b156edefa9273bdf5a313204919f751e1a86b8c81e254b9471599"
 [kyber]
 # Build counter for this Firefox version. The displayed version is
 # <firefox version>-<build>, for example 159.0-1.
-build = 2
+build = 3
 # Skins by Godiesc (MPL-2.0). gx_commit is the tagged release v.12.5 (2026-10-26), the
 # newest release before the Firefox 160 fixes. one_commit is the head ("Quick fixes for
 # Firefox v.158"); the repo has no later commit. Both are re-vendored with
