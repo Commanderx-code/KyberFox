@@ -1,9 +1,9 @@
 name: Upstream watch
 
-# Every 3 hours: look for a newer Firefox. When there is one, bump pins.toml on
-# the branch upstream/firefox-<version>, assemble the tree with failed patches
-# allowed, and open a pull request with the failed patch list and the 72-hour
-# deadline. docs/upstream-watch.md explains the follow-up.
+# Every 3 hours: look for a newer Firefox. When there is one, bump pins.toml and
+# the PKGBUILD pkgver on the branch upstream/firefox-<version>, assemble the tree
+# with failed patches allowed, and open a pull request with the failed patch list
+# and the 72-hour deadline. docs/upstream-watch.md explains the follow-up.
 # workflow_dispatch needs this file on main.
 on:
   schedule:
@@ -103,12 +103,12 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git switch -c "$branch"
-            git add pins.toml
+            git add pins.toml packaging/arch/PKGBUILD
             git commit -m "Bump Firefox to $VERSION"
             git push origin "$branch"
           else
-            # A leftover branch is trusted only if its pins.toml is exactly the
-            # merge-base pins.toml bumped to this version, and nothing else changed.
+            # A leftover branch is trusted only if its pins.toml and PKGBUILD are exactly
+            # the merge-base files bumped to this version, and nothing else changed.
             bad="Branch $branch is not the expected bump; delete it and rerun."
             if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
               git fetch --quiet --unshallow origin
@@ -116,16 +116,20 @@ jobs:
             git fetch --quiet origin \
               "+refs/heads/$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH" \
               "+refs/heads/$branch:refs/remotes/origin/$branch"
-            nfiles=$(git diff --name-only "origin/$DEFAULT_BRANCH...origin/$branch" | wc -l)
-            only=$(git diff --name-only "origin/$DEFAULT_BRANCH...origin/$branch")
-            if [ "$nfiles" != "1" ] || [ "$only" != "pins.toml" ]; then
-              echo "::error::$bad (it changes $nfiles files)"; exit 1
+            changed=$(git diff --name-only "origin/$DEFAULT_BRANCH...origin/$branch" | sort)
+            if [ "$changed" != "$(printf '%s\n' packaging/arch/PKGBUILD pins.toml)" ]; then
+              echo "::error::$bad (it changes: ${changed//$'\n'/ })"; exit 1
             fi
             base=$(git merge-base "origin/$DEFAULT_BRANCH" "origin/$branch")
             git show "$base:pins.toml" > "$RUNNER_TEMP/base-pins.toml"
             git show "origin/$branch:pins.toml" > "$RUNNER_TEMP/branch-pins.toml"
             python -m tools.upstream_watch --verify-branch \
               "$RUNNER_TEMP/base-pins.toml" "$RUNNER_TEMP/branch-pins.toml" "$VERSION" \
+              || { echo "::error::$bad"; exit 1; }
+            git show "$base:packaging/arch/PKGBUILD" > "$RUNNER_TEMP/base-PKGBUILD"
+            git show "origin/$branch:packaging/arch/PKGBUILD" > "$RUNNER_TEMP/branch-PKGBUILD"
+            python -m tools.upstream_watch --verify-pkgbuild \
+              "$RUNNER_TEMP/base-PKGBUILD" "$RUNNER_TEMP/branch-PKGBUILD" "$VERSION" \
               || { echo "::error::$bad"; exit 1; }
           fi
 

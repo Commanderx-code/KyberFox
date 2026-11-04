@@ -1,8 +1,9 @@
 """Upstream watch: notice new Firefox, LibreWolf and uBlock Origin releases.
 
 --check prints what is pinned and what is newest. --bump rewrites the two
-Firefox values in pins.toml, assembles the tree with failed patches allowed,
-and writes upstream-watch-report.md. The workflow opens the pull request.
+Firefox values in pins.toml and pkgver in packaging/arch/PKGBUILD, assembles
+the tree with failed patches allowed, and writes upstream-watch-report.md. The
+workflow opens the pull request.
 """
 import argparse
 import json
@@ -18,6 +19,7 @@ from tools.sources import LIBREWOLF_URL, HashMismatch, LibreWolfMismatch, Pins, 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PINS = REPO_ROOT / "pins.toml"
+PKGBUILD = REPO_ROOT / "packaging/arch/PKGBUILD"
 REPORT = "upstream-watch-report.md"
 
 DETAILS_URL = "https://product-details.mozilla.org/1.0/firefox_versions.json"
@@ -74,6 +76,26 @@ def bump_pins(path: Path, version: str, sha256: str) -> None:
         if n != 1:
             raise ValueError(f"{path}: [firefox] needs exactly one {key}, found {n}")
     Path(path).write_bytes((text[:start] + body + text[end:]).encode())
+
+
+def bump_pkgbuild(path: Path, version: str) -> None:
+    """Rewrite the pkgver line of the PKGBUILD (a test keeps it equal to pins.toml)."""
+    check_version(version)
+    text = Path(path).read_bytes().decode()
+    text, n = re.subn(r"(?m)^pkgver=[^\r\n]*", f"pkgver={version}", text)
+    if n != 1:
+        raise ValueError(f"{path}: expected one pkgver line, found {n}")
+    Path(path).write_bytes(text.encode())
+
+
+def verify_pkgbuild(base: Path, branch: Path, version: str) -> None:
+    """Raise unless branch is the base PKGBUILD with pkgver set to version, byte for byte."""
+    with tempfile.TemporaryDirectory() as tmp:
+        expected = Path(tmp) / "PKGBUILD"
+        expected.write_bytes(Path(base).read_bytes())
+        bump_pkgbuild(expected, version)
+        if expected.read_bytes() != Path(branch).read_bytes():
+            raise ValueError(f"branch PKGBUILD is not the base bumped to {version}")
 
 
 def verify_branch(base_pins: Path, branch_pins: Path, version: str) -> None:
@@ -198,8 +220,10 @@ def _write_report(info: dict, failed: list[str], unclassified: list[str],
     out.write_text("\n".join(lines) + "\n")
 
 
-def bump(pins_path: Path, report_dir: Path, version: str) -> dict:
-    """Pin version, assemble, and write the report. version comes from --check."""
+def bump(pins_path: Path, report_dir: Path, version: str, pkgbuild: Path | None = None) -> dict:
+    """Pin version (and the PKGBUILD's pkgver), assemble, and write the report.
+
+    version comes from --check."""
     from tools import assemble as assemble_mod  # late: keeps --check light
 
     check_version(version)
@@ -208,6 +232,8 @@ def bump(pins_path: Path, report_dir: Path, version: str) -> dict:
         raise SystemExit(f"{version} is not newer than the pinned {pins.firefox_version}")
     info = _info(pins, version)
     bump_pins(pins_path, version, fetch_sha256(version))
+    if pkgbuild is not None:
+        bump_pkgbuild(pkgbuild, version)
     lw = info["librewolf"]
     unclassified = []
     if lw["latest"] and lw["latest"] != pins.librewolf_ref:
@@ -233,19 +259,22 @@ def main(argv=None) -> int:
                       help="Firefox version from --check's firefox.latest")
     mode.add_argument("--verify-branch", nargs=3, metavar=("BASE_PINS", "BRANCH_PINS", "VERSION"),
                       help="fail unless BRANCH_PINS is BASE_PINS bumped to VERSION")
+    mode.add_argument("--verify-pkgbuild", nargs=3, metavar=("BASE", "BRANCH", "VERSION"),
+                      help="fail unless the BRANCH PKGBUILD is BASE with pkgver set to VERSION")
     args = ap.parse_args(argv)
-    if args.verify_branch:
-        base, branch, version = args.verify_branch
-        try:
-            verify_branch(Path(base), Path(branch), version)
-        except (ValueError, RuntimeError) as exc:
-            print(exc, file=sys.stderr)
-            return 1
-        return 0
+    for check, fn in ((args.verify_branch, verify_branch), (args.verify_pkgbuild, verify_pkgbuild)):
+        if check:
+            base, branch, version = check
+            try:
+                fn(Path(base), Path(branch), version)
+            except (ValueError, RuntimeError) as exc:
+                print(exc, file=sys.stderr)
+                return 1
+            return 0
     if args.check:
         print(json.dumps(gather(load_pins(PINS)), indent=2))
     else:
-        bump(PINS, Path.cwd(), args.bump)
+        bump(PINS, Path.cwd(), args.bump, PKGBUILD)
     return 0
 
 

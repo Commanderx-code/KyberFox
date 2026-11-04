@@ -4,7 +4,7 @@
 # For a local or CI build, place the tarball next to this file under the name
 # kyberfox-${pkgver}-${pkgrel}.linux-x86_64.tar.xz and run makepkg --skipchecksums.
 pkgname=kyberfox
-pkgver=159.0
+pkgver=159.0.1
 pkgrel=1
 pkgdesc='Privacy-focused Firefox fork with built-in themes and hardened defaults'
 arch=('x86_64')
