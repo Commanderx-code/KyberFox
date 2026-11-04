@@ -5,7 +5,7 @@
 /* Azure: the Kyber look in its colors. The shared sheets in themes/kyber/
  * read these variables. */
 
-@-moz-document url-prefix("chrome://"), url("about:newtab"), url("about:home"), url("about:privatebrowsing") {
+@-moz-document url-prefix("chrome://"), url("about:newtab"), url("about:home"), url("about:privatebrowsing"), url-prefix("about:preferences") {
   :root {
     --kf-bg: #00133d;
     --kf-bg-toolbar: #03194a;
@@ -22,7 +22,7 @@
     --kyber-glow-b: #ccd1d8;
     --kyber-bg-deep: #000a24;
     --kyber-fox: url("chrome://kyberfox/content/themes/kyber/foxes/fox-azure.png");
-    --kyber-fox-private: url("chrome://kyberfox/content/themes/kyber/foxes/private-azure.png");
+    --kyber-fox-private: url("chrome://kyberfox/content/themes/kyber/foxes/masked-fox.png");
     --kyber-waves: url("chrome://kyberfox/content/themes/kyber/waves-azure.svg");
     --kyber-wordmark-a: #31a2f2;
     --kyber-wordmark-b: #ccd1d8;

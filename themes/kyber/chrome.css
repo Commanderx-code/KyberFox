@@ -60,6 +60,12 @@
     margin-inline-end: 6px;
   }
 
+  /* The bookmarks toolbar's "place your bookmarks here" strip is hidden; a
+   * toolbar with bookmarks shows as usual. */
+  #PersonalToolbar:has(> #personal-toolbar-empty:not([hidden])) {
+    display: none !important;
+  }
+
   :root:is([inFullscreen], [sizemode="fullscreen"]) #TabsToolbar .toolbar-items::before,
   #navigator-toolbox[tabs-hidden] #TabsToolbar .toolbar-items::before {
     display: none;
@@ -81,17 +87,43 @@
     box-shadow: 0 0 calc(10px * var(--kyber-glow-strength)) var(--kyber-glow-color);
   }
 
+  /* The pill reads PRIVATE: Firefox's longer label stays for screen readers
+   * and the short word is drawn on top with an empty alternative text. */
   :root[privatebrowsingmode="temporary"] #nav-bar > .private-browsing-indicator-with-label > .private-browsing-indicator-label {
     display: flex !important;
+    font-size: 0 !important;
+    text-transform: uppercase;
+  }
+
+  :root[privatebrowsingmode="temporary"] #nav-bar > .private-browsing-indicator-with-label > .private-browsing-indicator-label::after {
+    content: "Private" / "";
+    font-size: 0.85rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    font-weight: 600;
   }
 
   :root[privatebrowsingmode="temporary"] #nav-bar > .private-browsing-indicator-button,
   :root[privatebrowsingmode="temporary"] #TabsToolbar .private-browsing-indicator-with-label,
   :root[privatebrowsingmode="temporary"] #TabsToolbar .private-browsing-indicator-button {
     display: none !important;
+  }
+
+  @media (max-width: 700px) {
+    #TabsToolbar .toolbar-items::before {
+      display: none;
+    }
+
+    :root[privatebrowsingmode="temporary"] #nav-bar > .private-browsing-indicator-with-label {
+      padding-inline: 6px;
+      margin-inline: 2px !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --kyber-glow-strength: 0 !important;
+    }
   }
 
   /* High contrast: plain outlines, no glow. */

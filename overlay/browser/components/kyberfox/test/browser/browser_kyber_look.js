@@ -394,7 +394,7 @@ add_task(async function test_private_page_kyber_lines() {
     Assert.ok(state.noteShown, "the note shows");
     Assert.equal(
       state.noteText,
-      "Your local browsing history is not saved in this window."
+      "History is not saved after you close all private windows. Downloads and bookmarks are kept. Private browsing does not make you anonymous: websites, your employer, and your internet provider may still see your activity."
     );
   });
 });
@@ -422,7 +422,7 @@ add_task(async function test_private_fox_follows_theme() {
   KyberThemes.apply("kyber-azure");
   await withPrivatePage(async browser => {
     let state = await privatePageState(browser);
-    Assert.stringContains(state.logoImage, "private-azure.png");
+    Assert.stringContains(state.logoImage, "masked-fox.png");
   });
 });
 
@@ -531,6 +531,133 @@ add_task(async function test_high_contrast_text_readable() {
         .trim()
     );
     Assert.equal(fg, "CanvasText", "private page text too");
+  });
+  await SpecialPowers.popPrefEnv();
+});
+
+// Closer to the mockups: shortcut cards, no empty bookmarks strip, the short
+// PRIVATE pill and the private search placeholder.
+
+add_task(async function test_newtab_shortcut_cards() {
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["browser.newtabpage.activity-stream.feeds.topsites", true],
+      [
+        "browser.newtabpage.pinned",
+        JSON.stringify([{ url: "https://example.com/", label: "Example" }]),
+      ],
+    ],
+  });
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    let card = await SpecialPowers.spawn(browser, [], async () => {
+      await ContentTaskUtils.waitForCondition(
+        () =>
+          content.document.querySelector(
+            ".top-site-outer:not(.add-button-tile) .top-site-inner"
+          ),
+        "a shortcut is drawn"
+      );
+      let inner = content.document.querySelector(
+        ".top-site-outer:not(.add-button-tile) .top-site-inner"
+      );
+      let style = content.getComputedStyle(inner);
+      return {
+        radius: style.borderTopLeftRadius,
+        border: style.borderTopWidth,
+        width: inner.getBoundingClientRect().width,
+      };
+    });
+    Assert.equal(card.radius, "14px", "the shortcut is a rounded card");
+    Assert.equal(card.border, "1px", "with a thin border");
+    Assert.greaterOrEqual(card.width, 88, "big enough for its label");
+  });
+  await SpecialPowers.popPrefEnv();
+});
+
+add_task(function test_empty_bookmarks_strip_hidden() {
+  let toolbar = document.getElementById("PersonalToolbar");
+  let empty = document.getElementById("personal-toolbar-empty");
+  let wasHidden = empty.hidden;
+  empty.hidden = false;
+  try {
+    KyberThemes.apply("ember");
+    Assert.notEqual(getComputedStyle(toolbar).display, "none", "ember keeps it");
+    KyberThemes.apply("kyber-crystal");
+    Assert.equal(
+      getComputedStyle(toolbar).display,
+      "none",
+      "no empty bookmarks strip under Kyber"
+    );
+    empty.hidden = true;
+    Assert.notEqual(
+      getComputedStyle(toolbar).display,
+      "none",
+      "a toolbar with bookmarks stays"
+    );
+  } finally {
+    empty.hidden = wasHidden;
+  }
+});
+
+add_task(async function test_private_pill_short_label() {
+  KyberThemes.apply("kyber-crystal");
+  let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
+  try {
+    let label = win.document.querySelector(
+      "#nav-bar > .private-browsing-indicator-with-label > .private-browsing-indicator-label"
+    );
+    Assert.ok(
+      win.getComputedStyle(label, "::after").content.startsWith('"Private"'),
+      "the pill reads PRIVATE"
+    );
+  } finally {
+    await BrowserTestUtils.closeWindow(win);
+  }
+});
+
+add_task(async function test_private_search_keeps_native_label() {
+  KyberThemes.apply("kyber-crystal");
+  await withPrivatePage(async browser => {
+    let label = await SpecialPowers.spawn(browser, [], () => {
+      let host = content.document.querySelector("content-search-handoff-ui");
+      let box = host.shadowRoot.querySelector(".fake-textbox");
+      return {
+        size: content.getComputedStyle(box).fontSize,
+        replacement: content.getComputedStyle(box, "::before").content,
+      };
+    });
+    Assert.notEqual(label.size, "0px", "native search label remains readable");
+    Assert.ok(["none", "normal"].includes(label.replacement), "no generated placeholder");
+  });
+});
+
+add_task(async function test_settings_uses_theme_tokens() {
+  await SpecialPowers.pushPrefEnv({set: [["browser.display.document_color_use", 1], ["ui.prefersContrast", 0]]});
+  KyberThemes.apply("kyber-crystal");
+  let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, "about:preferences#privacy");
+  try {
+    let doc = tab.linkedBrowser.contentDocument;
+    await TestUtils.waitForCondition(() => doc.getElementById("kyberfoxRecommendedAddonsLink"), "settings initialized");
+    let style = doc.defaultView.getComputedStyle(doc.documentElement);
+    info(JSON.stringify({ theme: KyberThemes.current(), contrast: doc.defaultView.matchMedia("(prefers-contrast: more)").matches, forced: doc.defaultView.matchMedia("(forced-colors: active)").matches, bg: style.getPropertyValue("--kf-bg") }));
+    Assert.equal(style.colorScheme, "dark");
+    Assert.equal(style.getPropertyValue("--background-color-canvas").trim(), "#0a0f2d", "native settings use the theme surface");
+  } finally {
+    BrowserTestUtils.removeTab(tab);
+    await SpecialPowers.popPrefEnv();
+  }
+});
+
+add_task(async function test_reduced_motion_removes_page_glow() {
+  await SpecialPowers.pushPrefEnv({set: [["ui.prefersReducedMotion", 1]]});
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    let strength = await SpecialPowers.spawn(browser, [], () =>
+      content.getComputedStyle(content.document.documentElement)
+        .getPropertyValue("--kyber-glow-strength").trim()
+    );
+    Assert.equal(strength, "0", "reduced motion removes decorative glow");
   });
   await SpecialPowers.popPrefEnv();
 });

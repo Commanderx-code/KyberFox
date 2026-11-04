@@ -118,3 +118,12 @@ unmodified, in `overlay/browser/components/kyberfox/content/fonts/`.
 The wordmark (`branding/wordmark.svg`, `themes/kyber/wordmark-mask.svg` and
 the copies in the branding folder) is the Sora Bold glyph outlines, drawn as
 paths by `tools/make_wordmark.py`; no font is embedded in it.
+
+## Owner-supplied masked fox
+
+`kyber/foxes/masked-fox.png` is the owner's supplied
+`kyber_fox_private_new_tab.png`, copied unchanged for private new tabs.
+It follows the repository's owner-supplied branding provenance in
+`docs/branding.md`. No third-party license notice accompanied the image;
+confirm redistribution rights with the owner before a wider public release.
+The auto-traced and redrawn SVG foxes from the reference folder are not used.
