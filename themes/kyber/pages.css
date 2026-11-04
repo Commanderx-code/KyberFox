@@ -18,6 +18,13 @@
     --newtab-text-secondary-color: var(--kf-fg-muted) !important;
     --newtab-wordmark-color: var(--kf-fg) !important;
     --newtab-primary-action-background: var(--kf-accent) !important;
+    --color-accent-primary: var(--kf-accent) !important;
+    --color-accent-primary-hover: color-mix(in srgb, var(--kf-accent) 85%, white) !important;
+    --color-accent-primary-active: color-mix(in srgb, var(--kf-accent) 70%, white) !important;
+    --button-background-color-primary: var(--kf-accent) !important;
+    --button-background-color-primary-hover: color-mix(in srgb, var(--kf-accent) 85%, white) !important;
+    --button-background-color-primary-active: color-mix(in srgb, var(--kf-accent) 70%, white) !important;
+    --button-text-color-primary: var(--kyber-bg-deep) !important;
   }
 
   /* A wallpaper the user picked sets one of these classes and wins. */
