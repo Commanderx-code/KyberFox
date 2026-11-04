@@ -92,6 +92,30 @@ add_task(function test_security_lists_stay_reachable() {
   }
 });
 
+add_task(function test_mozilla_services_are_locked_off() {
+  for (let [pref, value] of [
+    ["browser.ipProtection.enabled", false],
+    ["browser.vpn_promo.enabled", false],
+    ["signon.firefoxRelay.feature", "disabled"],
+    ["browser.contentblocking.report.monitor.enabled", false],
+    ["browser.preferences.moreFromMozilla", false],
+    ["browser.newtabpage.activity-stream.feeds.section.topstories", false],
+  ]) {
+    let actual =
+      typeof value == "boolean"
+        ? Services.prefs.getBoolPref(pref)
+        : Services.prefs.getStringPref(pref);
+    Assert.strictEqual(actual, value, `${pref} is ${value}`);
+    Assert.ok(Services.prefs.prefIsLocked(pref), `${pref} is locked`);
+  }
+  let allowed = Services.prefs
+    .getStringPref("kyberfox.services.settings.allowedCollections", "")
+    .split(",");
+  for (let collection of ["main/vpn-serverlist", "main/fxrelay-allowlist"]) {
+    Assert.ok(!allowed.includes(collection), `${collection} is not fetched`);
+  }
+});
+
 add_task(function test_accounts_are_locked_off() {
   const pref = "identity.fxaccounts.enabled";
   Assert.ok(!Services.prefs.getBoolPref(pref), `${pref} is false`);
