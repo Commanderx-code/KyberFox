@@ -252,7 +252,7 @@ Welcome page: the Kyber Crystal colors (background `#0A0F2D`, accent `#00E5FF`),
 - Modify:
   - `docs/themes.md`: the three themes, the `"shared"` field, reduce glow, the fallback and default rules, and the one-time move.
   - `docs/branding.md`: the wordmark is now designed (status complete), the theme foxes, and that the masked fox for the private page is still planned.
-  - `ROADMAP.md`: Phase 5 gets "Kyber themes, skin, new tab and private page" (in review), and the Jedi-inspired item is replaced by "Crimson and Azure themes, from the owner's concept sheet" (in review).
+  - `ROADMAP.md`: Phase 5 gets "Kyber themes, skin, new tab and private page" (in review), and the item for the palette from the owner's earlier mockups is replaced by "Crimson and Azure themes, from the owner's concept sheet" (in review).
   - `themes/NOTICES.md`: the fonts, from Task 2.
 
 - [ ] **Step 1: Run the whole Python suite.** `.venv/bin/python -m pytest tests -q`: all pass. `tools/check_forbidden.py` against the dev tree: no hits.

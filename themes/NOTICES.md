@@ -65,7 +65,7 @@ Modifications, all made by the vendor tool:
   `icons/tab-bottom-corner-right-australis-clipped.svg` (GX-style).
 - Fonts: upstream ships `Underwave-Bold.ttf`, whose name table reads
   "Copyright (c) 2021 Opera Norway AS. All rights reserved." It is not MPL
-  and is not copied; no font file is ever vendored. The `@font-face` rule for
+  and is not copied; no font file is ever vendored from the skins. The `@font-face` rule for
   the family `gamer` (used for a menu label in GX-style) is removed and uses
   of the family become `sans-serif`.
 - Every `url()` is rewritten to an absolute
@@ -115,3 +115,6 @@ License: SIL Open Font License 1.1, shipped next to the fonts as
 the weights the Kyber pages use (Sora 600 and 700, Inter 400, 500 and 600),
 unmodified, in `overlay/browser/components/kyberfox/content/fonts/`.
 
+The wordmark (`branding/wordmark.svg`, `themes/kyber/wordmark-mask.svg` and
+the copies in the branding folder) is the Sora Bold glyph outlines, drawn as
+paths by `tools/make_wordmark.py`; no font is embedded in it.

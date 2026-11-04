@@ -63,7 +63,7 @@ design covers are `02-private-window.png`, `03-new-tab.png`,
 - The Kyber look is the **default** on first start. The other themes and
   skins stay one click away in the theme picker.
 - Theme names: **Kyber Crystal**, **Crimson**, **Azure**. No Star Wars
-  terms ("Jedi", "Sith", "Dark Side" and the like) and no Lucasfilm emblems
+  terms and no Lucasfilm emblems
   anywhere: not in names, art, strings or file names.
 - Shortcut tiles are **Firefox's own top sites** (most visited, which the
   user can pin, edit and remove), styled as cards. No fixed set of links.
