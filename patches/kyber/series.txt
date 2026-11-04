@@ -22,3 +22,4 @@ hide-sync-pane.patch
 fix-bool-settings.patch
 preferences-style.patch
 private-browsing-logo.patch
+newtab-fonts.patch

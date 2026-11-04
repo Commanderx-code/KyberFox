@@ -206,3 +206,144 @@ add_task(async function test_private_pill() {
   }
   await BrowserTestUtils.closeWindow(win);
 });
+
+// The new tab and welcome pages (themes/kyber/pages.css).
+
+async function withNewTab(task) {
+  // A preloaded new tab can swap browsers under a running spawn.
+  await SpecialPowers.pushPrefEnv({ set: [["browser.newtab.preload", false]] });
+  NewTabPagePreloading.removePreloadedBrowser(window);
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    "about:newtab"
+  );
+  try {
+    await SpecialPowers.spawn(tab.linkedBrowser, [], async () => {
+      await ContentTaskUtils.waitForCondition(
+        () => !!content.document.querySelector(".logo-and-wordmark .logo"),
+        "the logo is drawn"
+      );
+    });
+    await task(tab.linkedBrowser);
+  } finally {
+    BrowserTestUtils.removeTab(tab);
+  }
+}
+
+function bodyImage(browser) {
+  return SpecialPowers.spawn(
+    browser,
+    [],
+    () => content.getComputedStyle(content.document.body).backgroundImage
+  );
+}
+
+add_task(async function test_newtab_waves() {
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    Assert.stringContains(await bodyImage(browser), "waves-crystal.svg");
+  });
+});
+
+add_task(async function test_newtab_big_fox() {
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    let [width, image] = await SpecialPowers.spawn(browser, [], () => {
+      let logo = content.document.querySelector(".logo-and-wordmark .logo");
+      let style = content.getComputedStyle(logo);
+      return [logo.getBoundingClientRect().width, style.backgroundImage];
+    });
+    Assert.greaterOrEqual(width, 160, "a big fox");
+    Assert.stringContains(image, "fox-crystal.png");
+  });
+});
+
+add_task(async function test_newtab_assets_load() {
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    let [imageOk, faces] = await SpecialPowers.spawn(browser, [], async () => {
+      let img = new content.Image();
+      let loaded = new Promise(resolve => {
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+      });
+      img.src = "chrome://kyberfox/content/themes/kyber/foxes/fox-crystal.png";
+      let ok = await loaded;
+      let fonts = await content.document.fonts.load('700 16px "Kyber Sora"');
+      return [ok, fonts.map(f => f.status)];
+    });
+    Assert.ok(imageOk, "the new tab can load the Kyber images");
+    Assert.deepEqual(faces, ["loaded"], "and the Kyber fonts");
+  });
+});
+
+add_task(async function test_newtab_follows_theme() {
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    KyberThemes.apply("kyber-crimson");
+    await TestUtils.waitForCondition(async () =>
+      (await bodyImage(browser)).includes("waves-crimson.svg")
+    );
+    KyberThemes.apply("ember");
+    await TestUtils.waitForCondition(async () => {
+      let image = await bodyImage(browser);
+      return !image.includes("waves-") && !image.includes("fox-");
+    }, "no Kyber images under ember");
+  });
+});
+
+add_task(async function test_user_wallpaper_wins() {
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    await SpecialPowers.spawn(browser, [], () => {
+      let body = content.document.body;
+      body.classList.add("darkWallpaper");
+      body.style.setProperty(
+        "--newtab-wallpaper",
+        "linear-gradient(red, blue)"
+      );
+    });
+    Assert.ok(
+      !(await bodyImage(browser)).includes("waves-"),
+      "the wallpaper replaces the waves"
+    );
+  });
+});
+
+add_task(async function test_newtab_no_remote_loads() {
+  KyberThemes.apply("kyber-crystal");
+  await withNewTab(async browser => {
+    let remote = await SpecialPowers.spawn(browser, [], async () => {
+      // Let the backgrounds and fonts load first.
+      await new Promise(r => content.setTimeout(r, 1000));
+      return content.performance
+        .getEntriesByType("resource")
+        .map(e => e.name)
+        .filter(n => /^https?:/.test(n));
+    });
+    Assert.deepEqual(remote, [], "nothing loads from the network");
+  });
+});
+
+add_task(async function test_welcome_fonts() {
+  KyberThemes.apply("kyber-crystal");
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    "chrome://kyberfox/content/welcome.xhtml"
+  );
+  try {
+    let doc = tab.linkedBrowser.contentDocument;
+    let h1 = doc.querySelector("h1");
+    Assert.equal(
+      doc.defaultView
+        .getComputedStyle(h1)
+        .fontFamily.split(",")[0]
+        .replace(/"/g, ""),
+      "Kyber Sora",
+      "the heading uses Kyber Sora"
+    );
+  } finally {
+    BrowserTestUtils.removeTab(tab);
+    Services.prefs.setBoolPref("kyberfox.welcome.shown", true);
+  }
+});

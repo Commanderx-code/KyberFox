@@ -2,7 +2,157 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* The Kyber new tab, private window and welcome pages. */
+/* The Kyber new tab, private window and welcome pages. Colors and images come
+ * from the theme's colors.css; --kyber-glow-strength scales every glow. A
+ * user sheet, so declarations that meet the page's own rules need
+ * !important. */
 
-@-moz-document url("about:newtab"), url("about:home"), url("about:privatebrowsing"), url-prefix("chrome://kyberfox/content/welcome") {
+/* The new tab: the waves behind everything, the big fox with the wordmark
+ * under it, a glowing search pill and glass top site cards. */
+@-moz-document url("about:newtab"), url("about:home") {
+  :root {
+    --kyber-outline: linear-gradient(90deg, var(--kyber-glow-a), var(--kyber-glow-b));
+    --kyber-glow-color: color-mix(in srgb, var(--kyber-glow-a) 55%, transparent);
+    --newtab-background-color: var(--kyber-bg-deep) !important;
+    --newtab-text-primary-color: var(--kf-fg) !important;
+    --newtab-text-secondary-color: var(--kf-fg-muted) !important;
+    --newtab-wordmark-color: var(--kf-fg) !important;
+    --newtab-primary-action-background: var(--kf-accent) !important;
+  }
+
+  /* A wallpaper the user picked sets one of these classes and wins. */
+  body:not(.lightWallpaper, .darkWallpaper) {
+    background: var(--kyber-waves) center / cover no-repeat fixed, var(--kyber-bg-deep) !important;
+    color: var(--kf-fg);
+  }
+
+  /* The logo block: centered at every width, fox above the wordmark, never
+   * moved aside or shrunk by the page's own layout rules. */
+  .logo-and-wordmark-wrapper {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  .logo-and-wordmark {
+    position: static !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 18px;
+    width: auto !important;
+  }
+
+  .logo-and-wordmark .logo {
+    width: 280px !important;
+    height: 280px !important;
+    background: var(--kyber-fox) center / contain no-repeat !important;
+  }
+
+  /* The wordmark is a mask over a gradient: "KYBER" white, "FOX" in the
+   * theme's colors. FOX starts at 63.8% of the mask's width and KYBER ends at
+   * 58.6% (tools/make_wordmark.py), so the colors split in the gap. */
+  .logo-and-wordmark .wordmark {
+    display: block !important;
+    width: 420px !important;
+    height: 48px !important;
+    margin: 0 !important;
+    background: linear-gradient(90deg, #fff 0 61%, var(--kyber-wordmark-a) 61%, var(--kyber-wordmark-b)) !important;
+    mask: url("chrome://kyberfox/content/themes/kyber/wordmark-mask.svg") center / contain no-repeat;
+  }
+
+  @media (max-width: 699px) {
+    .logo-and-wordmark .logo {
+      width: 160px !important;
+      height: 160px !important;
+    }
+
+    .logo-and-wordmark .wordmark {
+      width: 260px !important;
+      height: 30px !important;
+    }
+  }
+
+  /* Search: a pill with the gradient outline and a glow. The field draws in
+   * its own shadow tree; its variables and font reach it from the host. */
+  content-search-handoff-ui {
+    --content-search-handoff-ui-border-radius: 999px !important;
+    --content-search-handoff-ui-background-color: var(--kf-bg-urlbar) !important;
+    --content-search-handoff-ui-color: var(--kf-fg) !important;
+    --content-search-handoff-ui-fill: var(--kf-fg-muted) !important;
+    --content-search-handoff-ui-caret-color: var(--kf-accent) !important;
+    --content-search-handoff-ui-fakefocus-border-color: var(--kf-accent) !important;
+    font-family: "Kyber Inter", sans-serif;
+  }
+
+  .search-handoff-button {
+    border: 1.5px solid transparent !important;
+    background:
+      var(--content-search-handoff-ui-engine-icon) 16px center / 24px no-repeat padding-box,
+      linear-gradient(var(--kf-bg-urlbar), var(--kf-bg-urlbar)) padding-box,
+      var(--kyber-outline) border-box !important;
+    box-shadow: 0 0 calc(18px * var(--kyber-glow-strength)) var(--kyber-glow-color) !important;
+  }
+
+  /* Top sites: glass cards. */
+  .top-site-outer .tile {
+    background: rgb(255 255 255 / 0.04) !important;
+    border: 1px solid rgb(255 255 255 / 0.08) !important;
+    border-radius: 14px !important;
+    backdrop-filter: blur(8px);
+    box-shadow: none !important;
+  }
+
+  .top-site-outer .title {
+    font-family: "Kyber Inter", sans-serif;
+    color: var(--kf-fg) !important;
+  }
+
+  /* High contrast: plain outlines, no glow, no picture behind the text. */
+  @media (forced-colors: active), (prefers-contrast: more) {
+    body:not(.lightWallpaper, .darkWallpaper) {
+      background: Canvas !important;
+    }
+
+    .search-handoff-button,
+    .top-site-outer .tile {
+      border: 1px solid CanvasText !important;
+      background: Field !important;
+      box-shadow: none !important;
+      backdrop-filter: none;
+    }
+  }
+}
+
+/* The first-run welcome page: the theme's colors and the Kyber fonts. Under
+ * Kyber Crystal, the default, that is a #0A0F2D page with #00E5FF accents. */
+@-moz-document url-prefix("chrome://kyberfox/content/welcome") {
+  /* The page's own tokens win over plain user rules, hence !important. */
+  :root {
+    --background-color-canvas: var(--kf-bg) !important;
+    --text-color: var(--kf-fg) !important;
+    --text-color-deemphasized: var(--kf-fg-muted) !important;
+    --color-accent-primary: var(--kf-accent) !important;
+    --color-accent-primary-hover: color-mix(in srgb, var(--kf-accent) 85%, white) !important;
+    --color-accent-primary-active: color-mix(in srgb, var(--kf-accent) 70%, white) !important;
+    --button-text-color-primary: var(--kf-bg) !important;
+    --button-background-color-primary: var(--kf-accent) !important;
+    --button-background-color-primary-hover: color-mix(in srgb, var(--kf-accent) 85%, white) !important;
+    --button-background-color-primary-active: color-mix(in srgb, var(--kf-accent) 70%, white) !important;
+    --border-color-interactive: var(--kf-border) !important;
+    --focus-outline-color: var(--kf-accent) !important;
+    accent-color: var(--kf-accent);
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--kf-bg) !important;
+    color: var(--kf-fg);
+    font-family: "Kyber Inter", sans-serif !important;
+  }
+
+  h1,
+  h2 {
+    font-family: "Kyber Sora", sans-serif !important;
+  }
 }
