@@ -24,6 +24,16 @@ Preferences.addSetting({
     return value;
   },
   setup: emitChange => KyberPrivacyPresets.observe(emitChange),
+  // Custom is a state, not a choice: it shows only while it is the current
+  // state, and is never greyed out.
+  getControlConfig: (config, deps, setting) => ({
+    ...config,
+    options: config.options.map(option =>
+      option.value == "custom"
+        ? { ...option, hidden: setting.value != "custom" }
+        : option
+    ),
+  }),
 });
 
 Preferences.addSetting({
@@ -72,7 +82,6 @@ SettingGroupManager.registerGroups({
             id: "kyberfoxPrivacyPresetCustom",
             value: "custom",
             l10nId: "kyberfox-privacy-preset-custom",
-            disabled: true,
           },
         ],
       },
