@@ -50,7 +50,7 @@ file never forces a preset value back on startup.
 
 | Area | Kyber Fox default | Stock Firefox | Why | Compatibility cost | Verified |
 |---|---|---|---|---|---|
-| Ads and trackers | Bundled uBlock Origin, on; per-site shield | No ad blocker | Blocking out of the box was a release 1 goal | A blocked script can break a site; the shield turns blocking off per site | test |
+| Ads and trackers | Bundled uBlock Origin, on, also in private windows (once per profile; can be turned off in Add-ons and themes); per-site shield | No ad blocker | Blocking out of the box was a release 1 goal | A blocked script can break a site; the shield turns blocking off per site | test |
 | Third-party cookies | All blocked (`cookieBehavior` 1) | Partitioned (5) | Stronger than partitioning | Some embedded logins and payment widgets fail; turn the shield down for the site | test |
 | HTTPS-Only (`dom.security.https_only_mode`) | On, including local addresses (`upgrade_local`) | HTTPS-First | No silent plain-HTTP loads | An HTTP-only homelab service shows an error page with a "Continue to HTTP site" button; lasting exceptions are added under Settings, HTTPS-Only Mode, Manage Exceptions | test |
 | Telemetry, health report, studies (Normandy, Shield studies) | Off and locked | On | Project goal | None | test (telemetry); cfg only (studies) |

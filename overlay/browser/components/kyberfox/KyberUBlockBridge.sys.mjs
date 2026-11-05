@@ -14,7 +14,9 @@
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
+  AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
   ExtensionParent: "resource://gre/modules/ExtensionParent.sys.mjs",
+  ExtensionPermissions: "resource://gre/modules/ExtensionPermissions.sys.mjs",
   clearTimeout: "resource://gre/modules/Timer.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
@@ -24,6 +26,11 @@ const FRAME_SCRIPT = "chrome://kyberfox/content/shield-ublock-frame.js";
 const CALL_TIMEOUT_MS = 5000;
 const READY_RETRY_MS = 500;
 const READY_TRIES = 40;
+const PRIVATE_GRANTED_PREF = "kyberfox.ublock.privateGranted";
+const PRIVATE_PERMS = {
+  permissions: ["internal:privateBrowsingAllowed"],
+  origins: [],
+};
 
 /** Background pages that already have the frame script. */
 const gScripted = new WeakSet();
@@ -37,6 +44,35 @@ const gCallLog = [];
 
 const gStartCallbacks = new Set();
 let gWatching = false;
+let gPrivateGrant = null;
+
+async function grantPrivate() {
+  if (Services.prefs.getBoolPref(PRIVATE_GRANTED_PREF, false)) {
+    return;
+  }
+  let addon = await lazy.AddonManager.getAddonByID(UBLOCK_ID);
+  if (!addon) {
+    return;
+  }
+  let { permissions } = await lazy.ExtensionPermissions.get(UBLOCK_ID);
+  if (
+    addon.permissions &
+      lazy.AddonManager.PERM_CAN_CHANGE_PRIVATEBROWSING_ACCESS &&
+    !permissions.includes(PRIVATE_PERMS.permissions[0])
+  ) {
+    await lazy.ExtensionPermissions.add(
+      UBLOCK_ID,
+      PRIVATE_PERMS,
+      WebExtensionPolicy.getByID(UBLOCK_ID)?.extension
+    );
+    // As in Add-ons and themes: a running extension picks the change up on
+    // reload.
+    if (addon.isActive) {
+      await addon.reload();
+    }
+  }
+  Services.prefs.setBoolPref(PRIVATE_GRANTED_PREF, true);
+}
 
 // uBlock's own rule: the page's hostname or any parent domain is trusted.
 function isOff(sites, domain) {
@@ -132,6 +168,18 @@ export const KyberUBlockBridge = {
   onStart(callback) {
     gStartCallbacks.add(callback);
     watchStart();
+  },
+
+  /**
+   * Allows uBlock in private windows, once per profile, so that turning it
+   * off later in Add-ons and themes stands. Does nothing until uBlock is
+   * installed.
+   *
+   * @returns {Promise<void>}
+   */
+  allowInPrivateOnce() {
+    gPrivateGrant ??= grantPrivate().finally(() => (gPrivateGrant = null));
+    return gPrivateGrant;
   },
 
   /** Whether uBlock is allowed to run in private windows. */
