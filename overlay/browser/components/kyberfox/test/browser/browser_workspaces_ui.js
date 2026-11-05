@@ -474,3 +474,40 @@ add_task(async function test_footer_sits_under_the_list() {
     await closePanel(win);
   });
 });
+
+// Nothing in the panel is cut off, and the labels of the workspace rows and
+// of the New, Rename and Delete buttons start at the same x.
+add_task(async function test_panel_rows_fit_and_line_up() {
+  await withWorkspaces(async win => {
+    let p = await openPanel(win);
+    let body = p.querySelector(".kyber-workspace-body").getBoundingClientRect();
+    let label = el =>
+      el.querySelector(".toolbarbutton-text").getBoundingClientRect();
+    let rowLeft = Math.round(label(rows(win)[0]).left);
+    for (let kind of ["new", "rename", "delete"]) {
+      let btn = p.querySelector(`#kyber-workspace-${kind}`);
+      let rect = btn.getBoundingClientRect();
+      Assert.greater(rect.height, 0, `${kind} is shown`);
+      Assert.lessOrEqual(
+        Math.round(rect.bottom),
+        Math.round(body.bottom),
+        `${kind} is not cut off`
+      );
+      Assert.equal(
+        Math.round(label(btn).left),
+        rowLeft,
+        `${kind} lines up with the workspace names`
+      );
+      let icon = btn.querySelector(".toolbarbutton-icon");
+      Assert.ok(
+        icon.getAttribute("src") && icon.getBoundingClientRect().width > 0,
+        `${kind} has an icon`
+      );
+    }
+    let { scrollHeight, clientHeight } = p.querySelector(
+      ".kyber-workspace-body"
+    );
+    Assert.lessOrEqual(scrollHeight, clientHeight, "the panel does not scroll");
+    await closePanel(win);
+  });
+});
