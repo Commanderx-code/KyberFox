@@ -147,3 +147,27 @@ windows) a site uBlock does not filter. `setControl` does nothing there.
 
 A literal IPv4 host is its own site (the host is the key). IPv6 literals are
 unsupported.
+
+## The shield is the only visible blocker
+
+uBlock Origin's own toolbar button is hidden everywhere (`shield.css` hides
+`#ublock0_raymondhill_net-browser-action`, in the toolbar, the overflow menu
+and Customize), and `patches/kyber/shield-hides-ublock.patch` leaves it out of
+the extensions panel (`gUnifiedExtensions.getActivePolicies`). The shield
+panel's notes say "ad blocking" instead of naming uBlock. Its **Advanced
+blocking settings** button opens uBlock's `dashboard.html` in a tab, and is
+hidden when uBlock is not installed. uBlock stays listed in Add-ons and
+credited on `about:license`, and its "Block element…" context menu item stays.
+
+## Where the shield sits
+
+The shield is an icon at the right end of the address bar, after the bookmark
+star, like Brave's Shields icon. It is not a toolbar widget, so it cannot be
+moved or removed in Customize. `shield-ui.mjs` builds it in
+`#page-action-buttons` with the address bar's own `urlbar-page-action` class,
+and `order: 1` in `shield.css` keeps it last when Firefox adds page actions
+later. The icon is 20 px (the other address bar icons are 16 px) and filled
+with the theme accent; it turns gray when the site is turned off and dims when
+the page cannot be protected. The blocked count is a small badge on the icon.
+Profiles from earlier builds had the shield in the toolbar; that placement is
+removed on startup.

@@ -31,10 +31,11 @@ kyberfox-workspace-delete-message =
     }
 kyberfox-workspace-delete-confirm = Delete workspace
 
-## Shield. The button sits right of the address bar and opens a per-site panel.
+## Shield. The button sits at the right end of the address bar and opens a
+## per-site panel.
 
 kyberfox-shield-button =
-    .label = Shield
+    .aria-label = Shield
     .tooltiptext = Site protection
 kyberfox-shield-panel =
     .aria-label = Site protection
@@ -48,9 +49,11 @@ kyberfox-shield-fingerprinting =
     .label = Fingerprinting
 kyberfox-shield-cookies =
     .label = Cookies
-kyberfox-shield-cookies-note = Also turns off the browser’s tracker and fingerprint blocking for this site. uBlock Origin keeps blocking ads.
+kyberfox-shield-cookies-note = Also turns off the browser’s tracker and fingerprint blocking for this site. Ad blocking stays on.
 kyberfox-shield-private-note = Private window: one switch for this site, kept only for this session.
-kyberfox-shield-unreachable = uBlock Origin not reachable.
+kyberfox-shield-unreachable = Ad blocking is not responding. Try again in a moment.
+kyberfox-shield-advanced =
+    .label = Advanced blocking settings
 
 ## Privacy presets. The preset group tops the Privacy pane of about:preferences.
 

@@ -1,0 +1,15 @@
+diff --git a/browser/base/content/browser-addons.js b/browser/base/content/browser-addons.js
+--- a/browser/base/content/browser-addons.js
++++ b/browser/base/content/browser-addons.js
+@@ -2291,8 +2291,11 @@ var gUnifiedExtensions = {
+       // Ignore hidden and extensions that cannot access the current window
+       // (because of PB mode when we are in a private window), since users
+       // cannot do anything with those extensions anyway.
++      // Kyber Fox: the shield is the only control for the bundled uBlock
++      // Origin, so it is not listed here.
+       if (
+         extension.isHidden ||
++        policy.id == "uBlock0@raymondhill.net" ||
+         // NOTE: policy.canAccessWindow() sounds generic, but it really only
+         // enforces private browsing access.
+         (!skipPBMCheck && !policy.canAccessWindow(window))
