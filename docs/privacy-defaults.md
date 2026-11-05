@@ -73,13 +73,16 @@ file never forces a preset value back on startup.
 | Startup | Restore the previous session | Home page | Owner's choice | None | test |
 | Search engine | DuckDuckGo; Brave Search, Startpage, Ecosia and Google offered; Bing hidden; Wikipedia removed | Google | Privacy-respecting default, user's pick on the welcome page | None | test |
 | Add-on blocklist | On | On | It is a security list | One request to Mozilla's Remote Settings | test |
+| Safe Browsing (`browser.safebrowsing.*`) | On: Google's malware, phishing and unwanted-software lists are downloaded and checked locally; only a hash prefix of a matching URL is sent to confirm a hit; remote download checks off | On, remote download checks on | Warns about known malware and phishing sites without sending each visited URL | Lists download only in builds that carry the Safe Browsing key; a rare false warning can be clicked through | audit |
 | System add-on updates (`extensions.systemAddon.update.enabled`) | Off and locked | On | The check to `aus5.mozilla.org` sends the OS version, and Kyber Fox updates its built-in add-ons with its own releases | None | cfg only |
 
 ## Connections that stay
 
 Kyber Fox keeps some connections to Mozilla because they protect the user:
 certificate revocation lists, the add-on blocklist and Remote Settings
-security data. uBlock Origin fetches its filter lists from its own hosts. The
+security data, which also carries Firefox's tracker lists. Safe Browsing
+downloads Google's malware and phishing lists from
+`safebrowsing.googleapis.com`. uBlock Origin fetches its filter lists from its own hosts. The
 full list, with what each host is for, is [network-audit.md](network-audit.md).
 
 ## Not decided yet

@@ -1,8 +1,96 @@
-# First-run network audit
+# Network audits
+
+Each major Firefox update gets a rerun of the first-run audit, compared with
+the last one. Newest first.
+
+## Rerun on 159.0.1-4 (2026-11-05)
+
+### Build identity
+
+| Item | Value |
+|---|---|
+| Commit | `6b831e5` (main) |
+| CI run | GitHub Actions `41956877575` (release run), artifact `kyberfox-linux-x86_64` |
+| Tarball | `kyberfox-159.0.1.en-US.linux-x86_64.tar.xz` |
+| `kyberfox --version` | `Kyber Fox 159.0.1-4` |
+
+The shipped `kyberfox.cfg` is byte-identical to `settings/kyberfox.cfg` at
+`6b831e5`, and the shipped `distribution/policies.json` equals
+`settings/policies.json` there. Changes merged after `6b831e5` (the DNS over
+HTTPS provider list, the hidden Firefox themes picker and built-in themes,
+uBlock in private windows, uBlock 1.75.4) are not in this build.
+
+### Method
+
+Same as the first audit: the artifact was downloaded with `gh run download`,
+extracted into an empty directory, and only the browser binary was run, with
+`MOZ_LOG="timestamp,nsHttp:3,nsSocketTransport:3,nsHostResolver:3"`,
+`--headless --no-remote`, and a hard kill at the timeout. Runs 1, 3 and 4
+started together on separate profiles.
+
+| Run | Profile | URLs | Duration |
+|---|---|---|---|
+| 1. First start | new `p1` | `about:blank` | 180 s |
+| 2. Second start | same `p1` | `https://example.com` | 60 s |
+| 3. Fresh profile | new `p3` | `about:newtab`, `about:preferences#privacy` | 60 s |
+| 4. Long run (new) | new `p4` | `about:blank` | 1800 s; the log ends 20 minutes in, since lines buffered at the hard kill are lost |
+
+Hosts come from the `nsHostResolver` getaddrinfo lines and
+`nsSocketTransport::Init host=` lines, checked against `nsHttp` `uri=` lines.
+Stderr held only the harmless `lockstore_ffi` httpcache message and a
+`RenderCompositorSWGL` framebuffer message from headless software rendering.
+
+### Hosts compared with the first audit
+
+| Host | Runs | Change | Verdict |
+|---|---|---|---|
+| `aus5.mozilla.org` | none | gone; the system add-on update check stays off | fixed |
+| `safebrowsing.googleapis.com` | 1, 2, 3, 4 | new: Google Safe Browsing v5 `hashLists:batchGet` for the malware, phishing, unwanted-software and download lists, with the build's API key. Turned on since the first audit (cfg section SAFE BROWSING); remote download checks stay off | allowed (security) |
+| `addons.mozilla.org` | 1, 3, 4 | new: download of `ublock_origin-1.75.4.xpi`, because the bundled 1.75.2 was out of date; applied on the next start (run 2 profile has 1.75.4) | allowed (add-on update); the bundle now pins 1.75.4 |
+| `curbengh.github.io`, `malware-filter.gitlab.io` | 1, 3, 4 | new: mirrors of the URLhaus malware filter list that uBlock picks from its asset list, next to `malware-filter.pages.dev` from the first audit (not seen this time) | allowed (filter lists) |
+| `firefox.settings.services.mozilla.com`, `firefox-settings-attachments.cdn.mozilla.net`, `content-signature-2.cdn.mozilla.net` | 1 to 4 | unchanged; run 4 also fetched the `tracking-protection-lists` attachments (below) | allowed (security) |
+| `services.addons.mozilla.org`, `versioncheck-bg.addons.mozilla.org` | 1, 3, 4 | unchanged: add-on metadata and the uBlock update check | allowed (add-ons) |
+| `ublockorigin.github.io`, `ublockorigin.pages.dev`, `cdn.jsdelivr.net`, `pgl.yoyo.org`, `publicsuffix.org` | 1 to 4 | unchanged | allowed (filter lists) |
+| `example.com` | 2 | the test page | allowed (test page) |
+
+Run 3 (new tab and the Privacy page) made the same connections as run 1 and no
+more. No telemetry, Normandy, captive-portal, push, location, Contile,
+sponsored-content, OCSP, `shavar`, LibreWolf, Codeberg, `localhost` or AI model
+host appeared in any log. `commanderx-code.github.io` (the update manifest)
+was not contacted, as expected on Linux.
+
+### Open items from the first audit
+
+- Item 5 (tracking-protection lists) is settled. In run 4 Firefox's tracker
+  lists (`ads-track-digest256`, `analytics-track-digest256`,
+  `social-track-digest256`, the social-tracking-protection lists,
+  `content-track-digest256`, `harmful-addon-block-digest256`) came as
+  `tracking-protection-lists` attachments from
+  `firefox-settings-attachments.cdn.mozilla.net`. No `shavar` or
+  `tracking-protection.cdn.mozilla.net` request was made, and every profile's
+  `safebrowsing/` directory holds non-empty stores.
+- Item 3 (non-security Remote Settings collections) is unchanged: the same ten
+  main-bucket collections are polled. `password-rules`, `password-recipes`
+  and `fxmonitor-breaches` now serve features that are locked off (the
+  password manager and Monitor) and could be dropped like the VPN and Relay
+  lists; `translations-*` stays on purpose.
+- Item 6 (timers): run 4 covered 20 minutes; nothing new started after the
+  first 5 minutes besides Remote Settings attachment downloads and repeated
+  Safe Browsing list updates.
+
+### Profile checks
+
+All three profiles: `browser.contentblocking.category` is `"strict"` with
+`kyberfox.cfg.categorySeeded` true; no `crashes/` or `saved-telemetry-pings/`
+directory; `datareporting/` present as before. uBlock Origin is active in
+`app-profile`. The Firefox Light, Dark and Alpenglow themes are installed and
+inactive, as expected for this build.
+
+## First audit, 159.0-1 (2026-11-03)
 
 Date: 2026-11-03. Scope: the Linux x86_64 CI build, checked for every host it contacts in the background and while browsing.
 
-## Build identity
+### Build identity
 
 | Item | Value |
 |---|---|
@@ -14,7 +102,7 @@ Date: 2026-11-03. Scope: the Linux x86_64 CI build, checked for every host it co
 
 The shipped `kyberfox.cfg` and `distribution/policies.json` were compared with the files in the working tree. They are not identical: the working tree is newer. It makes `dom.security.https_only_mode` a `defaultPref` in the cfg, while the audited build enforces HTTPS-only through the `HttpsOnlyMode` policy. It also uses `defaultPref` for `browser.dom.window.dump.enabled` and `devtools.console.stdout.chrome`, where the build uses `pref`. None of these differences affect the hosts below.
 
-## Method
+### Method
 
 The artifact was downloaded with `gh run download 41575126157 -n kyberfox-linux-x86_64` and extracted into an empty directory. Only the browser binary was run from it.
 
@@ -35,7 +123,7 @@ Run 3 started at the same time as run 1 (different profile, different log). All 
 
 Hosts come from the `nsHostResolver` "Calling getaddrinfo for host" lines and from `nsSocketTransport::Init host=` lines, cross-checked against the `uri=` lines of `nsHttp`. A plain grep for `https://` in the log is not reliable, because response headers (Content-Security-Policy, `report-to`) mention hosts such as `www.recaptcha.net`, `www.gstatic.com`, `www.gstatic.cn`, `a.nel.cloudflare.com` and `videos.cdn.mozilla.net`. None of those was ever resolved or connected to. No `localhost` host appears in any log.
 
-## Hosts contacted
+### Hosts contacted
 
 The Run column shows which runs reached the host (1, 2, 3).
 
@@ -65,7 +153,7 @@ None of the forbidden hosts appeared in any log: no `telemetry.mozilla.org`, `no
 
 The Remote Settings poll reached these main-bucket collections besides the security ones: `websites-with-shared-credential-backends`, `webcompat-interventions`, `translations-wasm`, `translations-models`, `password-rules`, `password-recipes`, `language-dictionaries`, `hijack-blocklists`, `fxmonitor-breaches`, `anti-tracking-url-decoration`. Only change-set metadata was requested for them (no attachments), but they are outside the "security-related" list in the spec, and `translations-*` belongs to the on-device translation feature (an AI feature).
 
-## Profile checks
+### Profile checks
 
 | Check | Run 1 profile | Run 3 profile |
 |---|---|---|
@@ -90,7 +178,7 @@ Preferences in `prefs.js` (run 1 profile; run 3 is the same):
 
 Absence from `prefs.js` was checked against the shipped `kyberfox.cfg`, not by reading live values. Live values were not queried (no `about:config` in headless mode).
 
-## Conclusion
+### Conclusion
 
 The build behaves as the spec describes for telemetry, studies, sponsored content, captive-portal checks, push, geolocation, search suggestions and AI model hosts: none of those hosts was contacted in five minutes of combined logging. uBlock Origin is installed, active and fetched its filter lists on first start. Security connections go directly to Mozilla.
 
@@ -103,15 +191,15 @@ Items to change:
 5. `safebrowsing/` in the profile holds empty tracking-protection list stores, and no `shavar` host was contacted in the observed time. The first list download probably comes later than five minutes. A longer run (30 minutes) is needed to confirm that those lists, when fetched, come from `shavar.services.mozilla.com` or `tracking-protection.cdn.mozilla.net` only.
 6. This audit used a headless, 60 to 180 second window. Timers that fire later (add-on update every 24 hours, Remote Settings every 24 hours) were not observed beyond their first run.
 
-## Follow-up
+### Follow-up
 
 Checked on the same extracted build with the edited `settings/kyberfox.cfg` and `settings/policies.json` copied over the shipped files, using fresh profiles, headless, `about:blank`.
 
-### System add-on update check
+#### System add-on update check
 
 `aus5.mozilla.org` was the system add-on updater (`extensions.systemAddon.update.url`, enabled by default in `firefox.js`). The cfg now sets `lockPref("extensions.systemAddon.update.enabled", false)` and `lockPref("extensions.systemAddon.update.url", "")`. A new 90 second run resolved only the hosts that stayed allowed in the table above, and `aus5.mozilla.org` is gone. The cfg has no other `aus5` or `aus.mozilla.org` reference. `app.update.url.manual` and `app.update.url.details` point at the project's GitHub releases page, and `app.update.url` is not set in the cfg. The only remaining `aus5.mozilla.org` string in the repo is in `patches/kyber/updater.patch`, where it is the `MOZ_APPUPDATE_HOST` value that patch removes.
 
-### Content blocking category
+#### Content blocking category
 
 Cause. Firefox's `ContentBlockingPrefs.sys.mjs` (`browser/components/protections`) runs `matchCBCategory()` at startup. It tests the `standard` category before `strict`, and a category matches when none of its listed prefs has a user value. Both categories pass on a new profile, because the cfg sets the strict values as defaults. `standard` is tested first, so Firefox wrote `"standard"` as a user value. That value differs from the cfg default `"strict"`, so it was stored. No cfg pref was pinning a value to standard, and the `hasMigratedCategoryPrefs` lock was not involved.
 
@@ -128,6 +216,6 @@ The other audited prefs are unchanged: `toolkit.telemetry.enabled`, `datareporti
 
 Open point for the Privacy page task. The strict feature prefs are defaults, not user values. Choosing Standard in Firefox's page only clears user values, so it would leave the strict defaults in force. The Kyber presets in that task must set Standard values explicitly.
 
-## Welcome page (recommended add-ons)
+### Welcome page (recommended add-ons)
 
 `addons.mozilla.org` is contacted only after the user clicks "Install selected" on the first-run welcome page (`chrome://kyberfox/content/welcome.xhtml`), once per chosen add-on, at `https://addons.mozilla.org/firefox/downloads/latest/<slug>/latest.xpi`. The page itself makes no request: it shows no AMO icons, ratings, or counts, and the add-on list is read from a file shipped in the browser. "Skip" makes no request. Chosen add-ons then update through the normal add-on updater. The search engines the page offers (DuckDuckGo, Google, Brave Search, Startpage, Ecosia) are shipped by `settings/policies.json`; picking one contacts nothing until the user searches.
