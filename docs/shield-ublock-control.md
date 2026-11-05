@@ -147,3 +147,15 @@ windows) a site uBlock does not filter. `setControl` does nothing there.
 
 A literal IPv4 host is its own site (the host is the key). IPv6 literals are
 unsupported.
+
+## The shield is the only visible blocker
+
+uBlock Origin's own toolbar button is hidden everywhere (`shield.css` hides
+`#ublock0_raymondhill_net-browser-action`, in the toolbar, the overflow menu
+and Customize), and `patches/kyber/shield-hides-ublock.patch` leaves it out of
+the extensions panel (`gUnifiedExtensions.getActivePolicies`). The shield
+panel's notes say "ad blocking" instead of naming uBlock. Its **Advanced
+blocking settings** button opens uBlock's `dashboard.html` in a tab, and is
+hidden when uBlock is not installed. uBlock stays listed in Add-ons and
+credited on `about:license`, and its "Block element…" context menu item stays.
+

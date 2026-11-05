@@ -79,7 +79,7 @@ The first window is a welcome page. Pick a default search engine and tick any
 add-ons you want from the recommended list; nothing is selected for you, and
 nothing is downloaded until you choose **Install selected**. Add-ons come from
 addons.mozilla.org. You can skip the page and find it again later under Privacy
-and security in Settings. uBlock Origin is already included.
+and security in Settings. Ad blocking is already included: it is uBlock Origin, bundled and controlled from the shield button. The shield panel's **Advanced blocking settings** opens uBlock Origin's dashboard for custom filters and lists.
 
 To bring bookmarks, passwords and history over from another browser, use
 File, Import From Another Browser… (press Alt if the menu bar is hidden), or

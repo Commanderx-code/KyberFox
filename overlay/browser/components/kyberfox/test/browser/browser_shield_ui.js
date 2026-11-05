@@ -415,3 +415,68 @@ add_task(async function test_off_state_shows_crossed_shield() {
   await KyberShield.setEnabled(tab.linkedBrowser, true);
   BrowserTestUtils.removeTab(tab);
 });
+
+// The shield is the only blocking control in the window: uBlock Origin's own
+// toolbar button is never shown, and the panel does not name uBlock.
+add_task(async function test_ublock_button_hidden() {
+  let widgetId = "ublock0_raymondhill_net-browser-action";
+  await TestUtils.waitForCondition(
+    () => CustomizableUI.getWidget(widgetId)?.forWindow(window)?.node,
+    "uBlock's toolbar widget is built"
+  );
+  let nodes = document.querySelectorAll(`[data-extensionid="${UBLOCK_ID}"]`);
+  Assert.greater(nodes.length, 0, "uBlock's widget is in the window");
+  for (let node of nodes) {
+    Assert.ok(!node.checkVisibility(), `${node.id || node.localName} is not shown`);
+  }
+  Assert.ok(
+    !gUnifiedExtensions.getActivePolicies().some(p => p.id == UBLOCK_ID),
+    "uBlock is not listed in the extensions panel"
+  );
+});
+
+add_task(async function test_panel_does_not_name_ublock() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let p = await openPanel();
+  for (let note of p.querySelectorAll(".kyber-shield-note")) {
+    await document.l10n.translateElements([note]);
+    Assert.ok(
+      !/uBlock/i.test(note.textContent),
+      `${note.id} does not name uBlock: ${note.textContent}`
+    );
+  }
+  await closePanel();
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_advanced_settings_opens_dashboard() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let p = await openPanel();
+  let link = p.querySelector("#kyber-shield-advanced");
+  Assert.ok(link && link.checkVisibility(), "the panel has the advanced link");
+  await document.l10n.translateElements([link]);
+  Assert.equal(
+    link.textContent.trim() || link.label,
+    "Advanced blocking settings",
+    "the link is labeled"
+  );
+  let dashboard = WebExtensionPolicy.getByID(UBLOCK_ID).getURL("dashboard.html");
+  let opened = BrowserTestUtils.waitForNewTab(gBrowser, dashboard);
+  let hidden = BrowserTestUtils.waitForEvent(p, "popuphidden");
+  EventUtils.synthesizeMouseAtCenter(link, {});
+  let dashTab = await opened;
+  await hidden;
+  Assert.equal(
+    dashTab.linkedBrowser.currentURI.spec,
+    dashboard,
+    "uBlock's dashboard opens in a new tab"
+  );
+  BrowserTestUtils.removeTab(dashTab);
+  BrowserTestUtils.removeTab(tab);
+});

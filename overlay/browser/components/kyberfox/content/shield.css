@@ -49,3 +49,15 @@
 #kyber-shield-panel [hidden] {
   display: none;
 }
+
+/* The shield is the only control for the bundled uBlock Origin: its own
+   toolbar button is never shown, in the toolbar, the overflow menu or
+   Customize. */
+#ublock0_raymondhill_net-browser-action,
+#wrapper-ublock0_raymondhill_net-browser-action {
+  display: none !important;
+}
+
+#kyber-shield-advanced {
+  align-self: start;
+}

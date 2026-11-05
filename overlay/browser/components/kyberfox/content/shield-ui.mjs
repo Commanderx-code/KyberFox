@@ -18,6 +18,8 @@ const { KyberShieldWidget } = ChromeUtils.importESModule(
 
 const CONTROLS = ["ads", "fingerprinting", "cookies"];
 
+const UBLOCK_ID = "uBlock0@raymondhill.net";
+
 // uBlock may count a few more blocked requests after the page has loaded.
 const LATE_COUNT_MS = 1000;
 
@@ -208,13 +210,19 @@ class ShieldButton {
       node.setAttribute("data-l10n-id", l10nId);
       return node;
     };
+    // Opens uBlock Origin's dashboard for custom filters and lists.
+    let advanced = html("moz-button", { id: "kyber-shield-advanced" });
+    advanced.setAttribute("type", "ghost");
+    advanced.setAttribute("data-l10n-id", "kyberfox-shield-advanced");
+    advanced.addEventListener("click", () => this.openAdvanced());
     body.append(
       site,
       master,
       rows,
       note("kyber-shield-cookies-note", "kyberfox-shield-cookies-note"),
       note("kyber-shield-private-note", "kyberfox-shield-private-note"),
-      note("kyber-shield-error", "kyberfox-shield-unreachable")
+      note("kyber-shield-error", "kyberfox-shield-unreachable"),
+      advanced
     );
     panel.append(body);
 
@@ -226,6 +234,15 @@ class ShieldButton {
     this.doc.getElementById("mainPopupSet").append(panel);
     this.panel = panel;
     return panel;
+  }
+
+  openAdvanced() {
+    let policy = WebExtensionPolicy.getByID(UBLOCK_ID);
+    if (!policy) {
+      return;
+    }
+    this.panel.hidePopup();
+    this.win.openTrustedLinkIn(policy.getURL("dashboard.html"), "tab");
   }
 
   openPanel() {
@@ -258,6 +275,7 @@ class ShieldButton {
     );
     query("private-note").hidden = state.perControl;
     query("error").hidden = !this.unreachable;
+    query("advanced").hidden = !WebExtensionPolicy.getByID(UBLOCK_ID);
   }
 
   async onToggle(event) {
