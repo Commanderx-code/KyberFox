@@ -924,3 +924,127 @@ add_task(async function test_site_not_working_in_a_private_window() {
   BrowserTestUtils.removeTab(tab);
   await BrowserTestUtils.closeWindow(win);
 });
+
+add_task(async function test_fox_guard_artwork_loads() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let p = await openPanel();
+  let emblem = p.querySelector(".kyber-shield-emblem");
+  await TestUtils.waitForCondition(() => emblem.complete, "the image loads");
+  Assert.equal(
+    emblem.getAttribute("src"),
+    "chrome://kyberfox/content/fox-guard.png",
+    "the header shows the Fox Guard artwork"
+  );
+  Assert.greater(emblem.naturalWidth, 0, "the artwork ships in the build");
+  Assert.equal(emblem.alt, "", "the artwork is decoration for screen readers");
+  await closePanel();
+  BrowserTestUtils.removeTab(tab);
+});
+
+// The attention icon: the site's ad protection is on, but the ad blocker is
+// turned off or removed, so nothing blocks ads. Only that, not a site with
+// a protection switched off.
+add_task(async function test_attention_when_ad_blocking_stops() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let browser = tab.linkedBrowser;
+  await TestUtils.waitForCondition(() => shieldState() == "on", "on");
+  registerCleanupFunction(() => gAddon.enable());
+
+  await gAddon.disable();
+  await TestUtils.waitForCondition(
+    () => shieldState() == "attention",
+    "the icon asks for attention once ad blocking stops"
+  );
+  Assert.equal(await tooltip(), "Kyber Shields: ad blocking is not running");
+  Assert.stringContains(
+    getComputedStyle(button().querySelector(".kyber-shield-icon"))
+      .listStyleImage,
+    "crystal-guard-attention.svg",
+    "the attention icon shows"
+  );
+
+  let p = await openPanel();
+  let status = p.querySelector("#kyber-shield-status");
+  let blocked = p.querySelector("#kyber-shield-blocked");
+  await document.l10n.translateElements([status, blocked]);
+  Assert.equal(status.textContent, "Ad blocking is not running");
+  Assert.equal(
+    p.querySelector("#kyber-shield-status-card").getAttribute("state"),
+    "attention"
+  );
+  Assert.equal(blocked.textContent, "Not running", "no count is shown");
+  Assert.ok(toggle("ads").disabled, "the ads switch cannot pretend to work");
+  Assert.ok(
+    !toggle("cookies").disabled && !toggle("fingerprinting").disabled,
+    "the browser's own protections still switch"
+  );
+  Assert.ok(
+    p.querySelector("#kyber-shield-blocker-note").checkVisibility(),
+    "the panel says why"
+  );
+  let newTab = BrowserTestUtils.waitForNewTab(gBrowser, uri =>
+    uri.startsWith("about:addons")
+  );
+  p.querySelector("#kyber-shield-addons").click();
+  BrowserTestUtils.removeTab(await newTab);
+  await TestUtils.waitForCondition(() => p.state == "closed", "panel closes");
+
+  // A site with ad blocking switched off is a choice, not a problem.
+  await KyberShield.setControl(browser, "ads", false);
+  await reloadTab(browser);
+  await TestUtils.waitForCondition(() => shieldState() == "partial", "partial");
+  await KyberShield.setControl(browser, "ads", true);
+  await reloadTab(browser);
+  await TestUtils.waitForCondition(
+    () => shieldState() == "attention",
+    "attention again"
+  );
+
+  // "Site not working?" skips ads while nothing blocks them.
+  await KyberShield.setControl(browser, "cookies", false);
+  p = await openPanel();
+  Assert.equal(
+    p.querySelector("#kyber-shield-fix-next").getAttribute("data-l10n-id"),
+    "kyberfox-shield-fix-master-button",
+    "after cookies, the next step is the whole shield, not ads"
+  );
+  await closePanel();
+  await KyberShield.setControl(browser, "cookies", true);
+
+  await gAddon.enable();
+  await TestUtils.waitForCondition(
+    () => shieldState() == "on",
+    "the icon is calm again once ad blocking runs",
+    200,
+    50
+  );
+  p = await openPanel();
+  Assert.ok(
+    p.querySelector("#kyber-shield-blocker-note").hidden,
+    "no note while ad blocking runs"
+  );
+  Assert.ok(!toggle("ads").disabled, "the ads switch works again");
+  await closePanel();
+  BrowserTestUtils.removeTab(tab);
+});
+
+// The ad blocker does not run in private windows unless it is allowed there.
+// The panel says so instead of showing "None on this page", and it is the
+// default, so it is not an attention state.
+add_task(async function test_private_window_says_ad_blocking_is_off() {
+  let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
+  await BrowserTestUtils.openNewForegroundTab(win.gBrowser, url("example.com"));
+  await TestUtils.waitForCondition(() => shieldState(win) == "on", "on");
+  let p = await openPanel(win);
+  let blocked = p.querySelector("#kyber-shield-blocked");
+  await win.document.l10n.translateElements([blocked]);
+  Assert.equal(blocked.textContent, "Off in private windows");
+  await closePanel(win);
+  await BrowserTestUtils.closeWindow(win);
+});

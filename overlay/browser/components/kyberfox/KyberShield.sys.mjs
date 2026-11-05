@@ -454,4 +454,41 @@ export const KyberShield = {
   blockedCount(browser) {
     return KyberUBlockBridge.blockedCount(browser);
   },
+
+  /**
+   * Whether the ad blocker filters the page in a browser. The ads flag of
+   * state() is the user's choice for the site; this says whether anything
+   * carries it out.
+   *
+   * @param {XULBrowserElement} browser
+   * @returns {"running"|"private"|"stopped"} "private" in a private window
+   *   the ad blocker is not allowed in; "stopped" when it is turned off or
+   *   removed.
+   */
+  adBlocking(browser) {
+    if (!KyberUBlockBridge.running) {
+      return "stopped";
+    }
+    if (
+      lazy.PrivateBrowsingUtils.isBrowserPrivate(browser) &&
+      !KyberUBlockBridge.privateAllowed
+    ) {
+      return "private";
+    }
+    return "running";
+  },
+
+  /**
+   * Runs a callback each time the ad blocker starts or stops.
+   *
+   * @param {Function} callback
+   * @returns {Function} Removes the callback.
+   */
+  onAdBlockingChange(callback) {
+    let removers = [
+      KyberUBlockBridge.onStart(callback),
+      KyberUBlockBridge.onStop(callback),
+    ];
+    return () => removers.forEach(remove => remove());
+  },
 };

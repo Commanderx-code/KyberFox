@@ -32,18 +32,24 @@ const LATE_COUNT_MS = 1000;
 
 /**
  * The icon state for a page, from the engine's state: "unavailable" for pages
- * the shield does not handle, "off" with the site switched off, "partial"
- * with the site on but one protection off, "on" otherwise.
+ * the shield does not handle, "off" with the site switched off, "attention"
+ * when the site wants ads blocked but the ad blocker is not running,
+ * "partial" with the site on but one protection off, "on" otherwise. A
+ * protection the user switched off is a choice, never "attention".
  *
  * @param {object} state KyberShield.state()
- * @returns {"on"|"partial"|"off"|"unavailable"}
+ * @param {string} adBlocking KyberShield.adBlocking()
+ * @returns {"on"|"partial"|"off"|"attention"|"unavailable"}
  */
-function stateName(state) {
+function stateName(state, adBlocking) {
   if (!state.supported) {
     return "unavailable";
   }
   if (!state.enabled) {
     return "off";
+  }
+  if (state.ads && adBlocking == "stopped") {
+    return "attention";
   }
   return CONTROLS.every(control => state[control]) ? "on" : "partial";
 }
@@ -56,16 +62,23 @@ function stateName(state) {
  * only the whole shield.
  *
  * @param {object} state KyberShield.state()
+ * @param {string} adBlocking KyberShield.adBlocking()
  * @returns {"cookies"|"ads"|"master"|null} null when nothing is left on.
  */
-function nextFixStep(state) {
+function nextFixStep(state, adBlocking) {
   if (!state.supported || !state.enabled) {
     return null;
   }
   if (!state.perControl) {
     return "master";
   }
-  return ["cookies", "ads"].find(control => state[control]) ?? "master";
+  // With the ad blocker stopped, switching ads off would change nothing.
+  return (
+    ["cookies", "ads"].find(
+      control =>
+        state[control] && !(control == "ads" && adBlocking == "stopped")
+    ) ?? "master"
+  );
 }
 
 /**
@@ -157,11 +170,22 @@ class ShieldButton {
     gBrowser.addTabsProgressListener(listener);
     let onSelect = () => this.refreshButton();
     gBrowser.tabContainer.addEventListener("TabSelect", onSelect);
+    // The ad blocker turned off, removed or back on.
+    let stopWatching = KyberShield.onAdBlockingChange(() => {
+      if (this.unloaded) {
+        return;
+      }
+      this.refreshButton();
+      if (this.panel?.state == "open") {
+        this.render();
+      }
+    });
     this.win.addEventListener(
       "unload",
       () => {
         gBrowser.removeTabsProgressListener(listener);
         gBrowser.tabContainer.removeEventListener("TabSelect", onSelect);
+        stopWatching();
         this.unloaded = true;
       },
       { once: true }
@@ -218,7 +242,7 @@ class ShieldButton {
       state.supported && state.enabled
         ? KyberShield.blockedCount(this.browser)
         : "";
-    let shieldState = stateName(state);
+    let shieldState = stateName(state, KyberShield.adBlocking(this.browser));
     this.button.setAttribute("shield-state", shieldState);
     this.doc.l10n.setAttributes(
       this.button,
@@ -282,8 +306,11 @@ class ShieldButton {
 
     // Header: the emblem, the name and the site the switches apply to.
     let header = html("div", { className: "kyber-shield-header" });
-    let emblem = html("div", { className: "kyber-shield-emblem" });
-    emblem.setAttribute("aria-hidden", "true");
+    // Fox Guard: decoration, so screen readers skip it.
+    let emblem = icon(
+      "kyber-shield-emblem",
+      "chrome://kyberfox/content/fox-guard.png"
+    );
     let title = l10n(
       html("h2", { id: "kyber-shield-title" }),
       "kyberfox-shield-title"
@@ -385,6 +412,12 @@ class ShieldButton {
 
     let links = html("div", { className: "kyber-shield-links" });
     links.append(
+      // Shown only while the ad blocker is off: where to turn it back on.
+      link(
+        "kyber-shield-addons",
+        "chrome://mozapps/skin/extensions/extension.svg",
+        () => this.openAddons()
+      ),
       fix,
       fixSection,
       link(
@@ -414,6 +447,7 @@ class ShieldButton {
       note("kyber-shield-cookies-note", "kyberfox-shield-cookies-note"),
       note("kyber-shield-private-note", "kyberfox-shield-private-note"),
       note("kyber-shield-error", "kyberfox-shield-unreachable"),
+      note("kyber-shield-blocker-note", "kyberfox-shield-blocker-note"),
       links
     );
     panel.append(body);
@@ -449,7 +483,10 @@ class ShieldButton {
 
   /** Turns off the next protection for the site and reloads the page. */
   fixNext() {
-    let step = nextFixStep(KyberShield.state(this.browser));
+    let step = nextFixStep(
+      KyberShield.state(this.browser),
+      KyberShield.adBlocking(this.browser)
+    );
     if (!step) {
       return Promise.resolve();
     }
@@ -478,6 +515,12 @@ class ShieldButton {
     let browser = this.browser;
     this.panel.hidePopup();
     this.win.BrowserCommands.pageInfo(null, "permTab", null, null, browser);
+  }
+
+  /** Add-ons and themes, where the ad blocker is turned back on. */
+  openAddons() {
+    this.panel.hidePopup();
+    this.win.BrowserAddonUI.openAddonsMgr("addons://list/extension");
   }
 
   /** Firefox's Privacy settings, where the browser-wide protections live. */
@@ -519,9 +562,10 @@ class ShieldButton {
   render() {
     let panel = this.panel;
     let state = KyberShield.state(this.browser);
+    let adBlocking = KyberShield.adBlocking(this.browser);
     let query = id => panel.querySelector(`#kyber-shield-${id}`);
 
-    let shieldState = stateName(state);
+    let shieldState = stateName(state, adBlocking);
     query("site").textContent = this.siteName();
     query("status-card").setAttribute("state", shieldState);
     this.doc.l10n.setAttributes(
@@ -538,6 +582,12 @@ class ShieldButton {
     let blocked = query("blocked");
     if (!state.ads) {
       this.doc.l10n.setAttributes(blocked, "kyberfox-shield-blocked-off");
+    } else if (adBlocking != "running") {
+      // No count to show: nothing is blocking ads here.
+      this.doc.l10n.setAttributes(
+        blocked,
+        `kyberfox-shield-blocked-${adBlocking}`
+      );
     } else if (
       !WebExtensionPolicy.getByID(UBLOCK_ID) ||
       // uBlock's badge reads "!" for a page loaded before it was ready.
@@ -571,7 +621,7 @@ class ShieldButton {
     panel.querySelector(".kyber-shield-controls-heading").hidden =
       !state.perControl;
 
-    let step = nextFixStep(state);
+    let step = nextFixStep(state, adBlocking);
     let textId = "done";
     if (step) {
       textId = state.perControl ? step : "private";
@@ -591,8 +641,10 @@ class ShieldButton {
       let row = query(control);
       row.hidden = !state.perControl;
       row.pressed = state[control];
-      // A control cannot be switched on while the whole shield is off.
-      row.disabled = !state.enabled;
+      // A control cannot be switched on while the whole shield is off, and
+      // the ads switch does nothing while the ad blocker is stopped.
+      row.disabled =
+        !state.enabled || (control == "ads" && adBlocking == "stopped");
     }
     query("cookies-note").hidden = !(
       state.perControl &&
@@ -601,6 +653,8 @@ class ShieldButton {
     );
     query("private-note").hidden = state.perControl;
     query("error").hidden = !this.unreachable;
+    query("blocker-note").hidden = adBlocking != "stopped";
+    query("addons").hidden = adBlocking != "stopped";
     query("advanced").hidden = !WebExtensionPolicy.getByID(UBLOCK_ID);
   }
 

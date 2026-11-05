@@ -62,7 +62,7 @@ the compatibility cost of each Strict option.
 
 - [ ] Explanations and compatibility notes under each option on the Privacy page (planned)
 - [ ] A short "this site is broken" path from the shield panel to the fixes (in review; "Site not working?" in the Kyber Shields panel)
-- [ ] Kyber Shields panel: Crystal Guard icon with on, partial and off states, status card, blocked count, site permissions and settings rows (in progress; [docs/kyber-shields.md](docs/kyber-shields.md)); the Fox Guard emblem is a placeholder until the vector asset exists
+- [x] Kyber Shields panel: Crystal Guard icon with on, partial, off and attention states, Fox Guard artwork, status card, blocked count, site permissions and settings rows ([docs/kyber-shields.md](docs/kyber-shields.md))
 - [ ] Self-hosted SearXNG as a search engine: document the steps with Firefox's "Add search engine" in Settings, then decide whether the welcome page needs a field for it (planned)
 - [ ] Network audit rerun on every major Firefox update, compared with the last one (planned)
 - [ ] Mirror the security lists on project hosting instead of Mozilla's (research; the spec asks to revisit this before any public release)

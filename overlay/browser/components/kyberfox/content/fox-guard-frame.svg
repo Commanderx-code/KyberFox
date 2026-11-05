@@ -1,9 +1,0 @@
-<!-- This Source Code Form is subject to the terms of the Mozilla Public
-   - License, v. 2.0. If a copy of the MPL was not distributed with this
-   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
-<!-- Placeholder frame for the Fox Guard emblem: a shield outline that the
-   - panel fills with the theme's fox. Not the final emblem. -->
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none">
-  <path d="M48 6 12 18.5v24.8C12 65 27 80.2 48 90c21-9.8 36-25 36-46.7V18.5L48 6z" stroke="context-fill" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M48 13.5 18.5 23.7v19.6c0 18.3 12.4 31.3 29.5 39.9 17.1-8.6 29.5-21.6 29.5-39.9V23.7L48 13.5z" stroke="context-stroke" stroke-width="1.5" stroke-linejoin="round" stroke-opacity="0.8"/>
-</svg>
