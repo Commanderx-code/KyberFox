@@ -31,10 +31,11 @@ kyberfox-workspace-delete-message =
     }
 kyberfox-workspace-delete-confirm = Delete workspace
 
-## Shield. The button sits right of the address bar and opens a per-site panel.
+## Shield. The button sits at the right end of the address bar and opens a
+## per-site panel.
 
 kyberfox-shield-button =
-    .label = Shield
+    .aria-label = Shield
     .tooltiptext = Site protection
 kyberfox-shield-panel =
     .aria-label = Site protection
