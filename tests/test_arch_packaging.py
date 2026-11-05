@@ -40,7 +40,7 @@ def test_basics():
 def test_local_source_checksums():
     sums = re.findall(r"'([0-9a-f]{64})'", PKGBUILD)
     actual = [hashlib.sha256((ARCH / n).read_bytes()).hexdigest()
-              for n in ("kyberfox.desktop", "LICENSE")]
+              for n in ("kyberfox.desktop", "kyberfox-private.desktop", "LICENSE")]
     assert sums == actual
     assert "sha256sums=('SKIP'" in PKGBUILD
 
@@ -63,6 +63,25 @@ def test_desktop_file():
     assert "Desktop Action new-private-window" in cp
 
 
+def test_private_desktop_file():
+    """Private windows use the window class kyberfox-private; this entry gives
+    that class the private logo and a name, and stays out of the app menu."""
+    cp = configparser.ConfigParser(interpolation=None, delimiters=("=",))
+    cp.optionxform = str
+    cp.read(ARCH / "kyberfox-private.desktop", encoding="utf-8")
+    entry = cp["Desktop Entry"]
+    assert entry["Type"] == "Application"
+    assert entry["Name"] == "Kyber Fox Private Browsing"
+    assert entry["Exec"] == "/usr/bin/kyberfox --private-window %u"
+    assert entry["Icon"] == "kyberfox-private"
+    assert entry["StartupWMClass"] == "kyberfox-private"
+    assert entry["NoDisplay"] == "true"
+    for script in (ARCH / "release-package.sh", ROOT / ".github/workflows/smoke-arch.yml"):
+        assert "packaging/arch/kyberfox-private.desktop" in script.read_text() or \
+            '"$here/kyberfox-private.desktop"' in script.read_text(), script
+    assert "'kyberfox-private.desktop'" in PKGBUILD
+
+
 def test_package_layout():
     package = PKGBUILD[PKGBUILD.index("package()"):]
     assert 'cp -a "$srcdir/kyberfox" "$pkgdir/opt/kyberfox"' in package
@@ -73,12 +92,19 @@ def test_package_layout():
         r'install -Dm644 "\$srcdir/LICENSE" "\$pkgdir/usr/share/licenses/\$pkgname/LICENSE"', package)
     assert desktop and license_
     assert "/usr/share/icons/hicolor/${size}x${size}/apps/kyberfox.png" in package
+    assert re.search(
+        r'install -Dm644 "\$srcdir/kyberfox-private\.desktop" '
+        r'"\$pkgdir/usr/share/applications/kyberfox-private\.desktop"', package)
+    assert "/opt/kyberfox/browser/chrome/icons/default/kyberfox-private${size}.png" in package
+    assert "/usr/share/icons/hicolor/${size}x${size}/apps/kyberfox-private.png" in package
 
 
 def test_smoke_checks_what_the_package_installs():
     smoke = (ROOT / ".github/workflows/smoke-arch.yml").read_text(encoding="utf-8")
     for path in ("/usr/bin/kyberfox", "/opt/kyberfox/kyberfox-bin",
                  "/usr/share/applications/kyberfox.desktop",
+                 "/usr/share/applications/kyberfox-private.desktop",
+                 "/usr/share/icons/hicolor/128x128/apps/kyberfox-private.png",
                  "/usr/share/licenses/kyberfox/LICENSE"):
         assert path in smoke
     assert "Kyber Fox $ver-$rel" in smoke

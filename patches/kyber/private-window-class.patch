@@ -1,0 +1,15 @@
+diff --git a/browser/base/content/browser-init.js b/browser/base/content/browser-init.js
+--- a/browser/base/content/browser-init.js
++++ b/browser/base/content/browser-init.js
+@@ -112,6 +112,11 @@
+   onBeforeInitialXULLayout() {
+     this._setupFirstContentWindowPaintPromise();
+ 
++    // Kyber Fox: private windows get their own window class and icon on Linux.
++    ChromeUtils.importESModule(
++      "resource:///modules/KyberPrivateWindow.sys.mjs"
++    ).KyberPrivateWindow.setup(window);
++
+     if (!window.toolbar.visible) {
+       document.documentElement.setAttribute("popup-window", true);
+     }

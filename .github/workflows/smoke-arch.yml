@@ -70,7 +70,7 @@ jobs:
           fi
           build=/home/builder/pkg
           mkdir -p "$build"
-          cp packaging/arch/PKGBUILD packaging/arch/kyberfox.desktop packaging/arch/LICENSE "$build/"
+          cp packaging/arch/PKGBUILD packaging/arch/kyberfox.desktop packaging/arch/kyberfox-private.desktop packaging/arch/LICENSE "$build/"
           cp "${tarballs[0]}" "$build/kyberfox-$ver-$rel.linux-x86_64.tar.xz"
           chown -R builder: "$build"
           cd "$build"
@@ -103,8 +103,11 @@ jobs:
           test -x /opt/kyberfox/kyberfox-bin
           test -f /usr/share/applications/kyberfox.desktop
           test -e /usr/share/icons/hicolor/128x128/apps/kyberfox.png
+          test -f /usr/share/applications/kyberfox-private.desktop
+          test -e /usr/share/icons/hicolor/128x128/apps/kyberfox-private.png
           test -f /usr/share/licenses/kyberfox/LICENSE
           desktop-file-validate /usr/share/applications/kyberfox.desktop
+          desktop-file-validate /usr/share/applications/kyberfox-private.desktop
           pacman -Qi kyberfox
           # Bundled libraries sit next to the binary; anything else must be installed.
           export LD_LIBRARY_PATH=/opt/kyberfox

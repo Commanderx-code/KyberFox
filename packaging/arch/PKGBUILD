@@ -35,10 +35,12 @@ options=('!strip' '!debug' '!emptydirs')
 source=(
   "kyberfox-${pkgver}-${pkgrel}.linux-x86_64.tar.xz::${url}/releases/download/v${pkgver}-${pkgrel}/kyberfox-${pkgver}-${pkgrel}.linux-x86_64.tar.xz"
   'kyberfox.desktop'
+  'kyberfox-private.desktop'
   'LICENSE'
 )
 sha256sums=('SKIP'
             'b8864c8eb34043b0ad29104c1453a410597f636a4eb1b42893119416da02db36'
+            '1579544c679d8aa38a610733b9f0a96b7a7f491eae2ddddbeecd53695fe6fea6'
             '66a3107d5ad6a058aab753eaac2047ccb2ed0e39465dd0fe5844da3e300d5172')
 
 package() {
@@ -49,6 +51,9 @@ package() {
   ln -s /opt/kyberfox/kyberfox "$pkgdir/usr/bin/kyberfox"
 
   install -Dm644 "$srcdir/kyberfox.desktop" "$pkgdir/usr/share/applications/kyberfox.desktop"
+  # Private windows use the window class kyberfox-private; this entry gives
+  # them the private logo and their own place in the taskbar.
+  install -Dm644 "$srcdir/kyberfox-private.desktop" "$pkgdir/usr/share/applications/kyberfox-private.desktop"
   install -Dm644 "$srcdir/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
   # The tarball ships the sizes it has; link whichever of these exist.
@@ -58,6 +63,11 @@ package() {
     if [[ -f $pkgdir$icon ]]; then
       install -d "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps"
       ln -s "$icon" "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/kyberfox.png"
+    fi
+    icon="/opt/kyberfox/browser/chrome/icons/default/kyberfox-private${size}.png"
+    if [[ -f $pkgdir$icon ]]; then
+      install -d "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps"
+      ln -s "$icon" "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/kyberfox-private.png"
     fi
   done
 }
