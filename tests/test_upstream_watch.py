@@ -1,5 +1,6 @@
 import dataclasses
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -320,6 +321,14 @@ def test_bump_keeps_librewolf_mismatch_fatal(tmp_path, monkeypatch):
         uw.bump(pins, tmp_path, "159.0.1")
 
 
+def _change_ublock(text):
+    """Changes the [ublock] version, whatever pins.toml pins."""
+    head, sep, tail = text.partition("[ublock]")
+    changed = re.sub(r'version = "[^"]+"', 'version = "0.0.1"', tail, count=1)
+    assert changed != tail
+    return head + sep + changed
+
+
 def _branch_files(tmp_path, monkeypatch, branch_edit):
     base = tmp_path / "base.toml"
     base.write_bytes(REAL_PINS.read_bytes())
@@ -338,7 +347,7 @@ def test_verify_branch_accepts_exact_bump(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("edit", [
-    lambda t: t.replace('version = "1.75.2"', 'version = "1.75.3"'),  # bump plus a [ublock] change
+    lambda t: _change_ublock(t),  # bump plus a [ublock] change
     lambda t: t + 'extra = "1"\n',
     lambda t: t.replace('version = "159.0.1"', 'version = "150.0"'),  # downgrade
 ])
@@ -351,6 +360,6 @@ def test_verify_branch_rejects_other_content(tmp_path, monkeypatch, edit, capsys
 
 def test_verify_branch_rejects_ublock_only_branch(tmp_path, monkeypatch):
     base, branch = _branch_files(tmp_path, monkeypatch, lambda t: t)
-    branch.write_bytes(base.read_bytes().replace(b'version = "1.75.2"', b'version = "1.75.3"'))
+    branch.write_text(_change_ublock(base.read_text()))
     with pytest.raises(ValueError):
         uw.verify_branch(base, branch, "159.0.1")
