@@ -3,7 +3,7 @@
 `PKGBUILD` packages the prebuilt Linux tarball (release workflow output) into
 `/opt/kyberfox`, with `/usr/bin/kyberfox`, a desktop file, hicolor icons and the
 MPL-2.0 license text. `kyberfox-private.desktop` and the `kyberfox-private`
-icons give private windows (window class `kyberfox-private`) the private logo
+icons give private windows (window class `kyberfox-private`) the mask icon
 and their own taskbar entry; that entry is hidden from the app menu. `publish-repo.sh` signs a built package and adds it to the
 pacman repo directory. See `docs/arch-repo.md` for the signing key and hosting
 steps.

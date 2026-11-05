@@ -5,7 +5,7 @@
 /**
  * Private windows on Linux get their own window class (the Wayland app ID
  * and the X11 WM_CLASS), kyberfox-private. The desktop then groups them apart
- * from normal windows and shows the private logo that
+ * from normal windows and shows the mask icon that
  * kyberfox-private.desktop names. Without that desktop file the desktop has
  * no icon for the class, so the window keeps the default one.
  *
