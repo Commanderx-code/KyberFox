@@ -39,7 +39,13 @@ broken theme or custom file cannot lock you out.
 Firefox's own themes picker in Add-ons and themes is off
 (`browser.aboutaddons.novaThemesPickerEnabled` is false in `kyberfox.cfg`): its
 themes install from addons.mozilla.org and compete with the Kyber Fox picker.
-The built-in Light, Dark and Alpenglow themes still show there.
+Firefox's built-in Light, Dark and Alpenglow themes are hidden there too
+(`patches/kyber/hide-builtin-themes.patch`). They stay installed, because the
+profile manager uses Light and Dark; their manifests set `hidden`, which the
+patch allows in the theme manifest schema for built-in add-ons. Add-ons and
+themes then lists only the default theme and themes the user installed. A
+profile that had one of the three active keeps it until the default theme is
+enabled again from that page.
 
 ## Skins
 

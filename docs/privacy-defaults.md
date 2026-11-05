@@ -50,7 +50,7 @@ file never forces a preset value back on startup.
 
 | Area | Kyber Fox default | Stock Firefox | Why | Compatibility cost | Verified |
 |---|---|---|---|---|---|
-| Ads and trackers | Bundled uBlock Origin, on; per-site shield | No ad blocker | Blocking out of the box was a release 1 goal | A blocked script can break a site; the shield turns blocking off per site | test |
+| Ads and trackers | Bundled uBlock Origin, on, also in private windows (once per profile; can be turned off in Add-ons and themes); per-site shield | No ad blocker | Blocking out of the box was a release 1 goal | A blocked script can break a site; the shield turns blocking off per site | test |
 | Third-party cookies | All blocked (`cookieBehavior` 1) | Partitioned (5) | Stronger than partitioning | Some embedded logins and payment widgets fail; turn the shield down for the site | test |
 | HTTPS-Only (`dom.security.https_only_mode`) | On, including local addresses (`upgrade_local`) | HTTPS-First | No silent plain-HTTP loads | An HTTP-only homelab service shows an error page with a "Continue to HTTP site" button; lasting exceptions are added under Settings, HTTPS-Only Mode, Manage Exceptions | test |
 | Telemetry, health report, studies (Normandy, Shield studies) | Off and locked | On | Project goal | None | test (telemetry); cfg only (studies) |
@@ -73,13 +73,16 @@ file never forces a preset value back on startup.
 | Startup | Restore the previous session | Home page | Owner's choice | None | test |
 | Search engine | DuckDuckGo; Brave Search, Startpage, Ecosia and Google offered; Bing hidden; Wikipedia removed | Google | Privacy-respecting default, user's pick on the welcome page | None | test |
 | Add-on blocklist | On | On | It is a security list | One request to Mozilla's Remote Settings | test |
+| Safe Browsing (`browser.safebrowsing.*`) | On: Google's malware, phishing and unwanted-software lists are downloaded and checked locally; only a hash prefix of a matching URL is sent to confirm a hit; remote download checks off | On, remote download checks on | Warns about known malware and phishing sites without sending each visited URL | Lists download only in builds that carry the Safe Browsing key; a rare false warning can be clicked through | audit |
 | System add-on updates (`extensions.systemAddon.update.enabled`) | Off and locked | On | The check to `aus5.mozilla.org` sends the OS version, and Kyber Fox updates its built-in add-ons with its own releases | None | cfg only |
 
 ## Connections that stay
 
 Kyber Fox keeps some connections to Mozilla because they protect the user:
 certificate revocation lists, the add-on blocklist and Remote Settings
-security data. uBlock Origin fetches its filter lists from its own hosts. The
+security data, which also carries Firefox's tracker lists. Safe Browsing
+downloads Google's malware and phishing lists from
+`safebrowsing.googleapis.com`. uBlock Origin fetches its filter lists from its own hosts. The
 full list, with what each host is for, is [network-audit.md](network-audit.md).
 
 ## Not decided yet

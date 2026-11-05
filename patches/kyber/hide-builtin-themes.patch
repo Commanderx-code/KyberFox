@@ -1,0 +1,94 @@
+# Firefox's built-in Light, Dark and Alpenglow themes stay installed (the profile
+# manager uses Light and Dark) but are hidden from Add-ons and themes; Kyber Fox
+# themes live in Settings. Theme manifests may now say "hidden", which, as for
+# extensions, only privileged (built-in) add-ons can use. The version bump
+# reinstalls the themes in existing profiles.
+diff --git a/browser/themes/BuiltInThemeConfig.sys.mjs b/browser/themes/BuiltInThemeConfig.sys.mjs
+index 39d16addcf..53cc034201 100644
+--- a/browser/themes/BuiltInThemeConfig.sys.mjs
++++ b/browser/themes/BuiltInThemeConfig.sys.mjs
+@@ -24,7 +24,7 @@ export const BuiltInThemeConfig = new Map([
+   [
+     "firefox-compact-light@mozilla.org",
+     {
+-      version: "1.3.4",
++      version: "1.3.4.1",
+       path: "resource://builtin-themes/light/",
+       inApp: true,
+     },
+@@ -32,7 +32,7 @@ export const BuiltInThemeConfig = new Map([
+   [
+     "firefox-compact-dark@mozilla.org",
+     {
+-      version: "1.3.4",
++      version: "1.3.4.1",
+       path: "resource://builtin-themes/dark/",
+       inApp: true,
+     },
+@@ -40,7 +40,7 @@ export const BuiltInThemeConfig = new Map([
+   [
+     "firefox-alpenglow@mozilla.org",
+     {
+-      version: "1.5.3",
++      version: "1.5.3.1",
+       path: "resource://builtin-themes/alpenglow/",
+     },
+   ],
+diff --git a/browser/themes/addons/alpenglow/manifest.json b/browser/themes/addons/alpenglow/manifest.json
+index 8c6a8f8f05..c8b27db7b7 100644
+--- a/browser/themes/addons/alpenglow/manifest.json
++++ b/browser/themes/addons/alpenglow/manifest.json
+@@ -10,7 +10,8 @@
+   "name": "Firefox Alpenglow",
+   "description": "Use a colorful appearance for buttons, menus, and windows.",
+   "author": "Mozilla",
+-  "version": "1.5.3",
++  "version": "1.5.3.1",
++  "hidden": true,
+   "icons": { "32": "icon.svg" },
+ 
+   "theme": {
+diff --git a/browser/themes/addons/dark/manifest.json b/browser/themes/addons/dark/manifest.json
+index 974229eeef..1f2126543a 100644
+--- a/browser/themes/addons/dark/manifest.json
++++ b/browser/themes/addons/dark/manifest.json
+@@ -10,7 +10,8 @@
+   "name": "Dark",
+   "description": "A theme with a dark color scheme.",
+   "author": "Mozilla",
+-  "version": "1.3.4",
++  "version": "1.3.4.1",
++  "hidden": true,
+ 
+   "icons": { "32": "icon.svg" },
+   "theme": {
+diff --git a/browser/themes/addons/light/manifest.json b/browser/themes/addons/light/manifest.json
+index 40a317b950..add02055ef 100644
+--- a/browser/themes/addons/light/manifest.json
++++ b/browser/themes/addons/light/manifest.json
+@@ -10,7 +10,8 @@
+   "name": "Light",
+   "description": "A theme with a light color scheme.",
+   "author": "Mozilla",
+-  "version": "1.3.4",
++  "version": "1.3.4.1",
++  "hidden": true,
+ 
+   "icons": { "32": "icon.svg" },
+   "theme": {
+diff --git a/toolkit/components/extensions/schemas/theme.json b/toolkit/components/extensions/schemas/theme.json
+index c818902a1a..4f84370ee4 100644
+--- a/toolkit/components/extensions/schemas/theme.json
++++ b/toolkit/components/extensions/schemas/theme.json
+@@ -415,6 +415,11 @@
+             "patternProperties": {
+               "^[1-9]\\d*$": { "type": "string" }
+             }
++          },
++          "hidden": {
++            "type": "boolean",
++            "optional": true,
++            "default": false
+           }
+         }
+       },

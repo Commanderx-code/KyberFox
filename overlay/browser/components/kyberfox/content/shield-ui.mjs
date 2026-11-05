@@ -15,6 +15,10 @@ const { KyberShield } = ChromeUtils.importESModule(
   "resource:///modules/KyberShield.sys.mjs"
 );
 
+const { KyberUBlockBridge } = ChromeUtils.importESModule(
+  "resource:///modules/KyberUBlockBridge.sys.mjs"
+);
+
 const { CustomizableUI } = ChromeUtils.importESModule(
   "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs"
 );
@@ -141,6 +145,7 @@ class ShieldButton {
     // gBrowser does not exist yet while module scripts run, and the widget's
     // node can be built that early.
     await this.delayedStartup();
+    KyberUBlockBridge.allowInPrivateOnce().catch(console.error);
     let { gBrowser } = this.win;
 
     // Earlier versions put the shield in the toolbar; drop that placement.

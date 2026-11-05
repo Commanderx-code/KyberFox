@@ -1034,9 +1034,10 @@ add_task(async function test_attention_when_ad_blocking_stops() {
   BrowserTestUtils.removeTab(tab);
 });
 
-// The ad blocker does not run in private windows unless it is allowed there.
-// The panel says so instead of showing "None on this page", and it is the
-// default, so it is not an attention state.
+// The ad blocker runs in private windows by default, but its private access
+// can be turned off in Add-ons and themes (as the add-on installed by these
+// tests is). The panel then says so instead of showing "None on this page";
+// it is a choice, so it is not an attention state.
 add_task(async function test_private_window_says_ad_blocking_is_off() {
   let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
   await BrowserTestUtils.openNewForegroundTab(win.gBrowser, url("example.com"));
@@ -1045,6 +1046,36 @@ add_task(async function test_private_window_says_ad_blocking_is_off() {
   let blocked = p.querySelector("#kyber-shield-blocked");
   await win.document.l10n.translateElements([blocked]);
   Assert.equal(blocked.textContent, "Off in private windows");
+  await closePanel(win);
+  await BrowserTestUtils.closeWindow(win);
+});
+
+// With private access, a private window counts what the ad blocker blocked.
+add_task(async function test_private_window_counts_when_allowed() {
+  const { ExtensionPermissions } = ChromeUtils.importESModule(
+    "resource://gre/modules/ExtensionPermissions.sys.mjs"
+  );
+  const perms = {
+    permissions: ["internal:privateBrowsingAllowed"],
+    origins: [],
+  };
+  await ExtensionPermissions.add(UBLOCK_ID, perms);
+  await gAddon.reload();
+  registerCleanupFunction(async () => {
+    await ExtensionPermissions.remove(UBLOCK_ID, perms);
+  });
+  await TestUtils.waitForCondition(
+    () => WebExtensionPolicy.getByID(UBLOCK_ID)?.privateBrowsingAllowed,
+    "the ad blocker runs in private windows"
+  );
+
+  let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
+  await BrowserTestUtils.openNewForegroundTab(win.gBrowser, url("example.com"));
+  await TestUtils.waitForCondition(() => shieldState(win) == "on", "on");
+  let p = await openPanel(win);
+  let blocked = p.querySelector("#kyber-shield-blocked");
+  await win.document.l10n.translateElements([blocked]);
+  Assert.notEqual(blocked.textContent, "Off in private windows");
   await closePanel(win);
   await BrowserTestUtils.closeWindow(win);
 });

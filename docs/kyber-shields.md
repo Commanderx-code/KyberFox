@@ -41,7 +41,7 @@ Every row shows real data or opens a real control:
 | Row | Source | Action |
 | --- | --- | --- |
 | Status card: "Protection on", "Some protections off", "Ad blocking is not running", "Protection off" | `KyberShield.state()` | the switch is the site's master switch (`setEnabled`), reloads the page |
-| Ads and trackers blocked | uBlock Origin's badge count for the page in the tab (`KyberShield.blockedCount`) | none; reads "Off for this site" while ad blocking is off there, "Not running" while the ad blocker is turned off or removed, "Off in private windows" in a private window the ad blocker is not allowed in, and "Not counted" when its badge is not a number |
+| Ads and trackers blocked | uBlock Origin's badge count for the page in the tab (`KyberShield.blockedCount`) | none; reads "Off for this site" while ad blocking is off there, "Not running" while the ad blocker is turned off or removed, "Off in private windows" in a private window after the ad blocker's private-window access was turned off in Add-ons and themes (it is on by default; see [shield-ublock-control.md](shield-ublock-control.md)), and "Not counted" when its badge is not a number |
 | On this site: Ads and trackers, Fingerprinting, Cookies | `KyberShield.state()` | `setControl`, reloads the page. The ads switch is disabled while the ad blocker is not running |
 | Turn it on in Add-ons and themes | shown only while the ad blocker is turned off or removed, with a note that ads are not blocked | opens Add-ons and themes |
 | Site not working? | `KyberShield.state()` | folds out steps that turn protections off for the site one at a time, reloading after each: cookie protection first (it also lifts Firefox's tracker blocking there and fixes most sign-in, video and checkout problems), then ad blocking (skipped while the ad blocker is not running), then the whole shield; "Turn everything back on" restores the site. A private window has the one session-only step |
@@ -82,9 +82,5 @@ decoration: screen readers skip it, and the title names the panel.
 - A per-site breakdown of what was blocked. uBlock's logger has it but no
   stable API for the panel.
 - Firefox's own blocked-tracker count in the same row.
-- Ad blocking in private windows. The bundled ad blocker is not allowed in
-  private windows, as with any add-on by default, so only Firefox's own
-  tracking protection works there; the panel says "Off in private windows".
-  Allowing it there by default is a separate decision.
 - A Shields page in Settings. The panel's Privacy settings row opens the
   Privacy pane, where the presets and Firefox's own protections live.
