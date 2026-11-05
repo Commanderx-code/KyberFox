@@ -99,7 +99,9 @@ Sync page in Settings, so that is the only import path.
   import your own CSS file there.
 - **Shield:** the shield icon at the right end of the address bar sets the
   protections for the current site.
-- **Workspaces:** the dropdown at the left of the tab bar.
+- **Workspaces:** the button at the left of the tab bar, with the Kyber Fox
+  logo and the current workspace's name. Private windows have no workspaces
+  and show the logo and name only.
 
 ## If a theme breaks the window
 

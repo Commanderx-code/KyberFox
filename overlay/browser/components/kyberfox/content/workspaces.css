@@ -16,11 +16,18 @@
   > .toolbarbutton-icon {
     -moz-context-properties: fill;
     fill: var(--kyber-workspace-color);
+    /* Toolbar button padding would leave the 12px dot no room to draw. */
+    padding: 0;
     width: 12px;
     height: 12px;
   }
 
+  /* Toolbars in icon mode hide button text; this button always shows the
+     workspace name. */
   > .toolbarbutton-text {
+    display: flex !important;
+    align-items: center;
+    padding-block: 0;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;

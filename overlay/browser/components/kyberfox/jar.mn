@@ -20,6 +20,7 @@ browser.jar:
   content/kyberfox/fox-guard-frame.svg (content/fox-guard-frame.svg)
   content/kyberfox/shield.css (content/shield.css)
   content/kyberfox/shield-ui.mjs (content/shield-ui.mjs)
+  content/kyberfox/workspace-dot.svg (content/workspace-dot.svg)
   content/kyberfox/workspaces-ui.mjs (content/workspaces-ui.mjs)
   content/kyberfox/workspaces.css (content/workspaces.css)
   content/kyberfox/fonts/ (content/fonts/**)

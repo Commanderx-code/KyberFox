@@ -173,13 +173,48 @@ add_task(function test_selected_tab_rounded() {
   Assert.greater(blurRadius(getComputedStyle(bg).boxShadow), 0, "it glows");
 });
 
-add_task(function test_tabstrip_logo() {
+// The logo at the start of the tab strip is the workspace switcher: one
+// button with the logo, the workspace dot, its name and the chevron. Private
+// windows have no workspaces and keep the plain logo and name.
+add_task(async function test_tabstrip_logo_is_the_workspace_switcher() {
   KyberThemes.apply("kyber-crystal");
   let items = document.querySelector("#TabsToolbar .toolbar-items");
-  let before = getComputedStyle(items, "::before");
-  Assert.ok(before.content.includes("Kyber Fox"), "name at the tab strip");
-  Assert.ok(before.backgroundImage.includes("icon32.png"), "the real logo");
+  let btn = document.getElementById("kyber-workspace-button");
+  Assert.equal(
+    getComputedStyle(items, "::before").content,
+    "none",
+    "no separate name in a normal window"
+  );
+  let logo = getComputedStyle(btn, "::before");
+  Assert.ok(logo.backgroundImage.includes("icon32.png"), "the real logo");
+  Assert.ok(btn.label, `the button shows the workspace name (${btn.label})`);
+  let shown = BrowserTestUtils.waitForEvent(
+    document,
+    "popupshown",
+    false,
+    e => e.target.id == "kyber-workspace-panel"
+  );
+  EventUtils.synthesizeMouse(btn, 6, 6, {});
+  let { target: panel } = await shown;
+  let hidden = BrowserTestUtils.waitForEvent(panel, "popuphidden");
+  panel.hidePopup();
+  await hidden;
+
+  let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
+  let before = win.getComputedStyle(
+    win.document.querySelector("#TabsToolbar .toolbar-items"),
+    "::before"
+  );
+  Assert.ok(before.content.includes("Kyber Fox"), "a private window keeps the name");
+  Assert.ok(before.backgroundImage.includes("icon32.png"), "and the logo");
+  await BrowserTestUtils.closeWindow(win);
+
   KyberThemes.apply("ember");
+  Assert.equal(
+    getComputedStyle(btn, "::before").content,
+    "none",
+    "no logo in the button under ember"
+  );
   Assert.equal(
     getComputedStyle(items, "::before").content,
     "none",
