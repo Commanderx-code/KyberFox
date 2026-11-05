@@ -55,3 +55,14 @@
     --message-bar-border-color: transparent;
   }
 }
+
+/* Privacy: the "What Strict changes" rows. A row's description inherits the
+ * fieldset's font size, so the text is set small and the title kept at the
+ * normal size. */
+#kyberfoxStrictChanges moz-fieldset {
+  font-size: var(--font-size-small);
+
+  &::part(label) {
+    font-size: var(--font-size-root);
+  }
+}

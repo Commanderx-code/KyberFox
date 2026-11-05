@@ -254,3 +254,59 @@ add_task(async function test_strict_warns_about_timezone() {
   );
   closePane();
 });
+
+// "What Strict changes": one row per Strict option, saying what it does and
+// what it can break, and whether it is on now, read from its prefs.
+const STRICT_ROWS = [
+  "kyberfoxStrictFingerprinting",
+  "kyberfoxStrictClearOnQuit",
+  "kyberfoxStrictWebGL",
+  "kyberfoxStrictWebRTC",
+];
+
+async function rowText(doc, id) {
+  let row = doc.getElementById(id);
+  await row.updateComplete;
+  await doc.l10n.translateElements([row]);
+  return `${row.label} | ${row.description}`;
+}
+
+add_task(async function test_strict_options_explained() {
+  freshProfile();
+  KyberPrivacyPresets.apply("standard");
+  let doc = await openPane();
+  await TestUtils.waitForCondition(
+    () => STRICT_ROWS.every(id => doc.getElementById(id)),
+    "every Strict option has a row"
+  );
+  Assert.ok(
+    doc.getElementById("kyberfoxStrictChanges").checkVisibility(),
+    "the list shows under Standard too, before choosing"
+  );
+  for (let id of STRICT_ROWS) {
+    let text = await rowText(doc, id);
+    Assert.stringContains(text, "Can break:", `${id} says what it costs`);
+    Assert.stringContains(text, "Off now", `${id} is off under Standard`);
+  }
+
+  KyberPrivacyPresets.apply("strict");
+  for (let id of STRICT_ROWS) {
+    await TestUtils.waitForCondition(
+      async () => (await rowText(doc, id)).includes("On now"),
+      `${id} reads on under Strict`
+    );
+  }
+
+  // A single option changed by hand shows in its own row.
+  Services.prefs.setBoolPref("webgl.disabled", false);
+  await TestUtils.waitForCondition(
+    async () => (await rowText(doc, "kyberfoxStrictWebGL")).includes("Off now"),
+    "the WebGL row follows its pref"
+  );
+  Assert.stringContains(
+    await rowText(doc, "kyberfoxStrictFingerprinting"),
+    "On now",
+    "the others stay on"
+  );
+  closePane();
+});
