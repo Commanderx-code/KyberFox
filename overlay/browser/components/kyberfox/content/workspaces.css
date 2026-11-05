@@ -71,6 +71,28 @@
   min-width: 220px;
 }
 
+.kyber-workspace-body {
+  padding-block: 4px;
+}
+
+#kyber-workspace-list,
+.kyber-workspace-footer {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The dot and the footer icons share one 16px column, so every label starts
+   at the same x. */
+#kyber-workspace-panel .subviewbutton > .toolbarbutton-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.kyber-workspace-footer > .subviewbutton > .toolbarbutton-icon {
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
 .kyber-workspace-item {
   &[aria-checked="true"] {
     font-weight: 600;
@@ -89,7 +111,7 @@
 
 /* Space, not a separator line, between the workspace list and its buttons. */
 .kyber-workspace-footer {
-  margin-block-start: 8px;
+  margin-block-start: 6px;
 }
 
 .kyber-workspace-rename-input {

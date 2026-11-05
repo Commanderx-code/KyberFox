@@ -25,6 +25,11 @@ const HTML_NS = "http://www.w3.org/1999/xhtml";
 // Fill is supplied by CSS (context-fill), so one icon serves every color.
 // A shipped file: context-fill does not reach data: images.
 const DOT_ICON = "chrome://kyberfox/content/workspace-dot.svg";
+const FOOTER_ICONS = {
+  new: "chrome://global/skin/icons/plus.svg",
+  rename: "chrome://global/skin/icons/edit.svg",
+  delete: "chrome://global/skin/icons/delete.svg",
+};
 
 const PALETTE = [
   "#5b8def",
@@ -128,11 +133,10 @@ class WorkspaceButton {
 
     let list = this.doc.createXULElement("vbox");
     list.id = "kyber-workspace-list";
-    list.className = "panel-subview-body";
     this.list = list;
 
     let footer = this.doc.createXULElement("vbox");
-    footer.className = "panel-subview-body kyber-workspace-footer";
+    footer.className = "kyber-workspace-footer";
     footer.append(
       this.footerButton("new"),
       this.footerButton("rename"),
@@ -140,6 +144,8 @@ class WorkspaceButton {
     );
 
     // A panel lays its children out in a row; stack the list and the footer.
+    // Plain boxes, not panel-subview-body: that class stretches and scrolls,
+    // which cut the last button off.
     let body = this.doc.createXULElement("vbox");
     body.className = "kyber-workspace-body";
     body.append(list, footer);
@@ -181,6 +187,7 @@ class WorkspaceButton {
     let btn = this.doc.createXULElement("toolbarbutton");
     btn.id = `kyber-workspace-${kind}`;
     btn.className = "subviewbutton";
+    btn.setAttribute("image", FOOTER_ICONS[kind]);
     btn.setAttribute("data-l10n-id", `kyberfox-workspace-${kind}`);
     return btn;
   }
