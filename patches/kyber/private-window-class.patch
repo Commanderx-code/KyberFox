@@ -13,3 +13,22 @@ diff --git a/browser/base/content/browser-init.js b/browser/base/content/browser
      if (!window.toolbar.visible) {
        document.documentElement.setAttribute("popup-window", true);
      }
+diff --git a/browser/installer/package-manifest.in b/browser/installer/package-manifest.in
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -233,6 +233,15 @@
+ @RESPATH@/browser/chrome/icons/default/default48.png
+ @RESPATH@/browser/chrome/icons/default/default64.png
+ @RESPATH@/browser/chrome/icons/default/default128.png
++; Kyber Fox: the private window icon (window class kyberfox-private).
++@RESPATH@/browser/chrome/icons/default/kyberfox-private16.png
++@RESPATH@/browser/chrome/icons/default/kyberfox-private22.png
++@RESPATH@/browser/chrome/icons/default/kyberfox-private24.png
++@RESPATH@/browser/chrome/icons/default/kyberfox-private32.png
++@RESPATH@/browser/chrome/icons/default/kyberfox-private48.png
++@RESPATH@/browser/chrome/icons/default/kyberfox-private64.png
++@RESPATH@/browser/chrome/icons/default/kyberfox-private128.png
++@RESPATH@/browser/chrome/icons/default/kyberfox-private256.png
+ #endif
+ 
+ ; [DevTools Startup Files]

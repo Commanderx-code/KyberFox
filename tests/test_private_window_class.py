@@ -41,3 +41,12 @@ def test_private_icons_are_square_pngs():
         out = subprocess.run(["magick", "identify", "-format", "%w %h", str(p)],
                              capture_output=True, text=True, check=True).stdout
         assert out == f"{size} {size}", p
+
+
+def test_private_icons_are_in_the_package_manifest():
+    """Firefox's package-manifest.in names each icon; unlisted files are left
+    out of the tarball, so the patch lists them too."""
+    patch = (ROOT / "patches/kyber/private-window-class.patch").read_text()
+    assert "browser/installer/package-manifest.in" in patch
+    for size in SIZES:
+        assert f"+@RESPATH@/browser/chrome/icons/default/kyberfox-private{size}.png" in patch, size
