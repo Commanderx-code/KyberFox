@@ -97,8 +97,8 @@ Sync page in Settings, so that is the only import path.
   computer when the build carries a Safe Browsing key.
 - **Themes:** Settings, Appearance. Click a theme to apply it. You can also
   import your own CSS file there.
-- **Shield:** the shield button in the toolbar sets the protections for the
-  current site.
+- **Shield:** the shield icon at the right end of the address bar sets the
+  protections for the current site.
 - **Workspaces:** the dropdown at the left of the tab bar.
 
 ## If a theme breaks the window

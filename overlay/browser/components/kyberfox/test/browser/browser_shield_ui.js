@@ -153,7 +153,7 @@ add_task(async function test_badge_updates_on_navigation() {
     "the badge is uBlock's count"
   );
   Assert.equal(
-    button().querySelector(".toolbarbutton-badge").textContent,
+    button().querySelector(".kyber-shield-badge").textContent,
     button().getAttribute("badge"),
     "the badge element shows the count"
   );
@@ -165,7 +165,7 @@ add_task(async function test_badge_updates_on_navigation() {
   );
   await BrowserTestUtils.browserLoaded(browser);
   await waitForBadge(null);
-  Assert.ok(!button().disabled, "the button stays usable on this page");
+  Assert.ok(!button().hasAttribute("disabled"), "the button stays usable on this page");
 
   // Switching tabs shows the count of the tab switched to.
   let other = await BrowserTestUtils.openNewForegroundTab(
@@ -377,7 +377,7 @@ add_task(async function test_disabled_state_on_about_pages() {
     "about:robots"
   );
   await TestUtils.waitForCondition(
-    () => button().disabled,
+    () => button().hasAttribute("disabled"),
     "the button is disabled on about:robots"
   );
   Assert.ok(!button().hasAttribute("badge"), "and carries no badge");
@@ -390,7 +390,7 @@ add_task(async function test_disabled_state_on_about_pages() {
   BrowserTestUtils.startLoadingURIString(tab.linkedBrowser, url("example.com"));
   await BrowserTestUtils.browserLoaded(tab.linkedBrowser);
   await TestUtils.waitForCondition(
-    () => !button().disabled,
+    () => !button().hasAttribute("disabled"),
     "the button is enabled again on a web page"
   );
   BrowserTestUtils.removeTab(tab);
@@ -480,3 +480,49 @@ add_task(async function test_advanced_settings_opens_dashboard() {
   BrowserTestUtils.removeTab(dashTab);
   BrowserTestUtils.removeTab(tab);
 });
+
+// Like Brave's Shields icon: inside the right end of the address bar, after
+// the bookmark star, larger than the other address bar icons, and usable from
+// the keyboard.
+add_task(async function test_shield_sits_in_address_bar() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let node = button();
+  Assert.ok(node.closest("#page-action-buttons"), "inside the address bar");
+  let right = node.getBoundingClientRect().right;
+  for (let sibling of node.parentNode.children) {
+    if (sibling != node && sibling.checkVisibility()) {
+      Assert.lessOrEqual(
+        sibling.getBoundingClientRect().right,
+        right,
+        `${sibling.id} sits left of the shield`
+      );
+    }
+  }
+  Assert.ok(
+    !CustomizableUI.getPlacementOfWidget("kyber-shield-button"),
+    "not a toolbar button"
+  );
+  Assert.ok(node.checkVisibility(), "visible on a web page");
+  let icon = node.querySelector(".kyber-shield-icon").getBoundingClientRect();
+  let star = document
+    .getElementById("star-button")
+    .getBoundingClientRect();
+  Assert.greaterOrEqual(Math.round(icon.width), 20, `icon is 20px (${icon.width})`);
+  Assert.greater(icon.width, star.width, "larger than the bookmark star");
+
+  node.focus();
+  let shown = BrowserTestUtils.waitForEvent(
+    document,
+    "popupshown",
+    false,
+    e => e.target.id == "kyber-shield-panel"
+  );
+  EventUtils.synthesizeKey("KEY_Enter");
+  await shown;
+  await closePanel();
+  BrowserTestUtils.removeTab(tab);
+});
+

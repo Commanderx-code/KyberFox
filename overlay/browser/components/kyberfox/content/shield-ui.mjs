@@ -3,17 +3,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * The shield button right of the address bar and the panel it opens. The
- * engine is KyberShield.sys.mjs; this file only draws and drives it. Loaded
- * as a module script by browser.xhtml, once per browser window.
+ * The shield button at the right end of the address bar, where Brave puts its
+ * Shields icon, and the panel it opens. The engine is KyberShield.sys.mjs;
+ * this file only draws and drives it. Loaded as a module script by
+ * browser.xhtml, once per browser window.
  */
 
 const { KyberShield } = ChromeUtils.importESModule(
   "resource:///modules/KyberShield.sys.mjs"
 );
 
-const { KyberShieldWidget } = ChromeUtils.importESModule(
-  "resource:///modules/KyberShieldWidget.sys.mjs"
+const { CustomizableUI } = ChromeUtils.importESModule(
+  "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs"
 );
 
 const CONTROLS = ["ads", "fingerprinting", "cookies"];
@@ -39,19 +40,40 @@ class ShieldButton {
     this.unloaded = false;
   }
 
-  /**
-   * Wires the button node CustomizableUI built for this window. Called from
-   * the widget's onCreated, which may run before or after delayed startup.
-   *
-   * @param {XULElement} node
-   */
-  attach(node) {
-    if (this.button == node) {
-      return;
-    }
-    this.button = node;
-    node.addEventListener("command", () => this.openPanel());
+  /** Builds the button as the last icon in the address bar. */
+  build() {
+    let box = this.doc.createXULElement("hbox");
+    box.id = "kyber-shield-button";
+    box.className = "urlbar-page-action";
+    box.setAttribute("role", "button");
+    box.setAttribute("tabindex", "-1");
+    box.setAttribute("data-l10n-id", "kyberfox-shield-button");
+    let icon = this.doc.createXULElement("image");
+    icon.className = "urlbar-icon kyber-shield-icon";
+    let badge = this.doc.createXULElement("label");
+    badge.className = "kyber-shield-badge";
+    box.append(icon, badge);
+    this.doc.getElementById("page-action-buttons").append(box);
+
+    box.addEventListener("click", event => {
+      if (event.button == 0) {
+        this.activate();
+      }
+    });
+    box.addEventListener("keypress", event => {
+      if (event.key == "Enter" || event.key == " ") {
+        event.preventDefault();
+        this.activate();
+      }
+    });
+    this.button = box;
     this.start().catch(console.error);
+  }
+
+  activate() {
+    if (!this.button.hasAttribute("disabled")) {
+      this.openPanel();
+    }
   }
 
   async start() {
@@ -64,6 +86,10 @@ class ShieldButton {
     await this.delayedStartup();
     let { gBrowser } = this.win;
 
+    // Earlier versions put the shield in the toolbar; drop that placement.
+    if (CustomizableUI.getPlacementOfWidget("kyber-shield-button")) {
+      CustomizableUI.removeWidgetFromArea("kyber-shield-button");
+    }
     this.refreshButton();
 
     let listener = {
@@ -148,7 +174,7 @@ class ShieldButton {
       state.supported && state.enabled
         ? KyberShield.blockedCount(this.browser)
         : "";
-    this.button.disabled = !state.supported;
+    this.button.toggleAttribute("disabled", !state.supported);
     this.button.toggleAttribute(
       "shield-off",
       state.supported && !state.enabled
@@ -158,6 +184,7 @@ class ShieldButton {
     } else {
       this.button.removeAttribute("badge");
     }
+    this.button.querySelector(".kyber-shield-badge").textContent = count || "";
   }
 
   /** The base domain the shield keys its settings by, for display. */
@@ -246,7 +273,10 @@ class ShieldButton {
   }
 
   openPanel() {
-    this.ensurePanel().openPopup(this.button, "after_end");
+    this.ensurePanel().openPopup(
+      this.button.querySelector(".kyber-shield-icon"),
+      "bottomright topright"
+    );
   }
 
   /** Redraws the panel from the stored state of the selected tab. */
@@ -310,6 +340,4 @@ class ShieldButton {
 // The module is evaluated by a script element, so `window` is the browser
 // window itself.
 const shield = new ShieldButton(window);
-// CustomizableUI builds this window's button later and hands it over here.
-window.kyberShieldAttach = node => shield.attach(node);
-KyberShieldWidget.ensure();
+shield.build();

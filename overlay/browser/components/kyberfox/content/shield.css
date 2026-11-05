@@ -2,13 +2,51 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* The shield button, right of the address bar, and its panel. */
+/* The shield button, at the right end of the address bar, and its panel. */
 
 #kyber-shield-button {
-  list-style-image: url("chrome://kyberfox/content/shield.svg");
+  position: relative;
+  /* Page actions added later are appended after it; stay at the right end. */
+  order: 1;
 
-  &[shield-off] {
+  > .kyber-shield-icon {
+    list-style-image: url("chrome://kyberfox/content/shield.svg");
+    width: 20px;
+    height: 20px;
+    fill: var(--kf-accent, currentColor);
+    fill-opacity: 1;
+  }
+
+  &[shield-off] > .kyber-shield-icon {
     list-style-image: url("chrome://kyberfox/content/shield-off.svg");
+    fill: currentColor;
+    fill-opacity: var(--urlbar-icon-fill-opacity);
+  }
+
+  &[disabled] > .kyber-shield-icon {
+    fill: currentColor;
+    opacity: 0.4;
+  }
+
+  > .kyber-shield-badge {
+    display: none;
+    position: absolute;
+    inset-block-end: 1px;
+    inset-inline-end: 0;
+    margin: 0;
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+    padding: 0 3px;
+    border-radius: var(--border-radius-small);
+    background-color: var(--kf-accent, var(--color-accent-primary));
+    color: var(--kf-bg, #fff);
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+    font-size: 9px;
+    font-weight: var(--font-weight-bold);
+    line-height: 1.3;
+  }
+
+  &[badge] > .kyber-shield-badge {
+    display: block;
   }
 }
 
