@@ -18,6 +18,8 @@ prefs = [
 
 ["browser_kyber_look.js"]
 
+["browser_search_user_engine.js"]
+
 ["browser_sync_hidden.js"]
 
 ["browser_passwords_removed.js"]

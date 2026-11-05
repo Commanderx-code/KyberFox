@@ -36,6 +36,11 @@ Reset (the button, or Ctrl+Shift+Alt+T in any browser window) removes the
 sheet and the file and applies Ember. In safe mode `init()` does nothing, so a
 broken theme or custom file cannot lock you out.
 
+Firefox's own themes picker in Add-ons and themes is off
+(`browser.aboutaddons.novaThemesPickerEnabled` is false in `kyberfox.cfg`): its
+themes install from addons.mozilla.org and compete with the Kyber Fox picker.
+The built-in Light, Dark and Alpenglow themes still show there.
+
 ## Skins
 
 `themes/skins/<id>/` holds full skins (kind `skin`): GX-style (`gx`) and

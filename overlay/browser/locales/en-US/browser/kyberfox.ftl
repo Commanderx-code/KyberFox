@@ -124,6 +124,37 @@ kyberfox-privacy-preset-custom =
     .description = You changed an option a preset controls. Pick a preset to set them all again.
 kyberfox-privacy-preset-strict-warning =
     .message = Strict turns on resist fingerprinting. Some sites may break, and the clock reads as UTC.
+kyberfox-strict-changes-header =
+    .label = What Strict changes
+
+## Each row ends with whether the option is on now.
+## Variables:
+##   $state (string) - "on" or "off".
+
+kyberfox-strict-fingerprinting =
+    .label = Resist fingerprinting
+    .description = { $state ->
+        [on] On now.
+       *[off] Off now.
+    } Makes Kyber Fox look like other copies of it: the clock reads as UTC, the page area is rounded to common sizes with margins, and sites learn less about your system. Can break: times shown on sites, some games and captchas.
+kyberfox-strict-clearonquit =
+    .label = Clear cookies and site data when you quit
+    .description = { $state ->
+        [on] On now.
+       *[off] Off now.
+    } Each time you close Kyber Fox, cookies, site data and the cache are deleted. History and downloads stay. Can break: you are signed out of every site after a restart.
+kyberfox-strict-webgl =
+    .label = Block WebGL
+    .description = { $state ->
+        [on] On now.
+       *[off] Off now.
+    } Sites can no longer draw with your graphics hardware, which also gives them a detailed fingerprint. Can break: 3D graphics, 3D maps, some games and design tools.
+kyberfox-strict-webrtc =
+    .label = Limit what calls reveal about your network
+    .description = { $state ->
+        [on] On now.
+       *[off] Off now.
+    } Video and voice calls in the browser offer only your default network address. Can break: calls may connect more slowly or through a relay server, and calls between devices on the same network may fail.
 
 ## DRM. The checkbox sits in the Digital Rights Management (DRM) group.
 

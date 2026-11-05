@@ -139,10 +139,20 @@ class WorkspaceButton {
       this.footerButton("delete")
     );
 
-    panel.append(list, footer);
-    panel.addEventListener("popupshowing", () => this.renderRows());
+    // A panel lays its children out in a row; stack the list and the footer.
+    let body = this.doc.createXULElement("vbox");
+    body.className = "kyber-workspace-body";
+    body.append(list, footer);
+    panel.append(body);
+    panel.addEventListener("popupshowing", () => {
+      this.renderRows();
+      this.button.setAttribute("open", "true");
+      this.button.setAttribute("aria-expanded", "true");
+    });
     panel.addEventListener("popuphidden", () => {
       this.editing = false;
+      this.button.removeAttribute("open");
+      this.button.setAttribute("aria-expanded", "false");
     });
     panel.addEventListener("command", e => this.onCommand(e));
     panel.setAttribute("context", "kyber-workspace-context");
