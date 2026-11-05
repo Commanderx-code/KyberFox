@@ -144,6 +144,7 @@ Browser tests and release validation are described in the
 | [DRM and streaming](docs/streaming.md) | [Network audit](docs/network-audit.md) | [Security reporting](SECURITY.md) |
 | [Project glossary](GLOSSARY.md) | [Vision](docs/vision.md) | [Upstream security updates](docs/upstream-updates.md) |
 | [Roadmap](ROADMAP.md) | [Branding and assets](docs/branding.md) | [Release process](docs/release.md) |
+| [Your own SearXNG search](docs/searxng.md) | [Kyber Shields](docs/kyber-shields.md) | |
 
 <details>
 <summary>Packaging, update infrastructure, and licensing</summary>
