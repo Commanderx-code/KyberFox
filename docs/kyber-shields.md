@@ -37,6 +37,7 @@ Every row shows real data or opens a real control:
 | Status card: "Protection on", "Some protections off", "Protection off" | `KyberShield.state()` | the switch is the site's master switch (`setEnabled`), reloads the page |
 | Ads and trackers blocked | uBlock Origin's badge count for the page in the tab (`KyberShield.blockedCount`) | none; reads "Off for this site" while ad blocking is off there and "Not counted" when uBlock is missing or its badge is not a number |
 | On this site: Ads and trackers, Fingerprinting, Cookies | `KyberShield.state()` | `setControl`, reloads the page |
+| Site not working? | `KyberShield.state()` | folds out steps that turn protections off for the site one at a time, reloading after each: cookie protection first (it also lifts Firefox's tracker blocking there and fixes most sign-in, video and checkout problems), then ad blocking, then the whole shield; "Turn everything back on" restores the site. A private window has the one session-only step |
 | Site permissions | Firefox's `SitePermissions.getAllForBrowser`, counting the allowed ones | opens Firefox's Page Info window on its Permissions tab |
 | Privacy settings | none | opens Settings, Privacy |
 | Advanced blocking settings | shown only while uBlock Origin is installed | opens uBlock's dashboard |
@@ -81,4 +82,3 @@ Drop it in as `fox-guard.svg` and replace the two background layers of
 - A per-site breakdown of what was blocked. uBlock's logger has it but no
   stable API for the panel.
 - Firefox's own blocked-tracker count in the same row.
-- A "this site is broken" path (on the roadmap, Phase 2).

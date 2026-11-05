@@ -744,7 +744,7 @@ add_task(async function test_keyboard_moves_through_the_panel() {
     "keyboard opening focuses the master switch"
   );
   let order = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 8; i++) {
     EventUtils.synthesizeKey("KEY_Tab");
     let el = document.activeElement;
     order.push(el.closest("[id^=kyber-shield-]")?.id);
@@ -755,6 +755,7 @@ add_task(async function test_keyboard_moves_through_the_panel() {
       "kyber-shield-ads",
       "kyber-shield-fingerprinting",
       "kyber-shield-cookies",
+      "kyber-shield-fix",
       "kyber-shield-permissions",
       "kyber-shield-settings",
       "kyber-shield-advanced",
@@ -826,4 +827,100 @@ add_task(async function test_blocked_row_ignores_a_badge_that_is_not_a_count() {
   KyberShield.blockedCount = original;
   await closePanel();
   BrowserTestUtils.removeTab(tab);
+});
+
+// "Site not working?" turns protections off one step at a time, the least
+// protection lost first, and can turn everything back on.
+function fixPart(id, win = window) {
+  return win.document.getElementById(`kyber-shield-fix-${id}`);
+}
+
+async function fixText(win = window) {
+  await win.document.l10n.translateElements([fixPart("text", win)]);
+  return fixPart("text", win).textContent;
+}
+
+async function clickFix(part, browser, win = window) {
+  let reloaded = BrowserTestUtils.browserLoaded(browser);
+  EventUtils.synthesizeMouseAtCenter(fixPart(part, win), {}, win);
+  await reloaded;
+}
+
+add_task(async function test_site_not_working_steps() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let browser = tab.linkedBrowser;
+  let p = await openPanel();
+  let row = p.querySelector("#kyber-shield-fix");
+  Assert.ok(!fixPart("section").checkVisibility(), "folded at first");
+  Assert.equal(row.getAttribute("aria-expanded"), "false");
+  EventUtils.synthesizeMouseAtCenter(row, {});
+  Assert.ok(fixPart("section").checkVisibility(), "the steps show");
+  Assert.equal(row.getAttribute("aria-expanded"), "true");
+  Assert.ok(!fixPart("reset").checkVisibility(), "nothing to undo yet");
+  Assert.stringContains(await fixText(), "cookie", "cookies come first");
+
+  await clickFix("next", browser);
+  let state = KyberShield.state(browser);
+  Assert.ok(!state.cookies && state.ads && state.enabled, "only cookies off");
+  Assert.equal(p.state, "open", "the panel stays open");
+  Assert.ok(fixPart("section").checkVisibility(), "and the steps stay open");
+  Assert.stringContains(await fixText(), "Ad blocking", "then ad blocking");
+  Assert.ok(fixPart("reset").checkVisibility(), "now it can be undone");
+
+  await clickFix("next", browser);
+  state = KyberShield.state(browser);
+  Assert.ok(!state.ads && state.enabled, "ads off too");
+  Assert.stringContains(await fixText(), "every protection", "then all");
+
+  await clickFix("next", browser);
+  Assert.ok(!KyberShield.state(browser).enabled, "the site is off");
+  Assert.ok(!fixPart("next").checkVisibility(), "no step is left");
+  Assert.stringContains(await fixText(), "Every protection is off");
+
+  await clickFix("reset", browser);
+  state = KyberShield.state(browser);
+  Assert.ok(
+    state.enabled && state.ads && state.fingerprinting && state.cookies,
+    "everything is back on"
+  );
+  Assert.deepEqual(
+    Services.perms.getAllWithTypePrefix("kyber-shield"),
+    [],
+    "and nothing is stored"
+  );
+  await closePanel();
+  p = await openPanel();
+  Assert.ok(!fixPart("section").checkVisibility(), "folded again next time");
+  await closePanel();
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_site_not_working_in_a_private_window() {
+  let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    win.gBrowser,
+    url("example.com")
+  );
+  let browser = tab.linkedBrowser;
+  let p = await openPanel(win);
+  EventUtils.synthesizeMouseAtCenter(
+    p.querySelector("#kyber-shield-fix"),
+    {},
+    win
+  );
+  Assert.stringContains(
+    await fixText(win),
+    "private window",
+    "one step, for this window"
+  );
+  await clickFix("next", browser, win);
+  Assert.ok(!KyberShield.state(browser).enabled, "off for the session");
+  await clickFix("reset", browser, win);
+  Assert.ok(KyberShield.state(browser).enabled, "back on");
+  await closePanel(win);
+  BrowserTestUtils.removeTab(tab);
+  await BrowserTestUtils.closeWindow(win);
 });

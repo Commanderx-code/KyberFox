@@ -61,7 +61,7 @@ has a stated reason and a verification status, and the Settings page explains
 the compatibility cost of each Strict option.
 
 - [x] Explanations and compatibility notes under each option on the Privacy page: a "What Strict changes" list under the presets says what each Strict option does, what it can break, and whether it is on now
-- [ ] A short "this site is broken" path from the shield panel to the fixes (planned)
+- [x] A short "this site is broken" path from the shield panel to the fixes: "Site not working?" in the Kyber Shields panel
 - [ ] Kyber Shields panel: Crystal Guard icon with on, partial and off states, status card, blocked count, site permissions and settings rows (in progress; [docs/kyber-shields.md](docs/kyber-shields.md)); the Fox Guard emblem is a placeholder until the vector asset exists
 - [ ] Self-hosted SearXNG as a search engine (in review; [docs/searxng.md](docs/searxng.md) and a browser test; no welcome page field for now)
 - [ ] Network audit rerun on every major Firefox update, compared with the last one (planned)

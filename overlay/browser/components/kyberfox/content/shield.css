@@ -263,6 +263,30 @@
   }
 }
 
+.kyber-shield-link[aria-expanded="true"] > .kyber-shield-chevron {
+  transform: rotate(90deg);
+}
+
+#kyber-shield-fix-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-small);
+  margin: 0 var(--space-small) var(--space-small);
+  padding: var(--space-medium);
+  border-radius: var(--border-radius-medium);
+  background-color: color-mix(in srgb, var(--kyber-shield-a) 8%, transparent);
+}
+
+#kyber-shield-fix-text {
+  margin: 0;
+}
+
+.kyber-shield-fix-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-small);
+}
+
 .kyber-shield-note {
   margin: 0;
   color: var(--text-color-deemphasized);
