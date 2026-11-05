@@ -26,7 +26,7 @@ useradd --create-home builder
 
 build=/home/builder/pkg
 mkdir -p "$build" "$out"
-cp "$here/PKGBUILD" "$here/kyberfox.desktop" "$here/LICENSE" "$build/"
+cp "$here/PKGBUILD" "$here/kyberfox.desktop" "$here/kyberfox-private.desktop" "$here/LICENSE" "$build/"
 cp "$tarball" "$build/kyberfox-$ver-$rel.linux-x86_64.tar.xz"
 chown -R builder: "$build"
 

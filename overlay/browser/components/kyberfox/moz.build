@@ -14,6 +14,7 @@ BROWSER_CHROME_MANIFESTS += ["test/browser/browser.toml"]
 EXTRA_JS_MODULES += [
     "KyberAddons.sys.mjs",
     "KyberPrivacyPresets.sys.mjs",
+    "KyberPrivateWindow.sys.mjs",
     "KyberShield.sys.mjs",
     "KyberThemes.sys.mjs",
     "KyberUBlockBridge.sys.mjs",

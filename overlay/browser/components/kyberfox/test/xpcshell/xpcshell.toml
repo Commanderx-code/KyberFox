@@ -6,3 +6,6 @@ firefox-appdir = "browser"
 kyberfox-appdir = "browser"
 
 ["test_defaults.js"]
+
+["test_private_window_class.js"]
+run-if = ["os == 'linux'"]

@@ -65,6 +65,8 @@ trap 'rm -rf "$tmp"' EXIT
 
 for size in 16 22 24 32 48 64 128 256; do
   square "PNG32:$dir/default$size.png" "$size"
+  # Linux private windows (window class kyberfox-private).
+  square "PNG32:$dir/kyberfox-private$size.png" "$size" "$src/private-browsing"
 done
 square "PNG32:$dir/VisualElements_150.png" 300
 square "PNG32:$dir/VisualElements_70.png" 142

@@ -31,6 +31,9 @@ prefs = [
 
 ["browser_privacy_presets.js"]
 
+["browser_private_window_class.js"]
+run-if = ["os == 'linux'"]
+
 ["browser_settings_lines.js"]
 
 ["browser_settings_menu.js"]

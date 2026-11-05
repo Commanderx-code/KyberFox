@@ -28,6 +28,17 @@ The private logo replaces Firefox's own mask on the private window page, the
 private tab and the private window button, through
 `patches/kyber/private-browsing-logo.patch`.
 
+On Linux, private windows have their own window class, `kyberfox-private`
+(the Wayland app ID and the X11 `WM_CLASS`), set by
+`KyberPrivateWindow.sys.mjs` through `patches/kyber/private-window-class.patch`.
+The desktop shows them as a separate app in the taskbar with the private logo.
+The Arch package installs `kyberfox-private.desktop` (hidden from the app
+menu) and the `kyberfox-private` icons for that; the browser ships them as
+`chrome/icons/default/kyberfox-private<size>.png`. Without the desktop file
+the class is not set, so a plain tarball install keeps one icon for all
+windows. `browser.privateWindowSeparation.enabled`, Firefox's switch for the
+same thing on the Windows taskbar, turns it off.
+
 To change the logo, replace the files in `branding/` and run
 `sh tools/make-logos.sh` from the repository root. Sizes with a render are used
 as they are; other sizes are scaled down from the 1254 px original.

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Kyber Fox Private Browsing
+GenericName=Web Browser
+Comment=Browse the web in a private window
+Exec=/usr/bin/kyberfox --private-window %u
+Icon=kyberfox-private
+Terminal=false
+StartupNotify=true
+StartupWMClass=kyberfox-private
+Categories=Network;WebBrowser;
+NoDisplay=true
