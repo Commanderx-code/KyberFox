@@ -33,6 +33,26 @@
     text-overflow: ellipsis;
   }
 
+  /* One highlight for the whole button: Firefox paints the hover, open and
+     focus states on the icon and the text separately. */
+  > :is(.toolbarbutton-icon, .toolbarbutton-text) {
+    background-color: transparent !important;
+    outline: none !important;
+  }
+
+  &:not([disabled]):hover {
+    background-color: var(--toolbarbutton-background-color-hover);
+  }
+
+  &:not([disabled]):is(:hover:active, [open]) {
+    background-color: var(--toolbarbutton-background-color-active);
+  }
+
+  &:focus-visible {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-outline-inset);
+  }
+
   /* The chevron stays visible when a long name is cut off. */
   &::after {
     content: "\25BE";

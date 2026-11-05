@@ -430,3 +430,47 @@ add_task(async function test_dot_is_drawn_in_the_workspace_color() {
     );
   });
 });
+
+// The hover and open highlight covers the whole button (logo, dot, name and
+// chevron), not just the name.
+add_task(async function test_open_highlight_covers_the_button() {
+  await withWorkspaces(async win => {
+    let btn = button(win);
+    await TestUtils.waitForCondition(() => btn.label, "the button is drawn");
+    await openPanel(win);
+    Assert.equal(btn.getAttribute("aria-expanded"), "true", "marked open");
+    let transparent = "rgba(0, 0, 0, 0)";
+    Assert.notEqual(
+      win.getComputedStyle(btn).backgroundColor,
+      transparent,
+      "the button itself is highlighted"
+    );
+    for (let part of [".toolbarbutton-icon", ".toolbarbutton-text"]) {
+      Assert.equal(
+        win.getComputedStyle(btn.querySelector(part)).backgroundColor,
+        transparent,
+        `${part} carries no highlight of its own`
+      );
+    }
+    await closePanel(win);
+    Assert.equal(btn.getAttribute("aria-expanded"), "false", "and closed");
+  });
+});
+
+// The New, Rename and Delete buttons sit under the list, at full width.
+add_task(async function test_footer_sits_under_the_list() {
+  await withWorkspaces(async win => {
+    let p = await openPanel(win);
+    let list = p.querySelector("#kyber-workspace-list").getBoundingClientRect();
+    let footer = p
+      .querySelector(".kyber-workspace-footer")
+      .getBoundingClientRect();
+    Assert.greaterOrEqual(footer.top, list.bottom, "the footer is below");
+    Assert.equal(
+      Math.round(footer.width),
+      Math.round(list.width),
+      "and as wide as the list"
+    );
+    await closePanel(win);
+  });
+});
