@@ -77,10 +77,9 @@
     width: 420px !important;
     height: 48px !important;
     margin: 0 !important;
-    background: url("chrome://branding/content/firefox-wordmark.svg") center / contain no-repeat !important;
-    mask: none !important;
-    -moz-context-properties: fill;
-    fill: var(--newtab-wordmark-color);
+    /* KYBER in the wordmark color, FOX (from 60%) in the theme's colors. */
+    background: linear-gradient(90deg, var(--newtab-wordmark-color) 60%, var(--kyber-wordmark-a) 60%, var(--kyber-wordmark-b)) !important;
+    mask: url("chrome://kyberfox/content/themes/kyber/wordmark-mask.svg") center / contain no-repeat !important;
   }
 
   @media (max-width: 699px) {

@@ -13,6 +13,7 @@
     "kyber/pages.css",
     "kyber/settings.css"
   ],
+  "logo": "kyber/foxes/fox-crimson.png",
   "prefs": {},
   "vars": {
     "--kf-bg": "#050102",

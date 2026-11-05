@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* The Kyber window: a glowing outline on the address bar, rounded tabs with
- * the selected tab outlined, the logo and name at the start of the tab strip,
- * and a PRIVATE pill in private windows. Colors come from the theme's
+ * the selected tab outlined, the theme's fox and the name at the start of the
+ * tab strip, and a PRIVATE pill in private windows. Colors come from the theme's
  * colors.css; --kyber-glow-strength scales every glow ("Reduce glow" sets it
  * to 0.25). A user sheet, so declarations need !important. */
 
@@ -62,7 +62,7 @@
     width: 20px;
     height: 20px;
     margin-inline-end: 6px;
-    background: url("chrome://branding/content/icon32.png") no-repeat center / 20px 20px;
+    background: var(--kyber-fox) no-repeat center / 20px 20px;
   }
 
   /* Private windows have no workspaces: the logo and the name stand alone. */
@@ -74,11 +74,16 @@
     flex-shrink: 0;
     padding-inline: 28px 14px;
     min-height: 24px;
-    background: url("chrome://branding/content/icon32.png") no-repeat 4px center / 20px 20px;
+    background: var(--kyber-fox) no-repeat 4px center / 20px 20px;
     font-weight: 600;
     color: var(--kf-fg);
     border-inline-end: 1px solid var(--kf-border);
     margin-inline-end: 6px;
+  }
+
+  /* Fox Guard in the Kyber Shields panel, in the theme's colors. */
+  .kyber-shield-emblem {
+    content: var(--kyber-fox-guard) !important;
   }
 
   /* The bookmarks toolbar's "place your bookmarks here" strip is hidden; a

@@ -186,7 +186,7 @@ add_task(async function test_tabstrip_logo_is_the_workspace_switcher() {
     "no separate name in a normal window"
   );
   let logo = getComputedStyle(btn, "::before");
-  Assert.ok(logo.backgroundImage.includes("icon32.png"), "the real logo");
+  Assert.ok(logo.backgroundImage.includes("fox-crystal.png"), "the real logo");
   Assert.ok(btn.label, `the button shows the workspace name (${btn.label})`);
   let shown = BrowserTestUtils.waitForEvent(
     document,
@@ -206,8 +206,16 @@ add_task(async function test_tabstrip_logo_is_the_workspace_switcher() {
     "::before"
   );
   Assert.ok(before.content.includes("Kyber Fox"), "a private window keeps the name");
-  Assert.ok(before.backgroundImage.includes("icon32.png"), "and the logo");
+  Assert.ok(before.backgroundImage.includes("fox-crystal.png"), "and the logo");
   await BrowserTestUtils.closeWindow(win);
+
+  KyberThemes.apply("kyber-crimson");
+  Assert.ok(
+    getComputedStyle(btn, "::before").backgroundImage.includes(
+      "fox-crimson.png"
+    ),
+    "the logo takes the theme's colors"
+  );
 
   KyberThemes.apply("ember");
   Assert.equal(
@@ -291,6 +299,23 @@ add_task(async function test_newtab_big_fox() {
     Assert.greaterOrEqual(width, 160, "a big fox");
     Assert.stringContains(image, "fox-crystal.png");
   });
+});
+
+// The wordmark is the mask filled with the theme's colors: the text color
+// for KYBER and the theme's two wordmark colors for FOX.
+add_task(async function test_newtab_wordmark_takes_the_theme_colors() {
+  KyberThemes.apply("kyber-crimson");
+  await withNewTab(async browser => {
+    let [mask, image] = await SpecialPowers.spawn(browser, [], () => {
+      let mark = content.document.querySelector(".logo-and-wordmark .wordmark");
+      let style = content.getComputedStyle(mark);
+      return [style.maskImage, style.backgroundImage];
+    });
+    Assert.stringContains(mask, "wordmark-mask.svg");
+    Assert.stringContains(image, "rgb(250, 2, 38)", "FOX in Crimson red");
+    Assert.ok(!image.includes("firefox-wordmark.svg"), "not the fixed colors");
+  });
+  KyberThemes.apply("kyber-crystal");
 });
 
 add_task(async function test_newtab_assets_load() {

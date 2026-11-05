@@ -166,3 +166,11 @@ for kind in fox private; do
   gradient_map "$tmp/$kind.png" "$tmp/$kind-azure.png" "#020B2A" "#0B3FD6" "#3AA0F5" "#EEF3FA"
   magick "$tmp/$kind-azure.png" -strip "PNG32:$foxes/$kind-azure.png"
 done
+
+# Fox Guard, the Kyber Shields panel artwork, recolored the same way. Kyber
+# Crystal uses the original in overlay/.
+guard=overlay/browser/components/kyberfox/content/fox-guard.png
+gradient_map "$guard" "$tmp/guard-crimson.png" "#120006" "#7A0012" "#FF1A3C" "#FFD6DE"
+magick "$tmp/guard-crimson.png" -strip "PNG32:$foxes/fox-guard-crimson.png"
+gradient_map "$guard" "$tmp/guard-azure.png" "#020B2A" "#0B3FD6" "#3AA0F5" "#EEF3FA"
+magick "$tmp/guard-azure.png" -strip "PNG32:$foxes/fox-guard-azure.png"

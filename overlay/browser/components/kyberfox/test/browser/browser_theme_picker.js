@@ -173,6 +173,39 @@ add_task(async function test_picker_shows_all_with_previews() {
   closePane();
 });
 
+// Each Kyber card shows the theme's own fox; other themes keep the logo.
+add_task(async function test_cards_show_the_theme_fox() {
+  let doc = await openPane();
+  let logos = Object.fromEntries(
+    cards(doc).map(c => [
+      c.dataset.themeId,
+      c.querySelector(".preview-logo").getAttribute("src"),
+    ])
+  );
+  for (let [id, name] of [
+    ["kyber-crystal", "crystal"],
+    ["kyber-crimson", "crimson"],
+    ["kyber-azure", "azure"],
+  ]) {
+    Assert.equal(
+      logos[id],
+      `chrome://kyberfox/content/themes/kyber/foxes/fox-${name}.png`,
+      `${id} shows its fox`
+    );
+  }
+  Assert.equal(
+    logos.ember,
+    "chrome://branding/content/icon32.png",
+    "a theme without its own fox keeps the logo"
+  );
+  let img = cards(doc)
+    .find(c => c.dataset.themeId == "kyber-crimson")
+    .querySelector(".preview-logo");
+  await TestUtils.waitForCondition(() => img.complete, "the fox loads");
+  Assert.greater(img.naturalWidth, 0, "the fox ships in the build");
+  closePane();
+});
+
 add_task(async function test_disabled_card_is_grayed() {
   Services.prefs.setStringPref("kyberfox.theme.disabled", "starry");
   let doc = await openPane();

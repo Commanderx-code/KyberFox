@@ -944,6 +944,45 @@ add_task(async function test_fox_guard_artwork_loads() {
   BrowserTestUtils.removeTab(tab);
 });
 
+// Under a Kyber theme the artwork takes the theme's colors: the original for
+// Kyber Crystal, a recolor for Crimson and Azure.
+add_task(async function test_fox_guard_follows_the_theme() {
+  const { KyberThemes } = ChromeUtils.importESModule(
+    "resource:///modules/KyberThemes.sys.mjs"
+  );
+  let saved = KyberThemes.current();
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  try {
+    for (let [id, file] of [
+      ["kyber-crystal", "chrome://kyberfox/content/fox-guard.png"],
+      ["kyber-crimson", "themes/kyber/foxes/fox-guard-crimson.png"],
+      ["kyber-azure", "themes/kyber/foxes/fox-guard-azure.png"],
+    ]) {
+      KyberThemes.apply(id);
+      let p = await openPanel();
+      let emblem = p.querySelector(".kyber-shield-emblem");
+      let content = getComputedStyle(emblem).content;
+      Assert.stringContains(content, file, `${id} shows its Fox Guard`);
+      let img = new Image();
+      img.src = content.match(/url\("([^"]+)"\)/)[1];
+      await img.decode();
+      Assert.greater(img.naturalWidth, 0, `${id} artwork ships in the build`);
+      Assert.equal(
+        emblem.getBoundingClientRect().width,
+        88,
+        "the artwork keeps its size"
+      );
+      await closePanel();
+    }
+  } finally {
+    KyberThemes.apply(saved);
+    BrowserTestUtils.removeTab(tab);
+  }
+});
+
 // The attention icon: the site's ad protection is on, but the ad blocker is
 // turned off or removed, so nothing blocks ads. Only that, not a site with
 // a protection switched off.

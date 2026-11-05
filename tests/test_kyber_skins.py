@@ -117,6 +117,61 @@ def test_colors_css_points_at_existing_files():
     for i in KYBER:
         css = (SKINS / i / "colors.css").read_text(encoding="utf-8")
         urls = re.findall(r'url\("chrome://kyberfox/content/themes/([^"]+)"\)', css)
-        assert len(urls) == 3, i
+        assert len(urls) in (3, 4), i
         for rel in urls:
             assert (THEMES / rel).is_file(), (i, rel)
+
+
+THEME = {"kyber-crystal": "crystal", "kyber-crimson": "crimson", "kyber-azure": "azure"}
+GUARD = "overlay/browser/components/kyberfox/content/fox-guard.png"
+
+
+def test_theme_cards_show_the_theme_fox():
+    """The Settings theme card previews each Kyber theme with its own fox."""
+    for i in KYBER:
+        logo = manifest(i)["logo"]
+        assert logo == f"kyber/foxes/fox-{THEME[i]}.png", i
+        assert (THEMES / logo).is_file(), i
+
+
+def test_fox_guard_follows_the_theme():
+    """Crystal keeps the original Fox Guard; Crimson and Azure get recolors."""
+    for i in KYBER:
+        css = (SKINS / i / "colors.css").read_text(encoding="utf-8")
+        found = re.search(r'--kyber-fox-guard:\s*url\("chrome://kyberfox/content/([^"]+)"\);', css)
+        assert found, i
+        rel = found.group(1)
+        if i == "kyber-crystal":
+            assert rel == "fox-guard.png"
+        else:
+            assert rel == f"themes/kyber/foxes/fox-guard-{THEME[i]}.png", i
+            assert (THEMES / rel.removeprefix("themes/")).is_file(), i
+
+
+def test_fox_guard_recolors_match_the_original_size():
+    import shutil
+    import subprocess
+
+    import pytest
+
+    if not shutil.which("magick"):
+        pytest.skip("ImageMagick is not installed")
+    for t in ("crimson", "azure"):
+        p = THEMES / f"kyber/foxes/fox-guard-{t}.png"
+        out = subprocess.run(["magick", "identify", "-format", "%w %h %A", str(p)],
+                             capture_output=True, text=True, check=True).stdout.split()
+        assert out[:2] == ["176", "176"], t
+        assert out[2].lower() in ("blend", "true"), t
+        assert p.stat().st_size < 80_000, t
+    assert "fox-guard" in (ROOT / "tools/make-logos.sh").read_text()
+
+
+def test_wordmarks_take_the_theme_colors():
+    """The Settings and new tab wordmarks are the mask filled with the theme's
+    colors, not the fixed Kyber Crystal gradient in firefox-wordmark.svg."""
+    mask = 'url("chrome://kyberfox/content/themes/kyber/wordmark-mask.svg")'
+    for sheet in ("settings.css", "pages.css"):
+        css = (THEMES / "kyber" / sheet).read_text(encoding="utf-8")
+        assert "firefox-wordmark.svg" not in css, sheet
+        assert mask in css, sheet
+        assert "var(--kyber-wordmark-a) 60%" in css, sheet

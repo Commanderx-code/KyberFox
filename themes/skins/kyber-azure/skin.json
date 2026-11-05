@@ -13,6 +13,7 @@
     "kyber/pages.css",
     "kyber/settings.css"
   ],
+  "logo": "kyber/foxes/fox-azure.png",
   "prefs": {},
   "vars": {
     "--kf-bg": "#00133d",

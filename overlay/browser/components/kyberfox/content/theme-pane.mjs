@@ -88,7 +88,8 @@ class KyberfoxThemePicker extends MozLitElement {
   }
 
   cardTemplate(theme, focusId) {
-    let vars = KyberThemes.palette(theme.id)?.vars ?? {};
+    let palette = KyberThemes.palette(theme.id);
+    let vars = palette?.vars ?? {};
     let current = theme.id == this.value;
     return html`<button
       class="card"
@@ -119,7 +120,7 @@ class KyberfoxThemePicker extends MozLitElement {
         <span class="preview-page">
           <img
             class="preview-logo"
-            src="chrome://branding/content/icon32.png"
+            src=${palette?.logo ?? "chrome://branding/content/icon32.png"}
             alt=""
           />
           <span class="preview-search"></span>

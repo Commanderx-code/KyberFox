@@ -54,6 +54,7 @@
 
     .page-nav-heading-wrapper > .logo {
       margin-inline-start: 0 !important;
+      background: var(--kyber-fox) center / contain no-repeat !important;
     }
 
     .page-nav-heading {
@@ -70,9 +71,9 @@
       width: 180px;
       height: 24px;
       margin-block-end: 10px;
-      background: url("chrome://branding/content/firefox-wordmark.svg") center / contain no-repeat;
-      -moz-context-properties: fill;
-      fill: var(--kf-fg);
+      /* KYBER in the text color, FOX (from 60%) in the theme's colors. */
+      background: linear-gradient(90deg, var(--kf-fg) 60%, var(--kyber-wordmark-a) 60%, var(--kyber-wordmark-b));
+      mask: url("chrome://kyberfox/content/themes/kyber/wordmark-mask.svg") center / contain no-repeat;
     }
 
     #categories > #searchInput {
