@@ -42,6 +42,40 @@ Preferences.addSetting({
   visible: deps => deps.kyberfoxPrivacyPreset.value == "strict",
 });
 
+// "What Strict changes": a row per option Strict turns on, each reading its
+// own prefs so a change made elsewhere shows at once.
+const STRICT_OPTIONS = {
+  kyberfoxStrictFingerprinting: ["privacy.resistFingerprinting"],
+  kyberfoxStrictClearOnQuit: [
+    "privacy.sanitize.sanitizeOnShutdown",
+    "privacy.clearOnShutdown_v2.cookiesAndStorage",
+  ],
+  kyberfoxStrictWebGL: ["webgl.disabled"],
+  kyberfoxStrictWebRTC: ["media.peerconnection.ice.default_address_only"],
+};
+
+Preferences.addSetting({ id: "kyberfoxStrictChanges" });
+for (let [id, prefs] of Object.entries(STRICT_OPTIONS)) {
+  Preferences.addSetting({
+    id,
+    get: () => prefs.every(pref => Services.prefs.getBoolPref(pref, false)),
+    setup: emitChange => {
+      for (let pref of prefs) {
+        Services.prefs.addObserver(pref, emitChange);
+      }
+      return () => {
+        for (let pref of prefs) {
+          Services.prefs.removeObserver(pref, emitChange);
+        }
+      };
+    },
+    getControlConfig: (config, deps, setting) => ({
+      ...config,
+      l10nArgs: { state: setting.value ? "on" : "off" },
+    }),
+  });
+}
+
 // Opens the first-run page (recommended add-ons, default search) again.
 Preferences.addSetting({
   id: "kyberfoxRecommendedAddonsLink",
@@ -92,6 +126,19 @@ SettingGroupManager.registerGroups({
         controlAttrs: {
           type: "warning",
         },
+      },
+      {
+        id: "kyberfoxStrictChanges",
+        l10nId: "kyberfox-strict-changes-header",
+        control: "moz-fieldset",
+        headingLevel: 3,
+        // Fieldsets, not box items: box items break descriptions mid-word.
+        items: Object.keys(STRICT_OPTIONS).map(id => ({
+          id,
+          l10nId: `kyberfox-strict-${id.slice("kyberfoxStrict".length).toLowerCase()}`,
+          control: "moz-fieldset",
+          headingLevel: 4,
+        })),
       },
       {
         id: "kyberfoxRecommendedAddonsLink",
