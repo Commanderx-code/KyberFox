@@ -10,6 +10,8 @@ prefs = [
 
 ["browser_about_version.js"]
 
+["browser_builtin_themes_hidden.js"]
+
 ["browser_defaults.js"]
 
 ["browser_identity.js"]
