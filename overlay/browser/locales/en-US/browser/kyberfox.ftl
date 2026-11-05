@@ -43,6 +43,9 @@ kyberfox-shield-button-partial =
 kyberfox-shield-button-off =
     .aria-label = Kyber Shields: protection off for this site
     .tooltiptext = Kyber Shields: protection off for this site
+kyberfox-shield-button-attention =
+    .aria-label = Kyber Shields: ad blocking is not running
+    .tooltiptext = Kyber Shields: ad blocking is not running
 kyberfox-shield-button-unavailable =
     .aria-label = Kyber Shields: not available on this page
     .tooltiptext = Kyber Shields: not available on this page
@@ -50,6 +53,7 @@ kyberfox-shield-title = Kyber Shields
 kyberfox-shield-status-on = Protection on
 kyberfox-shield-status-partial = Some protections off
 kyberfox-shield-status-off = Protection off
+kyberfox-shield-status-attention = Ad blocking is not running
 # Variables:
 #   $site (string) - The site the shield applies to, for example example.com.
 kyberfox-shield-master =
@@ -62,6 +66,10 @@ kyberfox-shield-blocked-count = { $count } on this page
 kyberfox-shield-blocked-none = None on this page
 kyberfox-shield-blocked-off = Off for this site
 kyberfox-shield-blocked-unknown = Not counted
+# The ad blocker is turned off or removed, so nothing is counted.
+kyberfox-shield-blocked-stopped = Not running
+# The ad blocker is not allowed in private windows.
+kyberfox-shield-blocked-private = Off in private windows
 kyberfox-shield-controls-heading = On this site
 kyberfox-shield-permissions = Site permissions
 # Variables:
@@ -95,6 +103,8 @@ kyberfox-shield-cookies-note = Also turns off the browser’s tracker and finger
 kyberfox-shield-private-note = Private window: one switch for this site, kept only for this session.
 kyberfox-shield-unreachable = Ad blocking is not responding. Try again in a moment.
 kyberfox-shield-advanced = Advanced blocking settings
+kyberfox-shield-blocker-note = The built-in ad blocker is turned off or removed, so ads are not blocked. Tracker and fingerprint blocking still work.
+kyberfox-shield-addons = Turn it on in Add-ons and themes
 
 ## Privacy presets. The preset group tops the Privacy pane of about:preferences.
 

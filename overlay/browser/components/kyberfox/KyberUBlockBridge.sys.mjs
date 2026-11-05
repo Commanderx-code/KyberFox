@@ -43,6 +43,7 @@ let gOffSites = new Set();
 const gCallLog = [];
 
 const gStartCallbacks = new Set();
+const gStopCallbacks = new Set();
 let gWatching = false;
 let gPrivateGrant = null;
 
@@ -147,6 +148,14 @@ function watchStart() {
     }
     console.warn("KyberShield: uBlock Origin started but cannot be called");
   });
+  // Emitted once the extension is gone: running reads false by then.
+  lazy.ExtensionParent.apiManager.on("shutdown", (kind, ext) => {
+    if (ext.id == UBLOCK_ID) {
+      for (let callback of gStopCallbacks) {
+        callback();
+      }
+    }
+  });
 }
 
 export const KyberUBlockBridge = {
@@ -164,10 +173,24 @@ export const KyberUBlockBridge = {
    * Runs a callback each time uBlock has started and answers calls.
    *
    * @param {Function} callback
+   * @returns {Function} Removes the callback.
    */
   onStart(callback) {
     gStartCallbacks.add(callback);
     watchStart();
+    return () => gStartCallbacks.delete(callback);
+  },
+
+  /**
+   * Runs a callback each time uBlock stops: turned off, removed or updated.
+   *
+   * @param {Function} callback
+   * @returns {Function} Removes the callback.
+   */
+  onStop(callback) {
+    gStopCallbacks.add(callback);
+    watchStart();
+    return () => gStopCallbacks.delete(callback);
   },
 
   /**

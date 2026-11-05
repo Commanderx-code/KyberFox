@@ -34,6 +34,11 @@
     list-style-image: url("chrome://kyberfox/content/crystal-guard-partial.svg");
   }
 
+  /* The ad blocker is not running: a badge with a cut-out "!". */
+  &[shield-state="attention"] > .kyber-shield-icon {
+    list-style-image: url("chrome://kyberfox/content/crystal-guard-attention.svg");
+  }
+
   &[shield-state="off"] > .kyber-shield-icon {
     list-style-image: url("chrome://kyberfox/content/crystal-guard-off.svg");
     fill: currentColor;
@@ -98,20 +103,22 @@
   text-align: center;
 }
 
-/* Placeholder for the Fox Guard emblem: a vector shield frame around the
-   theme's fox. The final emblem is a single vector asset; see
-   docs/kyber-shields.md. */
+/* Fox Guard, the panel's artwork. The PNG is twice this size for sharp
+   HiDPI screens; it has its own glow, so it reads on light and dark panels. */
 .kyber-shield-emblem {
   /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
-  width: 84px;
+  width: 88px;
   /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
-  height: 84px;
-  background:
-    var(--kyber-fox, url("chrome://branding/content/about-logo.png")) center 52% / 58% no-repeat,
-    url("chrome://kyberfox/content/fox-guard-frame.svg") center / contain no-repeat;
-  -moz-context-properties: fill, stroke;
-  fill: var(--kyber-shield-a);
-  stroke: var(--kyber-shield-b);
+  height: 88px;
+  object-fit: contain;
+
+  /* Short windows: a smaller emblem leaves room for the switches. */
+  @media (max-height: 560px) {
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+    width: 48px;
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+    height: 48px;
+  }
 }
 
 #kyber-shield-title {
@@ -149,6 +156,11 @@
   border-radius: var(--border-radius-medium);
   background-color: color-mix(in srgb, var(--kyber-shield-a) 10%, transparent);
 
+  &[state="attention"] {
+    border-color: var(--icon-color-warning, currentColor);
+    background-color: transparent;
+  }
+
   &[state="off"],
   &[state="unavailable"] {
     border-color: var(--panel-separator-color, currentColor);
@@ -168,6 +180,12 @@
   [state="partial"] > & {
     background-image: url("chrome://global/skin/icons/warning.svg");
     border-style: dashed;
+  }
+
+  [state="attention"] > & {
+    background-image: url("chrome://global/skin/icons/warning.svg");
+    fill: var(--icon-color-warning, currentColor);
+    border-color: var(--icon-color-warning, currentColor);
   }
 
   [state="off"] > &,
