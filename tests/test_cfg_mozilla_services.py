@@ -29,6 +29,7 @@ DROPPED_COLLECTIONS = {
     "main/password-rules",
     "main/password-recipes",
     "main/fxmonitor-breaches",
+    "main/websites-with-shared-credential-backends",
 }
 
 KEPT_COLLECTIONS = {

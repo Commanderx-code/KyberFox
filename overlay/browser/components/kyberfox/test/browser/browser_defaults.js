@@ -117,6 +117,7 @@ add_task(function test_mozilla_services_are_locked_off() {
     "main/password-rules",
     "main/password-recipes",
     "main/fxmonitor-breaches",
+    "main/websites-with-shared-credential-backends",
   ]) {
     Assert.ok(!allowed.includes(collection), `${collection} is not fetched`);
   }
