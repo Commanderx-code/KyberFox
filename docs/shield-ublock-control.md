@@ -3,7 +3,7 @@
 The shield engine (`KyberShield.sys.mjs`) turns uBlock Origin off and on for one
 site. uBlock has no external messaging, so this records what was tried. All of
 it ran against the signed upstream XPI that the assembler stages
-(`uBlock0@raymondhill.net.xpi`, version 1.75.2) on the artifact build under the
+(`uBlock0@raymondhill.net.xpi`, version 1.75.4) on the artifact build under the
 mochitest harness. The XPI is never changed.
 
 ## Result
@@ -66,7 +66,7 @@ call that same listener with `url: https://<base domain>/`. Observed:
 
 Dependencies on uBlock internals: `vAPI.messaging.listeners`, the
 `popupPanel` channel, the `toggleNetFiltering` and `getWhitelist` messages.
-Version 1.75.2 is pinned in `pins.toml`; `browser_shield.js` fails if an update
+Version 1.75.4 is pinned in `pins.toml`; `browser_shield.js` fails if an update
 changes them.
 
 ## Mapping of the three controls
