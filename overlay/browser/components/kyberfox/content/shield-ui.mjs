@@ -49,6 +49,26 @@ function stateName(state) {
 }
 
 /**
+ * The next step of "Site not working?": the protection to turn off next for
+ * the site, the one that loses the least first. Cookie protection (which
+ * also lifts Firefox's tracker blocking there) breaks sign-ins and embeds
+ * most often, then ad blocking, then the whole shield. A private window has
+ * only the whole shield.
+ *
+ * @param {object} state KyberShield.state()
+ * @returns {"cookies"|"ads"|"master"|null} null when nothing is left on.
+ */
+function nextFixStep(state) {
+  if (!state.supported || !state.enabled) {
+    return null;
+  }
+  if (!state.perControl) {
+    return "master";
+  }
+  return ["cookies", "ads"].find(control => state[control]) ?? "master";
+}
+
+/**
  * One window's shield button and panel.
  */
 class ShieldButton {
@@ -341,8 +361,32 @@ class ShieldButton {
       row.addEventListener("click", onClick);
       return row;
     };
+    // "Site not working?": the steps fold out under the row.
+    let fix = link(
+      "kyber-shield-fix",
+      "chrome://global/skin/icons/help.svg",
+      () => this.toggleFix()
+    );
+    fix.setAttribute("aria-expanded", "false");
+    fix.setAttribute("aria-controls", "kyber-shield-fix-section");
+    let fixSection = html("div", {
+      id: "kyber-shield-fix-section",
+      hidden: true,
+    });
+    let fixNext = html("moz-button", { id: "kyber-shield-fix-next" });
+    fixNext.addEventListener("click", () => this.fixNext());
+    let fixReset = html("moz-button", { id: "kyber-shield-fix-reset" });
+    fixReset.setAttribute("type", "ghost");
+    l10n(fixReset, "kyberfox-shield-fix-reset");
+    fixReset.addEventListener("click", () => this.fixReset());
+    let fixButtons = html("div", { className: "kyber-shield-fix-buttons" });
+    fixButtons.append(fixNext, fixReset);
+    fixSection.append(html("p", { id: "kyber-shield-fix-text" }), fixButtons);
+
     let links = html("div", { className: "kyber-shield-links" });
     links.append(
+      fix,
+      fixSection,
       link(
         "kyber-shield-permissions",
         "chrome://browser/skin/permissions.svg",
@@ -379,6 +423,7 @@ class ShieldButton {
       this.render();
     });
     panel.addEventListener("toggle", e => this.onToggle(e));
+    panel.addEventListener("popuphidden", () => this.toggleFix(false));
     panel.addEventListener("popupshown", () => {
       if (this.focusOnShow) {
         this.focusOnShow = false;
@@ -388,6 +433,44 @@ class ShieldButton {
     this.doc.getElementById("mainPopupSet").append(panel);
     this.panel = panel;
     return panel;
+  }
+
+  /**
+   * Folds the "Site not working?" steps out or in.
+   *
+   * @param {boolean} [expand] Toggles when left out.
+   */
+  toggleFix(expand) {
+    let row = this.panel.querySelector("#kyber-shield-fix");
+    let show = expand ?? row.getAttribute("aria-expanded") != "true";
+    row.setAttribute("aria-expanded", show);
+    this.panel.querySelector("#kyber-shield-fix-section").hidden = !show;
+  }
+
+  /** Turns off the next protection for the site and reloads the page. */
+  fixNext() {
+    let step = nextFixStep(KyberShield.state(this.browser));
+    if (!step) {
+      return Promise.resolve();
+    }
+    return this.change(browser =>
+      step == "master"
+        ? KyberShield.setEnabled(browser, false)
+        : KyberShield.setControl(browser, step, false)
+    );
+  }
+
+  /** Turns the shield and every protection back on for the site. */
+  fixReset() {
+    return this.change(async browser => {
+      let ok = await KyberShield.setEnabled(browser, true);
+      if (KyberShield.state(browser).perControl) {
+        for (let control of CONTROLS) {
+          ok = (await KyberShield.setControl(browser, control, true)) && ok;
+        }
+      }
+      return ok;
+    });
   }
 
   /** Firefox's Page Info window on its Permissions tab for the page. */
@@ -487,6 +570,23 @@ class ShieldButton {
     }
     panel.querySelector(".kyber-shield-controls-heading").hidden =
       !state.perControl;
+
+    let step = nextFixStep(state);
+    let textId = "done";
+    if (step) {
+      textId = state.perControl ? step : "private";
+    }
+    this.doc.l10n.setAttributes(
+      query("fix-text"),
+      `kyberfox-shield-fix-${textId}-text`
+    );
+    let next = query("fix-next");
+    next.hidden = !step;
+    if (step) {
+      this.doc.l10n.setAttributes(next, `kyberfox-shield-fix-${textId}-button`);
+    }
+    query("fix-reset").hidden =
+      state.enabled && CONTROLS.every(control => state[control]);
     for (let control of CONTROLS) {
       let row = query(control);
       row.hidden = !state.perControl;
@@ -511,14 +611,28 @@ class ShieldButton {
       this.render();
       return;
     }
+    let value = target.pressed;
+    await this.change(browser =>
+      control == "master"
+        ? KyberShield.setEnabled(browser, value)
+        : KyberShield.setControl(browser, control, value)
+    );
+  }
+
+  /**
+   * Runs one change through the engine, then redraws and reloads the page.
+   *
+   * @param {function(XULBrowserElement): Promise<boolean>} apply Resolves to
+   *   false if uBlock could not be reached.
+   */
+  async change(apply) {
+    if (this.busy) {
+      return;
+    }
     this.busy = true;
     let browser = this.browser;
-    let value = target.pressed;
     try {
-      let ok =
-        control == "master"
-          ? await KyberShield.setEnabled(browser, value)
-          : await KyberShield.setControl(browser, control, value);
+      let ok = await apply(browser);
       this.unreachable = !ok;
       this.render();
       // The page must reload for the change to take effect. If uBlock could
