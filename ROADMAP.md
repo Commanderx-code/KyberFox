@@ -60,7 +60,7 @@ Exit criteria: every default in [docs/privacy-defaults.md](docs/privacy-defaults
 has a stated reason and a verification status, and the Settings page explains
 the compatibility cost of each Strict option.
 
-- [ ] Explanations and compatibility notes under each option on the Privacy page (planned)
+- [x] Explanations and compatibility notes under each option on the Privacy page: a "What Strict changes" list under the presets says what each Strict option does, what it can break, and whether it is on now
 - [ ] A short "this site is broken" path from the shield panel to the fixes (planned)
 - [ ] Kyber Shields panel: Crystal Guard icon with on, partial and off states, status card, blocked count, site permissions and settings rows (in progress; [docs/kyber-shields.md](docs/kyber-shields.md)); the Fox Guard emblem is a placeholder until the vector asset exists
 - [ ] Self-hosted SearXNG as a search engine: document the steps with Firefox's "Add search engine" in Settings, then decide whether the welcome page needs a field for it (planned)

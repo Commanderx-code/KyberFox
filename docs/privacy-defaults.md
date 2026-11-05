@@ -26,6 +26,10 @@ The top of Settings, Privacy and security, offers two presets. Standard is what
 a new profile gets. Strict adds the options that cost some convenience or break
 some sites. Changing any single option shows the preset as Custom.
 
+Under the presets, a "What Strict changes" list names each option Strict turns
+on, says what it does and what it can break, and shows whether it is on now.
+The list follows the actual settings, so it stays right under Custom.
+
 | Setting | Standard | Strict | What Strict costs |
 |---|---|---|---|
 | Enhanced Tracking Protection (`browser.contentblocking.category`) | strict | strict | |
