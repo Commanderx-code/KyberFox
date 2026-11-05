@@ -23,12 +23,8 @@ const LIST_PREF = "kyberfox.workspaces.list";
 const HTML_NS = "http://www.w3.org/1999/xhtml";
 
 // Fill is supplied by CSS (context-fill), so one icon serves every color.
-const DOT_ICON =
-  "data:image/svg+xml," +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">' +
-      '<circle cx="8" cy="8" r="5" fill="context-fill"/></svg>'
-  );
+// A shipped file: context-fill does not reach data: images.
+const DOT_ICON = "chrome://kyberfox/content/workspace-dot.svg";
 
 const PALETTE = [
   "#5b8def",

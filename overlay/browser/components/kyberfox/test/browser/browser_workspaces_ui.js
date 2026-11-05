@@ -96,6 +96,11 @@ add_task(async function test_button_first_in_tab_bar() {
       btn.style.getPropertyValue("--kyber-workspace-color"),
       "the dot has a color"
     );
+    let text = btn.querySelector(".toolbarbutton-text");
+    Assert.ok(
+      text.checkVisibility() && text.getBoundingClientRect().width > 0,
+      "the name is shown, not only set"
+    );
   });
 });
 
@@ -392,4 +397,36 @@ add_task(async function test_tab_group_create() {
   } finally {
     await BrowserTestUtils.closeWindow(win);
   }
+});
+
+// The dot is drawn in the workspace's color. A data: image cannot take the
+// color (context-fill works only for images the browser ships), so it would
+// draw black.
+add_task(async function test_dot_is_drawn_in_the_workspace_color() {
+  await withWorkspaces(async win => {
+    let btn = button(win);
+    await TestUtils.waitForCondition(() => btn.label, "the button is drawn");
+    let wanted = btn.style.getPropertyValue("--kyber-workspace-color").trim();
+    let rect = btn.querySelector(".toolbarbutton-icon").getBoundingClientRect();
+    let cx = rect.left + rect.width / 2;
+    let cy = rect.top + rect.height / 2;
+    let bitmap = await win.browsingContext.currentWindowGlobal.drawSnapshot(
+      new DOMRect(cx - 1, cy - 1, 2, 2),
+      1,
+      "white"
+    );
+    let canvas = win.document.createElement("canvas");
+    canvas.width = canvas.height = 2;
+    let ctx = canvas.getContext("2d");
+    ctx.drawImage(bitmap, 0, 0);
+    let [r, g, b] = ctx.getImageData(1, 1, 1, 1).data;
+    let hex = n => parseInt(wanted.slice(n, n + 2), 16);
+    let diff =
+      Math.abs(r - hex(1)) + Math.abs(g - hex(3)) + Math.abs(b - hex(5));
+    Assert.less(
+      diff,
+      40,
+      `the dot is ${wanted}, drawn as rgb(${r}, ${g}, ${b})`
+    );
+  });
 });

@@ -31,18 +31,44 @@ kyberfox-workspace-delete-message =
     }
 kyberfox-workspace-delete-confirm = Delete workspace
 
-## Shield. The button sits at the right end of the address bar and opens a
-## per-site panel.
+## Kyber Shields. The Crystal Guard button sits at the right end of the
+## address bar and opens a per-site panel. Kyber Shields is the feature's name.
 
-kyberfox-shield-button =
-    .aria-label = Shield
-    .tooltiptext = Site protection
-kyberfox-shield-panel =
-    .aria-label = Site protection
+kyberfox-shield-button-on =
+    .aria-label = Kyber Shields: protection on
+    .tooltiptext = Kyber Shields: protection on
+kyberfox-shield-button-partial =
+    .aria-label = Kyber Shields: some protections off for this site
+    .tooltiptext = Kyber Shields: some protections off for this site
+kyberfox-shield-button-off =
+    .aria-label = Kyber Shields: protection off for this site
+    .tooltiptext = Kyber Shields: protection off for this site
+kyberfox-shield-button-unavailable =
+    .aria-label = Kyber Shields: not available on this page
+    .tooltiptext = Kyber Shields: not available on this page
+kyberfox-shield-title = Kyber Shields
+kyberfox-shield-status-on = Protection on
+kyberfox-shield-status-partial = Some protections off
+kyberfox-shield-status-off = Protection off
 # Variables:
 #   $site (string) - The site the shield applies to, for example example.com.
 kyberfox-shield-master =
-    .label = Shield for { $site }
+    .aria-label = Kyber Shields for { $site }
+kyberfox-shield-blocked-label = Ads and trackers blocked
+# The count of requests the ad blocker blocked on the page in this tab.
+# Variables:
+#   $count (string) - The count as the ad blocker shows it, for example 12.
+kyberfox-shield-blocked-count = { $count } on this page
+kyberfox-shield-blocked-none = None on this page
+kyberfox-shield-blocked-off = Off for this site
+kyberfox-shield-blocked-unknown = Not counted
+kyberfox-shield-controls-heading = On this site
+kyberfox-shield-permissions = Site permissions
+# Variables:
+#   $count (number) - How many permissions the site is allowed.
+kyberfox-shield-permissions-allowed = Allowed: { $count }
+kyberfox-shield-permissions-none = None allowed
+kyberfox-shield-settings = Privacy settings
 kyberfox-shield-ads =
     .label = Ads and trackers
 kyberfox-shield-fingerprinting =
@@ -52,8 +78,7 @@ kyberfox-shield-cookies =
 kyberfox-shield-cookies-note = Also turns off the browser’s tracker and fingerprint blocking for this site. Ad blocking stays on.
 kyberfox-shield-private-note = Private window: one switch for this site, kept only for this session.
 kyberfox-shield-unreachable = Ad blocking is not responding. Try again in a moment.
-kyberfox-shield-advanced =
-    .label = Advanced blocking settings
+kyberfox-shield-advanced = Advanced blocking settings
 
 ## Privacy presets. The preset group tops the Privacy pane of about:preferences.
 

@@ -44,8 +44,29 @@
     box-shadow: 0 0 calc(8px * var(--kyber-glow-strength)) var(--kyber-glow-color) !important;
   }
 
-  /* The real logo and the name at the start of the tab strip. */
-  #TabsToolbar .toolbar-items::before {
+  /* The real logo at the start of the tab strip. In a normal window it is
+   * part of the workspace button: the logo, the workspace dot, its name and
+   * the chevron, one button that opens the workspace list. */
+  #kyber-workspace-button {
+    padding-inline-start: 6px;
+    margin-inline-end: 6px;
+    border-inline-end: 1px solid var(--kf-border);
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    color: var(--kf-fg);
+  }
+
+  #kyber-workspace-button::before {
+    content: "";
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-inline-end: 6px;
+    background: url("chrome://branding/content/icon32.png") no-repeat center / 20px 20px;
+  }
+
+  /* Private windows have no workspaces: the logo and the name stand alone. */
+  :root[privatebrowsingmode="temporary"] #TabsToolbar .toolbar-items::before {
     content: "Kyber Fox";
     display: flex;
     align-items: center;

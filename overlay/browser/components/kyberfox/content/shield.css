@@ -2,29 +2,49 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* The shield button, at the right end of the address bar, and its panel. */
+/* Kyber Shields: the Crystal Guard button at the right end of the address
+   bar, and its panel. Colors come from the Kyber skins (--kyber-glow-a/b) and
+   fall back to the palette accent, then to Firefox's own colors, so every
+   theme, light or dark, has a readable icon. */
+
+#kyber-shield-button,
+#kyber-shield-panel {
+  --kyber-shield-a: var(--kyber-glow-a, var(--kf-accent, var(--color-accent-primary)));
+  --kyber-shield-b: var(--kyber-glow-b, var(--kyber-shield-a));
+}
 
 #kyber-shield-button {
   position: relative;
   /* Page actions added later are appended after it; stay at the right end. */
   order: 1;
 
+  /* The shield takes fill, the crystal stroke. The state shows in the
+     shape, not only the color: solid crystal, hollow crystal, crossed. */
   > .kyber-shield-icon {
-    list-style-image: url("chrome://kyberfox/content/shield.svg");
-    width: 20px;
-    height: 20px;
-    fill: var(--kf-accent, currentColor);
+    list-style-image: url("chrome://kyberfox/content/crystal-guard.svg");
+    width: var(--icon-size-medium);
+    height: var(--icon-size-medium);
+    -moz-context-properties: fill, fill-opacity, stroke;
+    fill: var(--kyber-glow-a, currentColor);
     fill-opacity: 1;
+    stroke: var(--kyber-shield-b);
   }
 
-  &[shield-off] > .kyber-shield-icon {
-    list-style-image: url("chrome://kyberfox/content/shield-off.svg");
+  &[shield-state="partial"] > .kyber-shield-icon {
+    list-style-image: url("chrome://kyberfox/content/crystal-guard-partial.svg");
+  }
+
+  &[shield-state="off"] > .kyber-shield-icon {
+    list-style-image: url("chrome://kyberfox/content/crystal-guard-off.svg");
     fill: currentColor;
     fill-opacity: var(--urlbar-icon-fill-opacity);
   }
 
   &[disabled] > .kyber-shield-icon {
     fill: currentColor;
+    stroke: currentColor;
+    /* Dimmer than any opacity token: the page cannot be protected. */
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     opacity: 0.4;
   }
 
@@ -38,7 +58,7 @@
     padding: 0 3px;
     border-radius: var(--border-radius-small);
     background-color: var(--kf-accent, var(--color-accent-primary));
-    color: var(--kf-bg, #fff);
+    color: var(--kf-bg, white);
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     font-size: 9px;
     font-weight: var(--font-weight-bold);
@@ -50,34 +70,203 @@
   }
 }
 
+@media (forced-colors: active) {
+  #kyber-shield-button > .kyber-shield-icon {
+    fill: currentColor;
+    stroke: currentColor;
+  }
+}
+
 #kyber-shield-panel {
-  --arrowpanel-padding: 12px;
-  /* No design token for a panel width. */
-  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
-  min-width: 280px;
+  --arrowpanel-padding: 0;
+  --arrowpanel-border-color: color-mix(in srgb, var(--kyber-shield-a) 45%, var(--panel-border-color, transparent));
 }
 
 .kyber-shield-body {
-  gap: var(--space-small);
+  gap: var(--space-medium);
+  /* No design token for a panel width. */
+  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+  width: 352px;
+  padding: var(--space-large);
+}
+
+.kyber-shield-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xsmall);
+  text-align: center;
+}
+
+/* Placeholder for the Fox Guard emblem: a vector shield frame around the
+   theme's fox. The final emblem is a single vector asset; see
+   docs/kyber-shields.md. */
+.kyber-shield-emblem {
+  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+  width: 84px;
+  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+  height: 84px;
+  background:
+    var(--kyber-fox, url("chrome://branding/content/about-logo.png")) center 52% / 58% no-repeat,
+    url("chrome://kyberfox/content/fox-guard-frame.svg") center / contain no-repeat;
+  -moz-context-properties: fill, stroke;
+  fill: var(--kyber-shield-a);
+  stroke: var(--kyber-shield-b);
+}
+
+#kyber-shield-title {
+  margin: 0;
+  font-family: "Kyber Sora", sans-serif;
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--kyber-shield-a), var(--kyber-shield-b));
+  background-clip: text;
+  /* The gradient behind shows through the text. */
+  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+  color: transparent;
+
+  @media (forced-colors: active) {
+    background: none;
+    color: var(--text-color);
+  }
 }
 
 #kyber-shield-site {
   margin: 0;
+  color: var(--text-color-deemphasized);
+  overflow-wrap: anywhere;
+}
+
+#kyber-shield-status-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-small);
+  padding: var(--space-small) var(--space-medium);
+  border: 1px solid color-mix(in srgb, var(--kyber-shield-a) 60%, transparent);
+  border-radius: var(--border-radius-medium);
+  background-color: color-mix(in srgb, var(--kyber-shield-a) 10%, transparent);
+
+  &[state="off"],
+  &[state="unavailable"] {
+    border-color: var(--panel-separator-color, currentColor);
+    background-color: transparent;
+  }
+}
+
+.kyber-shield-status-icon {
+  width: var(--icon-size-medium);
+  height: var(--icon-size-medium);
+  background: url("chrome://global/skin/icons/check.svg") center / 16px no-repeat;
+  -moz-context-properties: fill;
+  fill: var(--kyber-shield-a);
+  border: 2px solid var(--kyber-shield-a);
+  border-radius: var(--border-radius-circle);
+
+  [state="partial"] > & {
+    background-image: url("chrome://global/skin/icons/warning.svg");
+    border-style: dashed;
+  }
+
+  [state="off"] > &,
+  [state="unavailable"] > & {
+    background-image: url("chrome://global/skin/icons/close.svg");
+    fill: currentColor;
+    border-color: currentColor;
+  }
+}
+
+#kyber-shield-status {
   font-size: var(--font-size-large);
   font-weight: var(--font-weight-semibold);
 }
 
+.kyber-shield-stat,
+.kyber-shield-link {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--space-small);
+  padding: var(--space-small);
+}
+
+.kyber-shield-stat {
+  grid-template-columns: auto 1fr auto;
+}
+
+.kyber-shield-row-icon,
+.kyber-shield-chevron {
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.kyber-shield-chevron:dir(rtl) {
+  transform: scaleX(-1);
+}
+
+.kyber-shield-row-value {
+  color: var(--text-color-deemphasized);
+  font-variant-numeric: tabular-nums;
+}
+
 .kyber-shield-rows {
   gap: var(--space-xsmall);
-  padding-inline-start: var(--space-xsmall);
+  padding-block-start: var(--space-small);
+  border-block-start: 1px solid var(--panel-separator-color);
+}
+
+.kyber-shield-controls-heading {
+  margin: 0 0 var(--space-xsmall);
+  color: var(--text-color-deemphasized);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+}
+
+.kyber-shield-links {
+  display: flex;
+  flex-direction: column;
+  border-block-start: 1px solid var(--panel-separator-color);
+  padding-block-start: var(--space-xsmall);
+}
+
+.kyber-shield-link {
+  appearance: none;
+  margin: 0;
+  border: none;
+  border-radius: var(--border-radius-small);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  transition: background-color 120ms;
+
+  &:hover {
+    background-color: var(--button-background-color-hover);
+  }
+
+  &:hover:active {
+    background-color: var(--button-background-color-active);
+  }
+
+  &:focus-visible {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-outline-inset);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
 
 .kyber-shield-note {
   margin: 0;
   color: var(--text-color-deemphasized);
   font-size: var(--font-size-small);
-  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
-  max-width: 280px;
 }
 
 #kyber-shield-error {
@@ -94,8 +283,4 @@
 #ublock0_raymondhill_net-browser-action,
 #wrapper-ublock0_raymondhill_net-browser-action {
   display: none !important;
-}
-
-#kyber-shield-advanced {
-  align-self: start;
 }
