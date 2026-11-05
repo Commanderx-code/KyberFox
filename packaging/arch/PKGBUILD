@@ -52,7 +52,7 @@ package() {
 
   install -Dm644 "$srcdir/kyberfox.desktop" "$pkgdir/usr/share/applications/kyberfox.desktop"
   # Private windows use the window class kyberfox-private; this entry gives
-  # them the private logo and their own place in the taskbar.
+  # them the mask icon and their own place in the taskbar.
   install -Dm644 "$srcdir/kyberfox-private.desktop" "$pkgdir/usr/share/applications/kyberfox-private.desktop"
   install -Dm644 "$srcdir/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 

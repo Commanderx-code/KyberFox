@@ -3,7 +3,8 @@
 # branding/. logo.png is the large original; logo-<size>.png are the owner's
 # own renders at those sizes and are used as they are, so small icons stay
 # sharp. Other sizes are scaled down from logo.png. branding/private-browsing/ holds
-# the private browsing logo in the same layout.
+# the private browsing logo in the same layout. branding/private-window/logo.png
+# is the mask: the app icon of private windows in the taskbar.
 # Needs ImageMagick 7 (magick) and python3. Run from the repository root.
 set -eu
 
@@ -65,13 +66,13 @@ trap 'rm -rf "$tmp"' EXIT
 
 for size in 16 22 24 32 48 64 128 256; do
   square "PNG32:$dir/default$size.png" "$size"
-  # Linux private windows (window class kyberfox-private).
-  square "PNG32:$dir/kyberfox-private$size.png" "$size" "$src/private-browsing"
+  # Linux private windows (window class kyberfox-private): the mask.
+  square "PNG32:$dir/kyberfox-private$size.png" "$size" "$src/private-window"
 done
 square "PNG32:$dir/VisualElements_150.png" 300
 square "PNG32:$dir/VisualElements_70.png" 142
-square "PNG32:$dir/PrivateBrowsing_150.png" 300 "$src/private-browsing"
-square "PNG32:$dir/PrivateBrowsing_70.png" 142 "$src/private-browsing"
+square "PNG32:$dir/PrivateBrowsing_150.png" 300 "$src/private-window"
+square "PNG32:$dir/PrivateBrowsing_70.png" 142 "$src/private-window"
 banner "PNG32:$dir/background.png" 1440 880 "$backdrop"
 
 for asset in Document44x44:44x44 LargeTile.scale-200:620x620 MedTile.scale-200:300x300 \
@@ -94,7 +95,7 @@ ico "$dir/document.ico" "$src" 16 32 48 256
 ico "$dir/document_pdf.ico" "$src" 256
 ico "$dir/newtab.ico" "$src" 16 32
 ico "$dir/newwindow.ico" "$src" 16 32
-ico "$dir/pbmode.ico" "$src/private-browsing" 16 32 48 256
+ico "$dir/pbmode.ico" "$src/private-window" 16 32 48 256
 
 icns "$dir/firefox.icns"
 icns "$dir/document.icns"

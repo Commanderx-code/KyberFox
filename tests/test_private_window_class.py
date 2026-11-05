@@ -50,3 +50,26 @@ def test_private_icons_are_in_the_package_manifest():
     assert "browser/installer/package-manifest.in" in patch
     for size in SIZES:
         assert f"+@RESPATH@/browser/chrome/icons/default/kyberfox-private{size}.png" in patch, size
+
+
+MASK = ROOT / "branding/private-window/logo.png"
+
+
+def test_private_window_icons_are_the_mask():
+    """The taskbar icon of a private window is the mask artwork in
+    branding/private-window/, on Linux and on Windows."""
+    script = (ROOT / "tools/make-logos.sh").read_text()
+    assert 'square "PNG32:$dir/kyberfox-private$size.png" "$size" "$src/private-window"' in script
+    assert 'ico "$dir/pbmode.ico" "$src/private-window"' in script
+    if not shutil.which("magick"):
+        pytest.skip("ImageMagick is not installed")
+    for size in (32, 128, 256):
+        icon = BRANDING / f"kyberfox-private{size}.png"
+        out = subprocess.run(
+            ["magick", str(MASK), "-resize", f"{size}x{size}", "-background", "black", "-flatten",
+             "(", str(icon), "-background", "black", "-flatten", ")",
+             "-compose", "difference", "-composite", "-colorspace", "gray",
+             "-format", "%[fx:mean]", "info:"],
+            capture_output=True, text=True, check=True).stdout
+        # The mask scores about 0.0004; the masked fox it replaced about 0.1.
+        assert float(out) < 0.01, (size, out)
