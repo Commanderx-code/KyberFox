@@ -3,9 +3,12 @@
 # pages over plain HTTP.
 # The welcome page would otherwise open in the first test window;
 # browser_welcome.js turns it on by itself.
+# The one-time private-window grant would reload uBlock in the middle of the
+# tests that install it; browser_ublock_private.js clears the pref itself.
 prefs = [
   "dom.security.https_only_mode=false",
   "kyberfox.welcome.shown=true",
+  "kyberfox.ublock.privateGranted=true",
 ]
 
 ["browser_about_version.js"]
@@ -53,6 +56,9 @@ support-files = [
 ["browser_themes.js"]
 
 ["browser_ublock_bundled.js"]
+
+["browser_ublock_private.js"]
+support-files = ["shield_assets.json"]
 
 ["browser_welcome.js"]
 

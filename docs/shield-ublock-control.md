@@ -143,6 +143,15 @@ written from normal windows, which applies in private windows too: an allow
 list entry, a fingerprinting exception, and (if uBlock is allowed in private
 windows) a site uBlock does not filter. `setControl` does nothing there.
 
+uBlock runs in private windows by default. Firefox leaves new add-ons out of
+private windows, so `KyberUBlockBridge.allowInPrivateOnce()`, called from the
+shield's window startup, grants uBlock the `internal:privateBrowsingAllowed`
+permission once per profile (as the Add-ons and themes toggle does) and
+reloads it if it is running. `kyberfox.ublock.privateGranted` records the
+grant, so turning private access off later in Add-ons and themes stands. The
+grant waits until uBlock is installed, and skips add-ons whose private access
+an enterprise policy controls.
+
 ## IP hosts
 
 A literal IPv4 host is its own site (the host is the key). IPv6 literals are
