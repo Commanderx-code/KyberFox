@@ -161,13 +161,11 @@ credited on `about:license`, and its "Block element…" context menu item stays.
 
 ## Where the shield sits
 
-The shield is an icon at the right end of the address bar, after the bookmark
-star, like Brave's Shields icon. It is not a toolbar widget, so it cannot be
-moved or removed in Customize. `shield-ui.mjs` builds it in
-`#page-action-buttons` with the address bar's own `urlbar-page-action` class,
-and `order: 1` in `shield.css` keeps it last when Firefox adds page actions
-later. The icon is 20 px (the other address bar icons are 16 px) and filled
-with the theme accent; it turns gray when the site is turned off and dims when
-the page cannot be protected. The blocked count is a small badge on the icon.
-Profiles from earlier builds had the shield in the toolbar; that placement is
-removed on startup.
+The shield is the Crystal Guard icon at the right end of the address bar,
+after the bookmark star, like Brave's Shields icon. It is not a toolbar
+widget, so it cannot be moved or removed in Customize. `shield-ui.mjs` builds
+it in `#page-action-buttons` with the address bar's own `urlbar-page-action`
+class, and `order: 1` in `shield.css` keeps it last when Firefox adds page
+actions later. Profiles from earlier builds had the shield in the toolbar;
+that placement is removed on startup. The icon states and the panel are
+described in [kyber-shields.md](kyber-shields.md).

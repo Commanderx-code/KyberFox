@@ -1,7 +1,8 @@
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<!-- Crystal Guard, protection off for the site: an empty shield, crossed out. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="context-fill" fill-opacity="context-fill-opacity">
   <path d="M8 1.5 2.5 3.4v4c0 3.2 2.3 5.5 5.5 7.1 3.2-1.6 5.5-3.9 5.5-7.1v-4L8 1.5zm0 1.2 4.3 1.5v3.2c0 2.4-1.7 4.3-4.3 5.7-2.6-1.4-4.3-3.3-4.3-5.7V4.2L8 2.7z"/>
-  <path d="M8 4.6 5.2 5.6v1.9c0 1.6 1.1 2.9 2.8 3.9 1.7-1 2.8-2.3 2.8-3.9V5.6L8 4.6z" fill-opacity="0.5"/>
+  <path d="M2.2 1.6 1.5 2.3l12.3 12.1.7-.7L2.2 1.6z"/>
 </svg>

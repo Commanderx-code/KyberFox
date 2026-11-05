@@ -3,10 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * The shield button at the right end of the address bar, where Brave puts its
- * Shields icon, and the panel it opens. The engine is KyberShield.sys.mjs;
- * this file only draws and drives it. Loaded as a module script by
- * browser.xhtml, once per browser window.
+ * Kyber Shields: the Crystal Guard button at the right end of the address bar
+ * and the panel it opens. The engine is KyberShield.sys.mjs; this file only
+ * draws and drives it. Everything the panel shows comes from real state: the
+ * engine's per-site switches, uBlock Origin's blocked count for the page and
+ * Firefox's site permissions. Loaded as a module script by browser.xhtml, once
+ * per browser window.
  */
 
 const { KyberShield } = ChromeUtils.importESModule(
@@ -17,12 +19,34 @@ const { CustomizableUI } = ChromeUtils.importESModule(
   "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs"
 );
 
+const { SitePermissions } = ChromeUtils.importESModule(
+  "resource:///modules/SitePermissions.sys.mjs"
+);
+
 const CONTROLS = ["ads", "fingerprinting", "cookies"];
 
 const UBLOCK_ID = "uBlock0@raymondhill.net";
 
 // uBlock may count a few more blocked requests after the page has loaded.
 const LATE_COUNT_MS = 1000;
+
+/**
+ * The icon state for a page, from the engine's state: "unavailable" for pages
+ * the shield does not handle, "off" with the site switched off, "partial"
+ * with the site on but one protection off, "on" otherwise.
+ *
+ * @param {object} state KyberShield.state()
+ * @returns {"on"|"partial"|"off"|"unavailable"}
+ */
+function stateName(state) {
+  if (!state.supported) {
+    return "unavailable";
+  }
+  if (!state.enabled) {
+    return "off";
+  }
+  return CONTROLS.every(control => state[control]) ? "on" : "partial";
+}
 
 /**
  * One window's shield button and panel.
@@ -47,7 +71,7 @@ class ShieldButton {
     box.className = "urlbar-page-action";
     box.setAttribute("role", "button");
     box.setAttribute("tabindex", "-1");
-    box.setAttribute("data-l10n-id", "kyberfox-shield-button");
+    box.setAttribute("data-l10n-id", "kyberfox-shield-button-unavailable");
     let icon = this.doc.createXULElement("image");
     icon.className = "urlbar-icon kyber-shield-icon";
     let badge = this.doc.createXULElement("label");
@@ -63,16 +87,16 @@ class ShieldButton {
     box.addEventListener("keypress", event => {
       if (event.key == "Enter" || event.key == " ") {
         event.preventDefault();
-        this.activate();
+        this.activate({ keyboard: true });
       }
     });
     this.button = box;
     this.start().catch(console.error);
   }
 
-  activate() {
+  activate({ keyboard = false } = {}) {
     if (!this.button.hasAttribute("disabled")) {
-      this.openPanel();
+      this.openPanel({ keyboard });
     }
   }
 
@@ -174,6 +198,12 @@ class ShieldButton {
       state.supported && state.enabled
         ? KyberShield.blockedCount(this.browser)
         : "";
+    let shieldState = stateName(state);
+    this.button.setAttribute("shield-state", shieldState);
+    this.doc.l10n.setAttributes(
+      this.button,
+      `kyberfox-shield-button-${shieldState}`
+    );
     this.button.toggleAttribute("disabled", !state.supported);
     this.button.toggleAttribute(
       "shield-off",
@@ -213,43 +243,134 @@ class ShieldButton {
       return node;
     };
 
+    let l10n = (node, id) => {
+      node.setAttribute("data-l10n-id", id);
+      return node;
+    };
+    let icon = (className, src) => {
+      let img = html("img", { className, alt: "" });
+      img.src = src;
+      return img;
+    };
+
     let panel = el("panel", { id: "kyber-shield-panel" });
     panel.setAttribute("type", "arrow");
-    panel.setAttribute("data-l10n-id", "kyberfox-shield-panel");
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-labelledby", "kyber-shield-title");
 
     let body = el("vbox", { className: "kyber-shield-body" });
-    let site = html("h2", { id: "kyber-shield-site" });
+
+    // Header: the emblem, the name and the site the switches apply to.
+    let header = html("div", { className: "kyber-shield-header" });
+    let emblem = html("div", { className: "kyber-shield-emblem" });
+    emblem.setAttribute("aria-hidden", "true");
+    let title = l10n(
+      html("h2", { id: "kyber-shield-title" }),
+      "kyberfox-shield-title"
+    );
+    let site = html("p", { id: "kyber-shield-site" });
+    header.append(emblem, title, site);
+
+    // Status card: what is on, said in words and by the icon, and the switch.
+    let card = html("div", { id: "kyber-shield-status-card" });
+    let statusText = html("span", { id: "kyber-shield-status" });
+    statusText.setAttribute("aria-live", "polite");
     let master = html("moz-toggle", { id: "kyber-shield-master" });
+    card.append(
+      html("span", { className: "kyber-shield-status-icon" }),
+      statusText,
+      master
+    );
+
+    // uBlock Origin's count for the page in the tab.
+    let stat = html("div", { className: "kyber-shield-stat" });
+    stat.append(
+      icon("kyber-shield-row-icon", "chrome://global/skin/icons/block.svg"),
+      l10n(
+        html("span", { className: "kyber-shield-row-label" }),
+        "kyberfox-shield-blocked-label"
+      ),
+      html("span", {
+        id: "kyber-shield-blocked",
+        className: "kyber-shield-row-value",
+      })
+    );
 
     let rows = el("vbox", { className: "kyber-shield-rows" });
+    rows.append(
+      l10n(
+        html("h3", { className: "kyber-shield-controls-heading" }),
+        "kyberfox-shield-controls-heading"
+      )
+    );
     for (let control of CONTROLS) {
       let row = html("moz-toggle", { id: `kyber-shield-${control}` });
-      row.setAttribute("data-l10n-id", `kyberfox-shield-${control}`);
+      l10n(row, `kyberfox-shield-${control}`);
       rows.append(row);
     }
 
-    let note = (id, l10nId) => {
-      let node = html("p", {
-        id,
-        className: "kyber-shield-note",
-        hidden: true,
-      });
-      node.setAttribute("data-l10n-id", l10nId);
-      return node;
+    let note = (id, l10nId) =>
+      l10n(
+        html("p", {
+          id,
+          className: "kyber-shield-note",
+          hidden: true,
+        }),
+        l10nId
+      );
+
+    // Rows that lead to Firefox's own controls, never a copy of them.
+    let link = (id, src, onClick, withValue = false) => {
+      let row = html("button", { id, className: "kyber-shield-link" });
+      row.append(
+        icon("kyber-shield-row-icon", src),
+        l10n(
+          html("span", { className: "kyber-shield-row-label" }),
+          `kyberfox-${id.slice(6)}`
+        )
+      );
+      if (withValue) {
+        row.append(html("span", { className: "kyber-shield-row-value" }));
+      }
+      row.append(
+        icon(
+          "kyber-shield-chevron",
+          "chrome://global/skin/icons/arrow-right.svg"
+        )
+      );
+      row.addEventListener("click", onClick);
+      return row;
     };
-    // Opens uBlock Origin's dashboard for custom filters and lists.
-    let advanced = html("moz-button", { id: "kyber-shield-advanced" });
-    advanced.setAttribute("type", "ghost");
-    advanced.setAttribute("data-l10n-id", "kyberfox-shield-advanced");
-    advanced.addEventListener("click", () => this.openAdvanced());
+    let links = html("div", { className: "kyber-shield-links" });
+    links.append(
+      link(
+        "kyber-shield-permissions",
+        "chrome://browser/skin/permissions.svg",
+        () => this.openPermissions(),
+        true
+      ),
+      link(
+        "kyber-shield-settings",
+        "chrome://global/skin/icons/settings.svg",
+        () => this.openSettings()
+      ),
+      // Opens uBlock Origin's dashboard for custom filters and lists.
+      link(
+        "kyber-shield-advanced",
+        "chrome://kyberfox/content/crystal-guard.svg",
+        () => this.openAdvanced()
+      )
+    );
+
     body.append(
-      site,
-      master,
+      header,
+      card,
+      stat,
       rows,
       note("kyber-shield-cookies-note", "kyberfox-shield-cookies-note"),
       note("kyber-shield-private-note", "kyberfox-shield-private-note"),
       note("kyber-shield-error", "kyberfox-shield-unreachable"),
-      advanced
+      links
     );
     panel.append(body);
 
@@ -258,9 +379,40 @@ class ShieldButton {
       this.render();
     });
     panel.addEventListener("toggle", e => this.onToggle(e));
+    panel.addEventListener("popupshown", () => {
+      if (this.focusOnShow) {
+        this.focusOnShow = false;
+        master.focus();
+      }
+    });
     this.doc.getElementById("mainPopupSet").append(panel);
     this.panel = panel;
     return panel;
+  }
+
+  /** Firefox's Page Info window on its Permissions tab for the page. */
+  openPermissions() {
+    let browser = this.browser;
+    this.panel.hidePopup();
+    this.win.BrowserCommands.pageInfo(null, "permTab", null, null, browser);
+  }
+
+  /** Firefox's Privacy settings, where the browser-wide protections live. */
+  openSettings() {
+    this.panel.hidePopup();
+    this.win.openPreferences("privacy");
+  }
+
+  /**
+   * How many permissions the site holds as allowed, from Firefox's own
+   * permission store, as Page Info lists them.
+   *
+   * @returns {number}
+   */
+  allowedPermissions() {
+    return SitePermissions.getAllForBrowser(this.browser).filter(
+      p => p.state == SitePermissions.ALLOW
+    ).length;
   }
 
   openAdvanced() {
@@ -272,7 +424,8 @@ class ShieldButton {
     this.win.openTrustedLinkIn(policy.getURL("dashboard.html"), "tab");
   }
 
-  openPanel() {
+  openPanel({ keyboard = false } = {}) {
+    this.focusOnShow = keyboard;
     this.ensurePanel().openPopup(
       this.button.querySelector(".kyber-shield-icon"),
       "bottomright topright"
@@ -285,12 +438,55 @@ class ShieldButton {
     let state = KyberShield.state(this.browser);
     let query = id => panel.querySelector(`#kyber-shield-${id}`);
 
+    let shieldState = stateName(state);
     query("site").textContent = this.siteName();
+    query("status-card").setAttribute("state", shieldState);
+    this.doc.l10n.setAttributes(
+      query("status"),
+      `kyberfox-shield-status-${shieldState}`
+    );
     let master = query("master");
     this.doc.l10n.setAttributes(master, "kyberfox-shield-master", {
       site: this.siteName(),
     });
     master.pressed = state.enabled;
+
+    let count = state.ads ? KyberShield.blockedCount(this.browser) : "";
+    let blocked = query("blocked");
+    if (!state.ads) {
+      this.doc.l10n.setAttributes(blocked, "kyberfox-shield-blocked-off");
+    } else if (
+      !WebExtensionPolicy.getByID(UBLOCK_ID) ||
+      // uBlock's badge reads "!" for a page loaded before it was ready.
+      (count && !/\d/.test(count))
+    ) {
+      this.doc.l10n.setAttributes(blocked, "kyberfox-shield-blocked-unknown");
+    } else if (count) {
+      this.doc.l10n.setAttributes(blocked, "kyberfox-shield-blocked-count", {
+        count,
+      });
+    } else {
+      this.doc.l10n.setAttributes(blocked, "kyberfox-shield-blocked-none");
+    }
+
+    let allowed = this.allowedPermissions();
+    let permissions = query("permissions").querySelector(
+      ".kyber-shield-row-value"
+    );
+    if (allowed) {
+      this.doc.l10n.setAttributes(
+        permissions,
+        "kyberfox-shield-permissions-allowed",
+        { count: allowed }
+      );
+    } else {
+      this.doc.l10n.setAttributes(
+        permissions,
+        "kyberfox-shield-permissions-none"
+      );
+    }
+    panel.querySelector(".kyber-shield-controls-heading").hidden =
+      !state.perControl;
     for (let control of CONTROLS) {
       let row = query(control);
       row.hidden = !state.perControl;

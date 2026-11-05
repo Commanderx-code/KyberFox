@@ -165,7 +165,10 @@ add_task(async function test_badge_updates_on_navigation() {
   );
   await BrowserTestUtils.browserLoaded(browser);
   await waitForBadge(null);
-  Assert.ok(!button().hasAttribute("disabled"), "the button stays usable on this page");
+  Assert.ok(
+    !button().hasAttribute("disabled"),
+    "the button stays usable on this page"
+  );
 
   // Switching tabs shows the count of the tab switched to.
   let other = await BrowserTestUtils.openNewForegroundTab(
@@ -217,8 +220,8 @@ add_task(async function test_panel_has_master_and_three_controls() {
   );
   await document.l10n.translateElements([toggles[0]]);
   Assert.equal(
-    toggles[0].label,
-    "Shield for example.com",
+    toggles[0].ariaLabel,
+    "Kyber Shields for example.com",
     "the master switch names the site"
   );
   Assert.ok(
@@ -427,7 +430,10 @@ add_task(async function test_ublock_button_hidden() {
   let nodes = document.querySelectorAll(`[data-extensionid="${UBLOCK_ID}"]`);
   Assert.greater(nodes.length, 0, "uBlock's widget is in the window");
   for (let node of nodes) {
-    Assert.ok(!node.checkVisibility(), `${node.id || node.localName} is not shown`);
+    Assert.ok(
+      !node.checkVisibility(),
+      `${node.id || node.localName} is not shown`
+    );
   }
   Assert.ok(
     !gUnifiedExtensions.getActivePolicies().some(p => p.id == UBLOCK_ID),
@@ -466,7 +472,8 @@ add_task(async function test_advanced_settings_opens_dashboard() {
     "Advanced blocking settings",
     "the link is labeled"
   );
-  let dashboard = WebExtensionPolicy.getByID(UBLOCK_ID).getURL("dashboard.html");
+  let dashboard =
+    WebExtensionPolicy.getByID(UBLOCK_ID).getURL("dashboard.html");
   let opened = BrowserTestUtils.waitForNewTab(gBrowser, dashboard);
   let hidden = BrowserTestUtils.waitForEvent(p, "popuphidden");
   EventUtils.synthesizeMouseAtCenter(link, {});
@@ -507,10 +514,12 @@ add_task(async function test_shield_sits_in_address_bar() {
   );
   Assert.ok(node.checkVisibility(), "visible on a web page");
   let icon = node.querySelector(".kyber-shield-icon").getBoundingClientRect();
-  let star = document
-    .getElementById("star-button")
-    .getBoundingClientRect();
-  Assert.greaterOrEqual(Math.round(icon.width), 20, `icon is 20px (${icon.width})`);
+  let star = document.getElementById("star-button").getBoundingClientRect();
+  Assert.greaterOrEqual(
+    Math.round(icon.width),
+    20,
+    `icon is 20px (${icon.width})`
+  );
   Assert.greater(icon.width, star.width, "larger than the bookmark star");
 
   node.focus();
@@ -526,3 +535,295 @@ add_task(async function test_shield_sits_in_address_bar() {
   BrowserTestUtils.removeTab(tab);
 });
 
+// Kyber Shields panel: the Crystal Guard icon states, the status card, the
+// blocked count, the permission and settings rows, and keyboard use.
+
+function shieldState(win = window) {
+  return button(win).getAttribute("shield-state");
+}
+
+async function tooltip(win = window) {
+  await win.document.l10n.translateElements([button(win)]);
+  return button(win).getAttribute("tooltiptext");
+}
+
+async function reloadTab(browser) {
+  BrowserTestUtils.startLoadingURIString(browser, url("example.com"));
+  await BrowserTestUtils.browserLoaded(browser);
+}
+
+add_task(async function test_icon_states_follow_the_engine() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let browser = tab.linkedBrowser;
+  await TestUtils.waitForCondition(() => shieldState() == "on", "on");
+  Assert.equal(await tooltip(), "Kyber Shields: protection on");
+
+  await KyberShield.setControl(browser, "ads", false);
+  await reloadTab(browser);
+  await TestUtils.waitForCondition(() => shieldState() == "partial", "partial");
+  Assert.equal(
+    await tooltip(),
+    "Kyber Shields: some protections off for this site"
+  );
+
+  await KyberShield.setEnabled(browser, false);
+  await reloadTab(browser);
+  await TestUtils.waitForCondition(() => shieldState() == "off", "off");
+  Assert.equal(await tooltip(), "Kyber Shields: protection off for this site");
+
+  await KyberShield.setEnabled(browser, true);
+  await KyberShield.setControl(browser, "ads", true);
+  BrowserTestUtils.startLoadingURIString(browser, "about:robots");
+  await BrowserTestUtils.browserLoaded(browser);
+  await TestUtils.waitForCondition(
+    () => shieldState() == "unavailable",
+    "unavailable"
+  );
+  Assert.equal(await tooltip(), "Kyber Shields: not available on this page");
+  Assert.equal(
+    button().getAttribute("aria-label"),
+    button().getAttribute("tooltiptext"),
+    "the accessible name carries the state too"
+  );
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_panel_header_and_status() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let browser = tab.linkedBrowser;
+  let p = await openPanel();
+  let title = p.querySelector("#kyber-shield-title");
+  let status = p.querySelector("#kyber-shield-status");
+  await document.l10n.translateElements([title, status]);
+  Assert.equal(title.textContent, "Kyber Shields", "the panel is titled");
+  Assert.equal(status.textContent, "Protection on", "the status reads on");
+  Assert.ok(
+    p.querySelector(".kyber-shield-emblem").checkVisibility(),
+    "the emblem shows"
+  );
+  Assert.equal(
+    p.getAttribute("aria-labelledby"),
+    "kyber-shield-title",
+    "the panel is named by its title"
+  );
+  Assert.equal(toggle("master").ariaLabel, "Kyber Shields for example.com");
+
+  await clickToggle(toggle("ads"), browser);
+  await document.l10n.translateElements([status]);
+  Assert.equal(status.textContent, "Some protections off");
+  Assert.equal(
+    p.querySelector("#kyber-shield-status-card").getAttribute("state"),
+    "partial"
+  );
+  await clickToggle(toggle("master"), browser);
+  await document.l10n.translateElements([status]);
+  Assert.equal(status.textContent, "Protection off");
+  await clickToggle(toggle("master"), browser);
+  await clickToggle(toggle("ads"), browser);
+  await closePanel();
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_blocked_row_shows_the_real_count() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let browser = tab.linkedBrowser;
+  await TestUtils.waitForCondition(
+    () => button().getAttribute("badge"),
+    "uBlock counted the ad"
+  );
+  let p = await openPanel();
+  let value = p.querySelector("#kyber-shield-blocked");
+  await document.l10n.translateElements([value]);
+  Assert.equal(
+    value.textContent,
+    `${KyberShield.blockedCount(browser)} on this page`,
+    "the row shows uBlock's count for the page"
+  );
+
+  await clickToggle(toggle("ads"), browser);
+  await document.l10n.translateElements([value]);
+  Assert.equal(value.textContent, "Off for this site", "no count while off");
+  await clickToggle(toggle("ads"), browser);
+  await closePanel();
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_permissions_row_opens_page_info() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let principal = tab.linkedBrowser.contentPrincipal;
+  let p = await openPanel();
+  let row = p.querySelector("#kyber-shield-permissions");
+  let value = row.querySelector(".kyber-shield-row-value");
+  await document.l10n.translateElements([value]);
+  Assert.equal(value.textContent, "None allowed", "nothing allowed yet");
+  await closePanel();
+
+  Services.perms.addFromPrincipal(
+    principal,
+    "geo",
+    Services.perms.ALLOW_ACTION
+  );
+  registerCleanupFunction(() =>
+    Services.perms.removeFromPrincipal(principal, "geo")
+  );
+  p = await openPanel();
+  await document.l10n.translateElements([value]);
+  Assert.equal(value.textContent, "Allowed: 1", "the allowed count is real");
+
+  let opened = BrowserTestUtils.domWindowOpenedAndLoaded(null, win =>
+    win.document.documentURI.includes("pageInfo")
+  );
+  let hidden = BrowserTestUtils.waitForEvent(p, "popuphidden");
+  EventUtils.synthesizeMouseAtCenter(row, {});
+  let info = await opened;
+  await hidden;
+  await TestUtils.waitForCondition(
+    () => info.document.getElementById("permTab")?.selected,
+    "Page Info opens on its Permissions tab"
+  );
+  await BrowserTestUtils.closeWindow(info);
+  Services.perms.removeFromPrincipal(principal, "geo");
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_settings_row_opens_privacy_settings() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let p = await openPanel();
+  let opened = BrowserTestUtils.waitForNewTab(
+    gBrowser,
+    u => u.startsWith("about:preferences"),
+    true
+  );
+  EventUtils.synthesizeMouseAtCenter(
+    p.querySelector("#kyber-shield-settings"),
+    {}
+  );
+  let prefsTab = await opened;
+  await TestUtils.waitForCondition(
+    () =>
+      prefsTab.linkedBrowser.contentWindow?.location.hash.includes("privacy"),
+    "Settings opens on Privacy"
+  );
+  Assert.equal(p.state, "closed", "the panel closes");
+  BrowserTestUtils.removeTab(prefsTab);
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_keyboard_moves_through_the_panel() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  button().focus();
+  let shown = BrowserTestUtils.waitForEvent(
+    document,
+    "popupshown",
+    false,
+    e => e.target.id == "kyber-shield-panel"
+  );
+  EventUtils.synthesizeKey(" ");
+  await shown;
+  let p = panel();
+  await TestUtils.waitForCondition(
+    () => toggle("master").matches(":focus-within"),
+    "keyboard opening focuses the master switch"
+  );
+  let order = [];
+  for (let i = 0; i < 7; i++) {
+    EventUtils.synthesizeKey("KEY_Tab");
+    let el = document.activeElement;
+    order.push(el.closest("[id^=kyber-shield-]")?.id);
+  }
+  Assert.deepEqual(
+    order,
+    [
+      "kyber-shield-ads",
+      "kyber-shield-fingerprinting",
+      "kyber-shield-cookies",
+      "kyber-shield-permissions",
+      "kyber-shield-settings",
+      "kyber-shield-advanced",
+      "kyber-shield-master",
+    ],
+    "Tab reaches every control in order and wraps"
+  );
+  let hidden = BrowserTestUtils.waitForEvent(p, "popuphidden");
+  EventUtils.synthesizeKey("KEY_Escape");
+  await hidden;
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_private_window_panel() {
+  let win = await BrowserTestUtils.openNewBrowserWindow({ private: true });
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    win.gBrowser,
+    url("example.com")
+  );
+  let p = await openPanel(win);
+  let status = p.querySelector("#kyber-shield-status");
+  await win.document.l10n.translateElements([status]);
+  Assert.equal(status.textContent, "Protection on");
+  for (let id of ["permissions", "settings"]) {
+    Assert.ok(
+      p.querySelector(`#kyber-shield-${id}`).checkVisibility(),
+      `${id} row shows in a private window`
+    );
+  }
+  Assert.ok(
+    p.querySelector(".kyber-shield-controls-heading").hidden,
+    "no per-site controls heading without per-site controls"
+  );
+  await clickToggle(toggle("master", win), tab.linkedBrowser, win);
+  await win.document.l10n.translateElements([status]);
+  Assert.equal(status.textContent, "Protection off");
+  Assert.equal(shieldState(win), "off", "the icon follows");
+  await closePanel(win);
+  BrowserTestUtils.removeTab(tab);
+  await BrowserTestUtils.closeWindow(win);
+  let normal = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  Assert.equal(
+    KyberShield.state(normal.linkedBrowser).enabled,
+    true,
+    "a normal window is untouched"
+  );
+  BrowserTestUtils.removeTab(normal);
+});
+
+// uBlock's badge reads "!" for a page that loaded before uBlock was ready;
+// that is not a count.
+add_task(async function test_blocked_row_ignores_a_badge_that_is_not_a_count() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    url("example.com")
+  );
+  let original = KyberShield.blockedCount;
+  KyberShield.blockedCount = () => "!";
+  registerCleanupFunction(() => {
+    KyberShield.blockedCount = original;
+  });
+  let p = await openPanel();
+  let value = p.querySelector("#kyber-shield-blocked");
+  await document.l10n.translateElements([value]);
+  Assert.equal(value.textContent, "Not counted", "no made-up count");
+  KyberShield.blockedCount = original;
+  await closePanel();
+  BrowserTestUtils.removeTab(tab);
+});
