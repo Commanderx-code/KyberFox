@@ -131,6 +131,7 @@ function loadSkins() {
         kind: "skin",
         scheme: skin.scheme,
         vars: skin.vars,
+        logo: logoURL(skin.logo),
       };
     } catch (e) {
       console.error(`KyberThemes: cannot read skin ${id}`, e);
@@ -149,6 +150,20 @@ function sharedPathsValid(paths) {
         !p.split("/").includes("..")
     )
   );
+}
+
+/**
+ * The chrome:// URL of a skin's own logo, a PNG under themes/, or null when
+ * the skin has none or names a path outside themes/.
+ *
+ * @param {*} path skin.json "logo"
+ */
+function logoURL(path) {
+  return typeof path == "string" &&
+    /^[a-z0-9][a-z0-9/_.-]*\.png$/.test(path) &&
+    !path.split("/").includes("..")
+    ? `chrome://kyberfox/content/themes/${path}`
+    : null;
 }
 
 /** Registers or drops the reduce-glow sheet to match the pref. */
@@ -484,7 +499,8 @@ export const KyberThemes = {
   },
 
   /**
-   * The raw palettes.json entry: {name, kind, scheme, vars}.
+   * The raw palettes.json entry: {name, kind, scheme, vars}. A skin also has
+   * logo, the chrome:// URL of its own logo or null.
    *
    * @param {string} id
    */
@@ -753,6 +769,7 @@ export const KyberThemes = {
       kind: "skin",
       scheme: manifest.scheme,
       vars: manifest.vars,
+      logo: logoURL(manifest.logo),
     };
   },
 

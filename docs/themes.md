@@ -54,7 +54,8 @@ One-style (`one`), vendored from Godiesc's projects by
 `python -m tools.vendor_skins` at the commits pinned in `pins.toml` (see
 `themes/NOTICES.md` for what is kept and changed). `skins/index.json` lists
 the ids; each `skin.json` has `name`, `scheme`, `sheets`, `prefs` and the
-`--kf-*` `vars` used for the picker card.
+`--kf-*` `vars` used for the picker card. An optional `logo`, a PNG path
+relative to `themes/`, replaces the Kyber Fox logo on that card.
 
 `apply("gx")` removes `base.css` and the color palette, registers a sheet
 that sets only `color-scheme` (from `scheme`), then each sheet of the skin
@@ -83,8 +84,8 @@ Kyber Crystal (`kyber-crystal`, cyan and violet on midnight blue), Crimson
 (`kyber-crimson`, red on black) and Azure (`kyber-azure`, blue and silver on
 navy) are skins under `themes/skins/kyber-*/`. Each has its own `colors.css`
 with the `--kf-*` variables and the Kyber ones (`--kyber-glow-a`,
-`--kyber-glow-b`, `--kyber-bg-deep`, the fox, private fox and wave images and
-the wordmark colors). Everything else is shared by the three and lives in
+`--kyber-glow-b`, `--kyber-bg-deep`, the fox, private fox, Fox Guard and wave
+images and the wordmark colors). Everything else is shared by the three and lives in
 `themes/kyber/`, listed in each `skin.json` under `"shared"` (paths relative
 to `themes/`, registered after the skin's own sheets):
 
@@ -92,10 +93,11 @@ to `themes/`, registered after the skin's own sheets):
 - `kyber/fonts.css`: Sora and Inter, bundled (see `themes/NOTICES.md`), under
   the family names "Kyber Sora" and "Kyber Inter".
 - `kyber/chrome.css`: the window. A gradient outline and glow on the address
-  bar, rounded tabs with the selected one outlined, the logo and name at the
-  start of the tab strip, and Firefox's labeled private browsing indicator
-  shown as a PRIVATE pill in private windows.
-- `kyber/settings.css`: native Settings, with a PNG fox and outlined wordmark,
+  bar, rounded tabs with the selected one outlined, the theme's fox and the
+  name at the start of the tab strip, Firefox's labeled private browsing
+  indicator shown as a PRIVATE pill in private windows, and the theme's Fox
+  Guard in the Kyber Shields panel.
+- `kyber/settings.css`: native Settings, with the theme's fox and wordmark,
   cyan-edged cards, violet navigation selection, subtle waves and a wider content
   column. Native radio presets are arranged horizontally at wider sizes.
   `content/settings-layout.mjs` places the real Settings search control in the
@@ -117,10 +119,14 @@ hidden in the page itself, and only `pages.css` shows them. The new tab's CSP
 gets `font-src chrome:` from `patches/kyber/newtab-fonts.patch` so the bundled
 fonts load there; no package is made reachable from web pages.
 
-The generated fox images in `themes/kyber/foxes/` are the logo recolored per theme by
-`tools/make-logos.sh` (a gradient map from luminance to the theme's ramp,
-alpha kept). The waves are drawn by `tools/make_waves.py` and the wordmark
-mask by `tools/make_wordmark.py`.
+The generated fox images in `themes/kyber/foxes/` are the logo, the private
+logo and the Fox Guard artwork recolored per theme by `tools/make-logos.sh` (a
+gradient map from luminance to the theme's ramp, alpha kept). The waves are
+drawn by `tools/make_waves.py` and the wordmark mask by
+`tools/make_wordmark.py`. On the new tab and in Settings the wordmark is that
+mask filled with the text color for KYBER and the theme's two wordmark colors
+for FOX, so it follows the theme; `firefox-wordmark.svg` keeps the Kyber
+Crystal colors for Firefox's own pages.
 
 **Reduce glow.** Settings > Appearance has a Reduce glow checkbox under the
 theme cards, stored in `kyberfox.theme.reduceGlow`. When it is on, a small

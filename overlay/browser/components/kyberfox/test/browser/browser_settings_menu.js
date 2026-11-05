@@ -254,3 +254,32 @@ add_task(async function test_disabled_skin_restores_native_search_position() {
     }
   });
 });
+
+// The sidebar logo and wordmark follow the theme: the theme's fox, and the
+// wordmark mask filled with the text color and the theme's wordmark colors.
+add_task(async function test_sidebar_logo_and_wordmark_follow_the_theme() {
+  KyberThemes.apply("kyber-crimson");
+  try {
+    await settingsTab(async (doc, win) => {
+      let nav = doc.querySelector("moz-page-nav").shadowRoot;
+      let logo = nav.querySelector(".page-nav-heading-wrapper > .logo");
+      Assert.stringContains(
+        win.getComputedStyle(logo).backgroundImage,
+        "fox-crimson.png",
+        "the logo is the theme's fox"
+      );
+      let mark = win.getComputedStyle(
+        nav.querySelector(".page-nav-heading"),
+        "::before"
+      );
+      Assert.stringContains(mark.maskImage, "wordmark-mask.svg");
+      Assert.stringContains(
+        mark.backgroundImage,
+        "rgb(250, 2, 38)",
+        "FOX in Crimson red"
+      );
+    });
+  } finally {
+    KyberThemes.apply("kyber-crystal");
+  }
+});

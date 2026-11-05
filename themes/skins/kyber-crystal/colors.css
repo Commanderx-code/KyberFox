@@ -23,6 +23,7 @@
     --kyber-bg-deep: #05081c;
     --kyber-fox: url("chrome://kyberfox/content/themes/kyber/foxes/fox-crystal.png");
     --kyber-fox-private: url("chrome://kyberfox/content/themes/kyber/foxes/masked-fox.png");
+    --kyber-fox-guard: url("chrome://kyberfox/content/fox-guard.png");
     --kyber-waves: url("chrome://kyberfox/content/themes/kyber/waves-crystal.svg");
     --kyber-wordmark-a: #00e5ff;
     --kyber-wordmark-b: #b400ff;

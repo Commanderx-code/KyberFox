@@ -23,6 +23,7 @@
     --kyber-bg-deep: #000a24;
     --kyber-fox: url("chrome://kyberfox/content/themes/kyber/foxes/fox-azure.png");
     --kyber-fox-private: url("chrome://kyberfox/content/themes/kyber/foxes/masked-fox.png");
+    --kyber-fox-guard: url("chrome://kyberfox/content/themes/kyber/foxes/fox-guard-azure.png");
     --kyber-waves: url("chrome://kyberfox/content/themes/kyber/waves-azure.svg");
     --kyber-wordmark-a: #31a2f2;
     --kyber-wordmark-b: #ccd1d8;

@@ -70,8 +70,11 @@ The panel header shows Fox Guard, a fox and a crystal within a shield, at
 `fox-guard.png`, is the original artwork cropped to its content and resized
 to 176 px, twice the shown size, for HiDPI screens; it is about 48 KB. The
 1312 px original is `branding/fox-guard.png`. The artwork carries its own
-glow, so one file works on the Kyber skins and on light themes. It is
-decoration: screen readers skip it, and the title names the panel.
+glow, so it works on light themes too. Crimson and Azure show recolored
+copies (`themes/kyber/foxes/fox-guard-crimson.png` and
+`fox-guard-azure.png`, made by `tools/make-logos.sh`), set through the
+theme's `--kyber-fox-guard`. It is decoration: screen readers skip it, and
+the title names the panel.
 
 ## Not built
 
