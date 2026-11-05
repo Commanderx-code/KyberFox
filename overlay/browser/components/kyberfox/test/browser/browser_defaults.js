@@ -111,7 +111,13 @@ add_task(function test_mozilla_services_are_locked_off() {
   let allowed = Services.prefs
     .getStringPref("kyberfox.services.settings.allowedCollections", "")
     .split(",");
-  for (let collection of ["main/vpn-serverlist", "main/fxrelay-allowlist"]) {
+  for (let collection of [
+    "main/vpn-serverlist",
+    "main/fxrelay-allowlist",
+    "main/password-rules",
+    "main/password-recipes",
+    "main/fxmonitor-breaches",
+  ]) {
     Assert.ok(!allowed.includes(collection), `${collection} is not fetched`);
   }
 });

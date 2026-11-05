@@ -25,6 +25,10 @@ DROPPED_COLLECTIONS = {
     "main/fxrelay-denylist",
     "main/fxrelay-allowlist",
     "main/ml-model-allow-deny-list",
+    # The password manager and Monitor are locked off.
+    "main/password-rules",
+    "main/password-recipes",
+    "main/fxmonitor-breaches",
 }
 
 KEPT_COLLECTIONS = {
