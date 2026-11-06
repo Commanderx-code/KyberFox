@@ -123,3 +123,4 @@ Questions, most important first:
 4. Does section 3.2 of the MPL need more than the public repository plus the pinned upstream tarball?
 5. May a rebranded build use Mozilla-hosted services (Remote Settings, add-on blocklist, addons.mozilla.org), or is written permission needed?
 6. Does Safe Browsing use stay "non-commercial" if the project takes donations?
+7. May Kyber Fox redistribute filter lists (EasyList and EasyPrivacy, GPL-3.0-or-later or CC BY-SA 3.0+; uBlock Origin's lists, GPL-3.0) from its own signed list service to an MPL-2.0 browser, and what attribution or license text must travel with them? See [research/2026-11-06-list-delivery-options.md](research/2026-11-06-list-delivery-options.md).
