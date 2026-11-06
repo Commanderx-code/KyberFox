@@ -68,10 +68,14 @@ profile; never the everyday profile.
 
 ### Linux desktop
 
-- [ ] KDE Plasma on Wayland and on X11: the window opens, scales correctly at 100%, 125% and 150%, and clipboard and drag and drop work
+`tools/plasma_check/run.sh` covers most of this list in virtual KWin
+sessions; see [KDE Plasma checks](#kde-plasma-checks). Check the rest on a
+real Plasma desktop.
+
+- [ ] KDE Plasma on Wayland, and Kyber Fox started with `MOZ_ENABLE_WAYLAND=0` (X11 through XWayland): the window opens, scales correctly at 100%, 125% and 150%, and clipboard and drag and drop work
 - [ ] The file picker (save a page, upload a file) uses the KDE dialog through the XDG desktop portal
-- [ ] Download-finished notifications appear as Plasma notifications
-- [ ] The app menu entry, icon and window grouping use Kyber Fox's name and logo
+- [ ] A site notification (after allowing notifications for the site) appears as a Plasma notification from Kyber Fox
+- [ ] The app menu entry, icon and window grouping use Kyber Fox's name and logo; a private window gets its own taskbar entry with the mask icon
 
 ### Updates
 
@@ -87,6 +91,51 @@ profile; never the everyday profile.
 
 - [ ] A service on a local address with a self-signed or private CA certificate: import the CA under Settings, Certificates, then load it without errors
 - [ ] A common homelab dashboard loads with the shield on
+
+## KDE Plasma checks
+
+`tools/plasma_check/run.sh OUT_DIR [KYBERFOX_BINARY]` starts the installed
+Kyber Fox (`/opt/kyberfox/kyberfox` by default) with a new profile in five
+virtual KWin sessions: Wayland at 100%, 125% and 150%, and XWayland at 100%
+and 150%. Nothing opens on the real desktop. Each session's settings and
+KWin's saved output scales stay in `OUT_DIR`. The script prints, for each
+session:
+
+- the window protocol and device pixel ratio;
+- the app ID KWin sees (resource class and desktop file);
+- whether text copied in Kyber Fox can be pasted on the desktop, and the
+  other way round.
+
+The 100% Wayland session also sends a notification and opens the Save dialog.
+It prints whether the dialog went through the portal (`SaveFile`) and which
+window KWin shows for it. Screenshots go to `OUT_DIR`.
+
+In a virtual session, plasmashell has no panel and does not take the
+notification service name. `tools/plasma_check/notify_server.py` stands in
+for it and logs what Kyber Fox sends. The script cannot check drag and drop,
+the notification popup itself, or the taskbar.
+
+Firefox does not send a desktop notification when a download finishes, so
+the notification check uses a site notification instead.
+
+### Results on 2026-11-05
+
+Kyber Fox 159.0.1-4 from the pacman repository, Plasma 6.8.2, KWin 6.8.2,
+xdg-desktop-portal 1.22.1 with xdg-desktop-portal-kde 6.8.2.
+
+| Check | Result |
+|---|---|
+| Wayland window | Opens on the Wayland protocol; resource class and desktop file `kyberfox` |
+| XWayland window (`MOZ_ENABLE_WAYLAND=0`) | Opens on XWayland; resource class `kyberfox`, which matches `StartupWMClass=kyberfox` in the desktop file |
+| Scaling | Device pixel ratio 1, 1.25 and 1.5 at 100%, 125% and 150% on both; text and icons sharp in the screenshots |
+| Clipboard | Both ways, at every scale, on both |
+| File picker | `SaveFile` goes through the portal and the KDE dialog opens (window `org.freedesktop.impl.portal.desktop.kde`) |
+| Notification | Sent over `org.freedesktop.Notifications` with app name "Kyber Fox" and hint `desktop-entry: kyberfox`, so Plasma shows it under Kyber Fox |
+| Private window entry | Resource class and desktop file `kyberfox-private`, checked on the development build of PR #49 (159.0.1-6 and later) |
+| Drag and drop, popup, taskbar | Not checked yet; need a real Plasma desktop |
+
+The Plasma 6.8 install used here has no X11 session, so XWayland is the X11
+path that was checked.
 
 ## When a privacy setting breaks a site
 
