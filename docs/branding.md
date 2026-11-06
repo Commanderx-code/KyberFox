@@ -48,6 +48,13 @@ private windows got the main entry and the fox icon instead of the mask; this
 was found and fixed on 2026-11-06. Normal windows still match
 `kyberfox.desktop` by their app ID, `kyberfox`.
 
+The Windows installer `.exe` starts from Firefox's 7-Zip stub,
+`other-licenses/7zstub/firefox/7zSD.Win32.sfx`, so Explorer showed Firefox's
+setup icon on it. `make assemble` replaces the stub's icon with
+`firefox.ico` (`tools/brand_installer_stub.py`), so the downloaded installer
+shows the Kyber Fox logo. The installer's own pages already use the Kyber
+bitmaps (`wizHeader.bmp`, `wizWatermark.bmp`).
+
 To change the logo, replace the files in `branding/` and run
 `sh tools/make-logos.sh` from the repository root. Sizes with a render are used
 as they are; other sizes are scaled down from the 1254 px original.
