@@ -1,5 +1,5 @@
 <updates>
-  <update type="minor" displayVersion="159.0.1-8" appVersion="159.0.1" platformVersion="159.0.1" buildID="20261106062922" detailsURL="https://github.com/Commanderx-code/KyberFox/releases/tag/v159.0.1-8">
-    <patch type="complete" URL="https://github.com/Commanderx-code/KyberFox/releases/download/v159.0.1-8/kyberfox-159.0.1-8.complete.mar" hashFunction="sha512" hashValue="bd2a709bb19686f1003b42e9188faee68a5a300dc42466ab9d7427b046aae1c8ec4c5ec00dfe68762b5040c05542ffd8d513091a564674b6e1a392c725cfc652" size="108684427" />
+  <update type="minor" displayVersion="159.0.1-9" appVersion="159.0.1" platformVersion="159.0.1" buildID="20261106081004" detailsURL="https://github.com/Commanderx-code/KyberFox/releases/tag/v159.0.1-9">
+    <patch type="complete" URL="https://github.com/Commanderx-code/KyberFox/releases/download/v159.0.1-9/kyberfox-159.0.1-9.complete.mar" hashFunction="sha512" hashValue="81d9471a9582ee40d5cec523c89eeef60798319be4af49e6368b8e86ea5ca98b9ec5ada33c9d17788a5d45497fee1784f62e72aa4a0ad973c801cf4fec7f4ac6" size="108705671" />
   </update>
 </updates>
