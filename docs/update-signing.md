@@ -20,6 +20,8 @@ Kyber Fox updates itself on Windows only. The Linux build is built with `--disab
 4. The updater (`updater.exe`) checks the MAR signature against the certificates built into it, `release_primary.der` and `release_secondary.der`. MAR signature checking is on by default in this Firefox; only `--enable-unverified-updates` turns it off, and `mozconfigs/windows-cross` does not use it. A MAR signed with any other key is refused.
 5. The updater also checks that the MAR's channel id matches. `mozconfigs/windows-cross` sets `MAR_CHANNEL_ID` and `ACCEPTED_MAR_CHANNEL_IDS` to `kyberfox-release`, and `tools/make_complete_mar.sh` stamps the same id on the MAR.
 
+The browser treats an update as already installed only when its `buildID` equals the build ID compiled into the running browser (`Services.appinfo.appBuildID`). The release reads the `buildID` for `update.xml` from the MAR's `application.ini`, so the two must agree. Both build workflows pin `MOZ_BUILD_DATE` once per job, so `make build` and `make package` use the same ID. The release fails if `kyberfox.exe` or `xul.dll` does not contain the ID from `application.ini`. Before this was pinned (releases up to 159.0.1-8), the two IDs differed by the minutes between the build and the package step. Windows installs then reinstalled the same release after every restart, until a fixed release replaced it.
+
 Installs are per user and the maintenance service is off (`--disable-maintenance-service`), so an update needs no elevation. The browser contacts `commanderx-code.github.io` every `app.update.interval` seconds (14400); see `docs/network-audit.md`.
 
 ## The `%BUILD_TARGET%` value

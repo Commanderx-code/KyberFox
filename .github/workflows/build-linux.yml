@@ -124,6 +124,13 @@ jobs:
           cat "$RUNNER_TEMP/mozconfig"
           echo "MOZCONFIG=$RUNNER_TEMP/mozconfig" >> "$GITHUB_ENV"
 
+      # One build ID for the whole job. Without it, make build and make package
+      # each make their own, application.ini disagrees with the ID compiled
+      # into the browser, and the Windows updater offers the same update again
+      # after every install. The release writes update.xml from application.ini.
+      - name: Pin the build ID
+        run: echo "MOZ_BUILD_DATE=$(date -u +%Y%m%d%H%M%S)" >> "$GITHUB_ENV"
+
       - name: Build
         run: |
           date -u
