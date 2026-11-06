@@ -1,8 +1,8 @@
 # Roadmap
 
-Kyber Fox is a Firefox fork in **alpha**. Releases 159.0-1 through 159.0.1-7
-went to close friends on Windows and Arch Linux on 2026-11-04 and 2026-11-05;
-159.0.1-7 is the current one. This file tracks what is done, what is next, and
+Kyber Fox is a Firefox fork in **alpha**. Releases 159.0-1 through 159.0.1-9
+went to close friends on Windows and Arch Linux from 2026-11-04 to 2026-11-06;
+159.0.1-9 is the current one. This file tracks what is done, what is next, and
 what is only an idea. The design behind release 1 is
 [docs/superpowers/specs/2026-11-02-kyber-fox-design.md](docs/superpowers/specs/2026-11-02-kyber-fox-design.md).
 
@@ -46,9 +46,10 @@ signing keys have an offline backup.
 - [x] Release 159.0.1-1, with the signed update from 159.0-1 applied in CI (complete; 2026-11-04)
 - [x] Release 159.0.1-2 with the Kyber look and the new Settings layout (complete; 2026-11-04, the signed update from 159.0.1-1 applied in CI)
 - [x] Releases 159.0.1-3 to 159.0.1-7 (complete; 2026-11-04 and 2026-11-05): Kyber Shields panel, uBlock Origin 1.75.4 and private windows, fewer Remote Settings lists, theme-matched fox art, and a separate taskbar entry for private windows on Linux
+- [x] Releases 159.0.1-8 and 159.0.1-9 (complete; 2026-11-06): the mask icon for private windows in the Plasma taskbar, the Kyber Fox icon on the Windows installer, and one build ID per build, so Windows no longer offers the same update again after installing it (PR #57; the release checks that `kyberfox.exe` and `xul.dll` carry the build ID in `update.xml`)
 - [x] Final logo and private-browsing logo (complete; PR #12, [docs/branding.md](docs/branding.md))
 - [x] Python tests on every pull request (complete; PR #11, the Checks workflow)
-- [ ] Update from one release to the next on a real Windows PC (blocked: needs the owner's machine)
+- [ ] Update from one release to the next on a real Windows PC (in progress; on 2026-11-06 the owner updated a Windows 11 virtual machine from 159.0.1-8 to 159.0.1-9 and it stopped offering updates after that; a check on a physical PC is still open)
 - [x] Install and update on a real Garuda machine (complete; the owner updated from 159.0.1-1 to 159.0.1-2 with pacman on 2026-11-04 and the new look loaded)
 - [ ] Offline backup of `kyber-fox-private/keys/` (blocked: owner task)
 - [ ] KDE Plasma checks: file picker through the XDG portal, notifications, fractional scaling, Wayland and X11 sessions (in progress; `tools/plasma_check/run.sh` passed on 2026-11-05 for Wayland and XWayland at 100%, 125% and 150%, clipboard, the portal file picker, notifications and the app ID; the taskbar icons are checked through Plasma's task manager applet; drag and drop and the notification popup still need a real Plasma desktop; [docs/testing.md](docs/testing.md#kde-plasma-checks))
@@ -111,7 +112,8 @@ survives a Firefox major update without code changes or ships disabled.
 - [x] The masked fox illustration on the private window page (complete; PR #18)
 - [x] Branded Settings layout and restyled Settings pages (complete; PRs #19 and #20, [docs/ui-implementation.md](docs/ui-implementation.md))
 - [x] Theme-matched art: the fox, wordmark, theme cards and Fox Guard follow the Crystal, Crimson or Azure theme in the tab strip, new tab, Settings and Kyber Shields (complete; PR #47, browser tests)
-- [x] Private windows on Linux get their own taskbar entry with the mask icon (complete; PRs #49 and #51, browser and xpcshell tests, packaging checked in CI; [docs/branding.md](docs/branding.md))
+- [x] Private windows on Linux get their own taskbar entry with the mask icon (complete; PRs #49, #51 and #55, browser and xpcshell tests, packaging checked in CI, the Plasma taskbar checked with `tools/plasma_check/run.sh`; [docs/branding.md](docs/branding.md))
+- [x] The Windows installer `.exe` shows the Kyber Fox icon instead of Firefox's setup icon (complete; PR #58, Python tests and the Windows smoke install)
 
 ## Research tracks
 
