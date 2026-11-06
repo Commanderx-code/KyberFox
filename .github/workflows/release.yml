@@ -315,6 +315,15 @@ jobs:
             echo "::error::application.ini says version '$mar_version' build '$build_id', expected $VERSION"
             exit 1
           fi
+          # The updater compares update.xml with the ID compiled into the browser,
+          # not with application.ini; a mismatch makes every install offer the
+          # same update again.
+          for bin in kyberfox.exe xul.dll; do
+            if [ "$(grep -c -a -F "$build_id" "$bin")" = 0 ]; then
+              echo "::error::$bin does not contain the build ID $build_id from application.ini"
+              exit 1
+            fi
+          done
           echo "BUILD_ID=$build_id" >> "$GITHUB_ENV"
 
       - name: Sign the MAR
