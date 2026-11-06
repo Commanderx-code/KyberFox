@@ -1,6 +1,6 @@
 # How filter lists could reach Kyber Fox's built-in blocker
 
-Date: 2026-11-06. Status: **options for a decision, not a decision.** Roadmap item: "Decide how lists reach users" under [built-in blocking in the style of Brave Shields](../../ROADMAP.md#built-in-blocking-in-the-style-of-brave-shields). Background: [content-blocking-research.md](../content-blocking-research.md) and the [2026-11-04 experiment](2026-11-04-content-classifier-experiment.md).
+Date: 2026-11-06. Status: **decided on 2026-11-06: option A now, option B later** (see [Decision](#decision)). Roadmap item: "Decide how lists reach users" under [built-in blocking in the style of Brave Shields](../../ROADMAP.md#built-in-blocking-in-the-style-of-brave-shields). Background: [content-blocking-research.md](../content-blocking-research.md) and the [2026-11-04 experiment](2026-11-04-content-classifier-experiment.md).
 
 ## Where things stand
 
@@ -63,3 +63,11 @@ Date: 2026-11-06. Status: **options for a decision, not a decision.** Roadmap it
 2. Build nothing for B or C yet. With network-only, third-party-only blocking, any list channel only feeds an engine that adds nothing next to uBlock Origin.
 3. When the engine gains first-party or cosmetic blocking, rerun the experiment. If it then approaches uBlock Origin, choose B: signed lists from one host fit the way Kyber Fox already signs its updates. Settle the list licensing question first.
 4. Recheck upstream on each Firefox major update; the upstream-watch pull request is the natural moment.
+
+## Decision
+
+2026-11-06, by the owner: option A for now, option B later. Mozilla's
+`content-classifier-lists` collection stays allowed and nothing is built for B
+or C yet. B, a Kyber Fox signed list service, is built once the engine gains
+first-party or cosmetic blocking and a rerun of the experiment shows it is
+worth it, after licensing question 7 is answered. C is not planned.
