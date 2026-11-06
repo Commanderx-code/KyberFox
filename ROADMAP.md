@@ -82,7 +82,7 @@ blocks requests from the same lists uBlock Origin uses, has browser tests, and
 has been measured for speed and site breakage against uBlock Origin alone.
 
 - [x] Experiment on a development profile: turn on the in-tree engine with a local list, measure blocking, speed and breakage (complete; 2026-11-04, [result](docs/research/2026-11-04-content-classifier-experiment.md): fast and cheap, but with uBlock Origin's lists it cut third-party requests by 6% against uBlock Origin's 27%, and added nothing next to uBlock Origin; the next three items wait until the engine gains first-party or cosmetic blocking)
-- [ ] Decide how lists reach users: Mozilla's collection, a Kyber Fox signed list service, or download at runtime from the list hosts, and check each list's license (research; options compared on 2026-11-06 in [docs/research/2026-11-06-list-delivery-options.md](docs/research/2026-11-06-list-delivery-options.md), waiting on the owner's choice)
+- [x] Decide how lists reach users: Mozilla's collection, a Kyber Fox signed list service, or download at runtime from the list hosts, and check each list's license (decided 2026-11-06: Mozilla's collection for now, a Kyber Fox signed list service later, once the engine gains first-party or cosmetic blocking and licensing question 7 is answered; [docs/research/2026-11-06-list-delivery-options.md](docs/research/2026-11-06-list-delivery-options.md#decision))
 - [ ] Connect the engine to the shield's per-site switch and blocked count (planned)
 - [ ] Element hiding and site fixes (cosmetic filters and scriptlets), which the in-tree engine lacks (planned; the largest piece, and the condition for ever dropping uBlock Origin)
 
