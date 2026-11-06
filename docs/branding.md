@@ -40,6 +40,14 @@ the class is not set, so a plain tarball install keeps one icon for all
 windows. `browser.privateWindowSeparation.enabled`, Firefox's switch for the
 same thing on the Windows taskbar, turns it off.
 
+`kyberfox.desktop` has no `StartupWMClass` line, on purpose. On Wayland, KWin
+reports every Kyber Fox window with the resource name `kyberfox` (the
+executable's name). Plasma's task manager matches the resource name against
+`StartupWMClass` before it looks at the app ID. With `StartupWMClass=kyberfox`,
+private windows got the main entry and the fox icon instead of the mask; this
+was found and fixed on 2026-11-06. Normal windows still match
+`kyberfox.desktop` by their app ID, `kyberfox`.
+
 To change the logo, replace the files in `branding/` and run
 `sh tools/make-logos.sh` from the repository root. Sizes with a render are used
 as they are; other sizes are scaled down from the 1254 px original.
