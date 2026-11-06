@@ -21,15 +21,17 @@ def sh(*args):
 
 
 def kwin_windows():
-    """(resourceClass, desktopFile) of every window KWin's window runner finds."""
+    """(resourceName, resourceClass, desktopFile) of every window KWin's window
+    runner finds."""
     found = set()
-    for query in ("Kyber", "New Tab", "Save"):
+    for query in ("Kyber", "New Tab", "Save", "Private"):
         reply = sh("dbus-send", "--session", "--print-reply", "--dest=org.kde.KWin",
                    "/WindowsRunner", "org.kde.krunner1.Match", f"string:{query}").stdout
         for uuid in set(re.findall(r"0_(\{[0-9a-f-]+\})", reply)):
             info = sh("qdbus6", "org.kde.KWin", "/KWin", "org.kde.KWin.getWindowInfo", uuid).stdout
             fields = dict(line.split(": ", 1) for line in info.splitlines() if ": " in line)
-            found.add((fields.get("resourceClass"), fields.get("desktopFile")))
+            found.add((fields.get("resourceName"), fields.get("resourceClass"),
+                       fields.get("desktopFile")))
     return sorted(found)
 
 
@@ -66,6 +68,17 @@ try:
     pasted = m.execute_script("""
       gURLBar.focus(); gURLBar.value = ""; goDoCommand("cmd_paste"); return gURLBar.value;""")
     print("clipboard from desktop", pasted == f"in-{TAG}")
+
+    # The real task manager applet, with a normal and a private window open:
+    # the screenshot shows which icon each window gets in the taskbar.
+    m.execute_script("OpenBrowserWindow({private: true});")
+    time.sleep(4)
+    print("windows with private window", kwin_windows())
+    tasks = subprocess.Popen(["plasmawindowed", "org.kde.plasma.icontasks"],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(8)
+    screenshot(f"{TAG}-taskbar")
+    tasks.terminate()
 
     if FULL:
         m.execute_script("""

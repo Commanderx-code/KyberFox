@@ -46,13 +46,18 @@ def test_local_source_checksums():
 
 
 def test_desktop_file():
+    """No StartupWMClass: on Wayland, KWin reports every Kyber Fox window with
+    the resource name kyberfox (the executable), and Plasma's task manager
+    matches that against StartupWMClass before the app ID. With
+    StartupWMClass=kyberfox here, private windows would get this entry and
+    its icon instead of kyberfox-private.desktop and the mask."""
     cp = configparser.ConfigParser(interpolation=None, delimiters=("=",))
     cp.optionxform = str
     cp.read(ARCH / "kyberfox.desktop", encoding="utf-8")
     entry = cp["Desktop Entry"]
     assert entry["Name"] == "Kyber Fox"
     assert entry["Exec"] == "/usr/bin/kyberfox %u"
-    assert entry["StartupWMClass"] == "kyberfox"
+    assert "StartupWMClass" not in entry
     assert entry["Icon"] == "kyberfox"
     assert entry["Categories"] == "Network;WebBrowser;"
     mime = entry["MimeType"].split(";")

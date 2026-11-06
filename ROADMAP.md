@@ -51,7 +51,7 @@ signing keys have an offline backup.
 - [ ] Update from one release to the next on a real Windows PC (blocked: needs the owner's machine)
 - [x] Install and update on a real Garuda machine (complete; the owner updated from 159.0.1-1 to 159.0.1-2 with pacman on 2026-11-04 and the new look loaded)
 - [ ] Offline backup of `kyber-fox-private/keys/` (blocked: owner task)
-- [ ] KDE Plasma checks: file picker through the XDG portal, notifications, fractional scaling, Wayland and X11 sessions (in progress; `tools/plasma_check/run.sh` passed on 2026-11-05 for Wayland and XWayland at 100%, 125% and 150%, clipboard, the portal file picker, notifications and the app ID; drag and drop, the notification popup and the taskbar still need a real Plasma desktop; [docs/testing.md](docs/testing.md#kde-plasma-checks))
+- [ ] KDE Plasma checks: file picker through the XDG portal, notifications, fractional scaling, Wayland and X11 sessions (in progress; `tools/plasma_check/run.sh` passed on 2026-11-05 for Wayland and XWayland at 100%, 125% and 150%, clipboard, the portal file picker, notifications and the app ID; the taskbar icons are checked through Plasma's task manager applet; drag and drop and the notification popup still need a real Plasma desktop; [docs/testing.md](docs/testing.md#kde-plasma-checks))
 - [x] About dialog shows the Kyber Fox version and the Firefox version it is built from (complete; PR #28, browser test: the About dialog and the About section of Settings read "159.0.1-7 (64-bit), based on Firefox 159.0.1"; the wording may change with question 3 in [docs/licensing.md](docs/licensing.md#open-questions-for-a-lawyer))
 - [x] Project documents: roadmap, vision, architecture, privacy defaults, testing, branding, licensing (complete; PRs #13 and #17)
 

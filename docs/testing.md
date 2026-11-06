@@ -106,14 +106,21 @@ session:
 - whether text copied in Kyber Fox can be pasted on the desktop, and the
   other way round.
 
+Each session then opens a private window and starts Plasma's task manager
+applet (`plasmawindowed org.kde.plasma.icontasks`). The `*-taskbar.png`
+screenshot shows the icon each window gets: the fox for the normal window,
+the mask for the private one. The applet reads the installed desktop files.
+To check changed ones before a release, copy them into
+`OUT_DIR/data/applications/` before running the script.
+
 The 100% Wayland session also sends a notification and opens the Save dialog.
 It prints whether the dialog went through the portal (`SaveFile`) and which
 window KWin shows for it. Screenshots go to `OUT_DIR`.
 
 In a virtual session, plasmashell has no panel and does not take the
 notification service name. `tools/plasma_check/notify_server.py` stands in
-for it and logs what Kyber Fox sends. The script cannot check drag and drop,
-the notification popup itself, or the taskbar.
+for it and logs what Kyber Fox sends. The script cannot check drag and drop
+or the notification popup itself.
 
 Firefox does not send a desktop notification when a download finishes, so
 the notification check uses a site notification instead.
@@ -126,16 +133,24 @@ xdg-desktop-portal 1.22.1 with xdg-desktop-portal-kde 6.8.2.
 | Check | Result |
 |---|---|
 | Wayland window | Opens on the Wayland protocol; resource class and desktop file `kyberfox` |
-| XWayland window (`MOZ_ENABLE_WAYLAND=0`) | Opens on XWayland; resource class `kyberfox`, which matches `StartupWMClass=kyberfox` in the desktop file |
+| XWayland window (`MOZ_ENABLE_WAYLAND=0`) | Opens on XWayland; resource class `kyberfox` |
 | Scaling | Device pixel ratio 1, 1.25 and 1.5 at 100%, 125% and 150% on both; text and icons sharp in the screenshots |
 | Clipboard | Both ways, at every scale, on both |
 | File picker | `SaveFile` goes through the portal and the KDE dialog opens (window `org.freedesktop.impl.portal.desktop.kde`) |
 | Notification | Sent over `org.freedesktop.Notifications` with app name "Kyber Fox" and hint `desktop-entry: kyberfox`, so Plasma shows it under Kyber Fox |
 | Private window entry | Resource class and desktop file `kyberfox-private`, checked on the development build of PR #49 (159.0.1-6 and later) |
-| Drag and drop, popup, taskbar | Not checked yet; need a real Plasma desktop |
+| Drag and drop, popup | Not checked yet; need a real Plasma desktop |
 
 The Plasma 6.8 install used here has no X11 session, so XWayland is the X11
 path that was checked.
+
+### Taskbar, 2026-11-06
+
+With 159.0.1-7 installed, a private window showed the fox in the real
+taskbar instead of the mask. The cause was `StartupWMClass=kyberfox` in
+`kyberfox.desktop` ([branding.md](branding.md)). With that line removed, the
+task manager applet shows the fox for normal windows and the mask for
+private ones, on Wayland and XWayland and at 100%, 125% and 150%.
 
 ## When a privacy setting breaks a site
 

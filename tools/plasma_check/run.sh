@@ -2,10 +2,11 @@
 # Runs the KDE Plasma desktop checks from docs/testing.md in virtual KWin
 # sessions, so nothing opens on the real desktop. Each run starts Kyber Fox
 # with a new profile and records the window protocol, scale, app ID,
-# clipboard both ways, a notification and the file picker.
+# clipboard both ways and the taskbar icons of a normal and a private window;
+# the first session also checks a notification and the file picker.
 #
 # Usage: tools/plasma_check/run.sh OUT_DIR [KYBERFOX_BINARY]
-# Needs kwin_wayland, kscreen-doctor, spectacle, wl-clipboard, qdbus6,
+# Needs kwin_wayland, kscreen-doctor, plasmawindowed, spectacle, wl-clipboard, qdbus6,
 # dbus-monitor, xdg-desktop-portal-kde, python3 with PyGObject, and the
 # work/dev checkout (its mach python provides the Marionette client).
 set -eu

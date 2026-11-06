@@ -39,7 +39,7 @@ source=(
   'LICENSE'
 )
 sha256sums=('SKIP'
-            'b8864c8eb34043b0ad29104c1453a410597f636a4eb1b42893119416da02db36'
+            '0cec5e3515ae0c547ffc74e940f77e126c5812c75f19f529a0607103f6e8ec5e'
             '1579544c679d8aa38a610733b9f0a96b7a7f491eae2ddddbeecd53695fe6fea6'
             '66a3107d5ad6a058aab753eaac2047ccb2ed0e39465dd0fe5844da3e300d5172')
 
