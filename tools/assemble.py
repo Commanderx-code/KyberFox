@@ -9,6 +9,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from tools.brand_installer_stub import brand
 from tools.patchset import apply_patch, classify, read_list, rebrand
 from tools.sources import fetch_firefox, fetch_librewolf, fetch_ublock, load_pins
 from tools.staticprefs import move_section_into_order
@@ -28,6 +29,12 @@ REMOVED_PATHS = (
     "toolkit/components/ml/content/backends/OpenAIPipeline.mjs",
     "toolkit/components/ml/vendor/openai",
 )
+
+# The 7-Zip stub that the Windows installer starts from, and the icon it gets
+# in place of Firefox's setup icon. ARM64 builds use another stub, which is
+# left alone: Kyber Fox builds x86_64 only.
+INSTALLER_STUB = "other-licenses/7zstub/firefox/7zSD.Win32.sfx"
+INSTALLER_ICON = "browser/branding/kyberfox/firefox.ico"
 
 _PATCHED_FILE = re.compile(r"^\+\+\+ b/(\S+)", re.M)
 _VENDORED_CRATE = re.compile(r"^(third_party/rust/[^/]+)/(.+)$")
@@ -191,6 +198,13 @@ def apply_librewolf_l10n(tree: Path, librewolf: Path) -> list[Path]:
     return written
 
 
+def brand_installer(tree: Path) -> None:
+    """Puts the Kyber Fox icon on the Windows installer's 7-Zip stub."""
+    stub = tree / INSTALLER_STUB
+    if stub.is_file():
+        stub.write_bytes(brand(stub.read_bytes(), (tree / INSTALLER_ICON).read_bytes()))
+
+
 def _finish_tree(tree: Path, pins, touched: set[str], ublock: Path) -> None:
     settings = tree / "kyberfox"
     settings.mkdir(exist_ok=True)
@@ -204,6 +218,7 @@ def _finish_tree(tree: Path, pins, touched: set[str], ublock: Path) -> None:
         elif path.exists():
             path.unlink()
     _follow_collection_pref(tree)
+    brand_installer(tree)
     _update_cargo_checksums(tree, touched)
     prefs = tree / "modules/libpref/init/StaticPrefList.yaml"
     if prefs.is_file():
