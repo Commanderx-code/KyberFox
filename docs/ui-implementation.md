@@ -49,7 +49,7 @@ replacement new-tab or settings applications. Relevant source locations:
 - Native search handoff and its localized text remain intact, including the
   configured private search engine. No search endpoint or data store is added.
 
-The supplied references were inspected in `/home/commander/Downloads/kyberfox/`.
+The supplied references were inspected in `~/Downloads/kyberfox/`.
 They are visual references, not embedded page screenshots. The masked illustration
 is copied unchanged from `kyber_fox_private_new_tab.png` into
 `themes/kyber/foxes/masked-fox.png`. It is owner-supplied branding, consistent with
