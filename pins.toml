@@ -1,8 +1,8 @@
 # Pinned inputs. Every download is verified against these values.
 
 [firefox]
-version = "160.0.1"
-sha256 = "7b9d95ddf24f7bbf5d0d05698bc02a66dac1eca438f80e093c5c76af7648b06d"
+version = "161.0"
+sha256 = "c649de11e4dc6266bc905ce4b33eb8672a1947c2e210ec53dce285cb86296a5a"
 
 [librewolf]
 # Tag in https://codeberg.org/librewolf/source. The commit is what is trusted;
